@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKIntegerSlider;
-import com.chaosbuffalo.mkworkspace.network.packets.AddWorkspaceVariantPacket;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKVerticalAccessPlacement;
@@ -28,7 +27,6 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -974,7 +972,8 @@ public class WorkspaceVerticalStackTopologyPanel {
             public void addFloorRootVariant(String sectionKey) {
                 String baseName = floorRootVariantBaseName(editor, stackId, sectionKey);
                 if (!baseName.isBlank()) {
-                    PacketDistributor.sendToServer(new AddWorkspaceVariantPacket(screen.anchor(), baseName));
+                    screen.draftSession().stageVariantAddition(baseName);
+                    screen.flagNeedSetup();
                 }
             }
 
@@ -1017,7 +1016,8 @@ public class WorkspaceVerticalStackTopologyPanel {
             public void addFloorHallVariant(String sectionKey, boolean main) {
                 String baseName = floorHallVariantBaseName(editor, stackId, sectionKey, main);
                 if (!baseName.isBlank()) {
-                    PacketDistributor.sendToServer(new AddWorkspaceVariantPacket(screen.anchor(), baseName));
+                    screen.draftSession().stageVariantAddition(baseName);
+                    screen.flagNeedSetup();
                 }
             }
 
@@ -1326,7 +1326,8 @@ public class WorkspaceVerticalStackTopologyPanel {
             public void addFloorInsertVariant(String sectionKey) {
                 String baseName = floorInsertVariantBaseName(editor, stackId, sectionKey);
                 if (!baseName.isBlank()) {
-                    PacketDistributor.sendToServer(new AddWorkspaceVariantPacket(screen.anchor(), baseName));
+                    screen.draftSession().stageVariantAddition(baseName);
+                    screen.flagNeedSetup();
                 }
             }
 
@@ -1438,7 +1439,8 @@ public class WorkspaceVerticalStackTopologyPanel {
             public void addFloorRoomVariant(String sectionKey, MKFloorRoomKind kind, int index) {
                 String baseName = floorRoomVariantBaseName(editor, stackId, sectionKey, kind, index);
                 if (!baseName.isBlank()) {
-                    PacketDistributor.sendToServer(new AddWorkspaceVariantPacket(screen.anchor(), baseName));
+                    screen.draftSession().stageVariantAddition(baseName);
+                    screen.flagNeedSetup();
                 }
             }
 

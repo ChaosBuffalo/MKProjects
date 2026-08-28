@@ -39,8 +39,10 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public class MKWorkspaceScaffoldBuilder {
@@ -201,7 +203,16 @@ public class MKWorkspaceScaffoldBuilder {
         if (index < 0) {
             throw new IllegalArgumentException("piece is not present in layout list");
         }
-        PieceBuildContext context = createBuildContext(workspace, targetPiece, placements.get(index));
+        return cloneFromTemplate(level, workspace, templatePiece, targetPiece, placements.get(index));
+    }
+
+    public MKWorkspacePieceDefinition cloneFromTemplate(ServerLevel level, MKStructureWorkspace workspace,
+                                                        MKWorkspacePieceDefinition templatePiece, MKPlannedPiece targetPiece,
+                                                        MKWorkspaceGridLayout.Placement placement) {
+        if (MKWorkspaceTemplateReuseTags.isDerived(targetPiece.tags())) {
+            return createDerivedLogicalPiece(workspace, targetPiece, templatePiece);
+        }
+        PieceBuildContext context = createBuildContext(workspace, targetPiece, placement);
         clearWorkspaceHeightBounds(level, context.clearedBounds());
         copyTemplateContents(level, templatePiece.exportBounds(), context.exportBounds());
         List<MKWorkspaceConnectorDefinition> connectors = recreateConnectorsFromTemplate(level, workspace, targetPiece,
@@ -216,7 +227,7 @@ public class MKWorkspaceScaffoldBuilder {
         BlockPos signPos = placeSign(level, workspace, targetPiece, structureBlockPos);
         Map<String, String> pieceTags = new HashMap<>(targetPiece.tags());
         copyGeneratedStairTags(templatePiece, pieceTags);
-        return createPieceDefinition(workspace, targetPiece, placements.get(index), context, connectors,
+        return createPieceDefinition(workspace, targetPiece, placement, context, connectors,
                 structureBlockPos, signPos, markerPositions, generatedStairPositions, pieceTags);
     }
 
@@ -292,6 +303,32 @@ public class MKWorkspaceScaffoldBuilder {
                 clearBlock(level, stairPos, excludedPos);
             }
         }
+    }
+
+    public void clearExistingPieceContents(ServerLevel level, List<MKWorkspacePieceDefinition> piecesToClear,
+                                           BlockPos excludedPos) {
+        for (BlockPos pos : collectExistingPieceContentPositions(piecesToClear)) {
+            clearBlock(level, pos, excludedPos);
+        }
+    }
+
+    Set<BlockPos> collectExistingPieceContentPositions(List<MKWorkspacePieceDefinition> piecesToClear) {
+        LinkedHashSet<BlockPos> positions = new LinkedHashSet<>();
+        for (MKWorkspacePieceDefinition piece : piecesToClear) {
+            BoundingBox previewBounds = piece.previewBounds();
+            for (int x = previewBounds.minX(); x <= previewBounds.maxX(); x++) {
+                for (int y = previewBounds.minY(); y <= previewBounds.maxY(); y++) {
+                    for (int z = previewBounds.minZ(); z <= previewBounds.maxZ(); z++) {
+                        positions.add(new BlockPos(x, y, z));
+                    }
+                }
+            }
+            positions.add(piece.structureBlockPos());
+            positions.add(piece.signPos());
+            positions.addAll(piece.markerPositions());
+            positions.addAll(piece.generatedStairPositions());
+        }
+        return Set.copyOf(positions);
     }
 
     BoundingBox existingWorkspaceClearBounds(MKStructureWorkspace workspace) {
@@ -1769,7 +1806,8 @@ public class MKWorkspaceScaffoldBuilder {
             SignText text = sign.getFrontText()
                     .setMessage(0, Component.literal(workspace.namespace()))
                     .setMessage(1, Component.literal(workspace.structureName()))
-                    .setMessage(2, Component.literal(piece.roleId()))
+                    .setMessage(2, Component.literal(piece.tags().getOrDefault("workspace_topology_slot_id",
+                            piece.roleId())))
                     .setMessage(3, Component.literal(piece.pieceName()));
             sign.setText(text, true);
             sign.setText(text, false);

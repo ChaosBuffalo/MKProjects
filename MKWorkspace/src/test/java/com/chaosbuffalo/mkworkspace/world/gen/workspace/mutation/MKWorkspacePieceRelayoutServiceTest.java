@@ -6,6 +6,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructure
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePlannerId;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateCloneTags;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedPiece;
@@ -131,6 +132,35 @@ class MKWorkspacePieceRelayoutServiceTest {
         assertEquals(0, withRemap.newCount());
         assertEquals(0, withRemap.removedCount());
         assertEquals(1, countPreservedWorkImpacts(withRemap));
+    }
+
+    @Test
+    void catalogSummaryDescribesClonedNewPhysicalPiecesSeparatelyFromScaffoldedPieces() {
+        MKWorkspacePieceDefinition sourcePiece = piece("room_source_template", "room_source", 5, 5, 5);
+        MKStructureWorkspace existing = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withPieces(List.of(sourcePiece));
+        LinkedHashMap<String, String> clonedTags = new LinkedHashMap<>(tags("room_clone"));
+        clonedTags.put(MKWorkspaceTemplateCloneTags.SOURCE_PIECE_NAME_TAG, sourcePiece.pieceName());
+        List<MKPlannedPiece> targetPieces = List.of(
+                planned("room_source_template", "room_source", sourcePiece.plannerId(), 5, 5, 5),
+                planned("room_clone_template", "room_clone", plannerId("room_clone"), 5, 5, 5,
+                        List.of(), Map.copyOf(clonedTags))
+        );
+
+        MKWorkspacePieceRelayoutService.CatalogRelayoutSummary summary = service
+                .summarizeCatalogRelayout(existing, existing, targetPieces, targetPieces)
+                .orElseThrow();
+
+        assertEquals(1, summary.newCount());
+        assertTrue(summary.impacts().stream()
+                .anyMatch(impact -> "new".equals(impact.outcome()) &&
+                        impact.reason().equals("new physical authored template slot will be cloned from " +
+                                sourcePiece.pieceName())));
+        assertTrue(summary.warnings().contains(
+                "1 new physical template slots will be cloned from selected source templates."));
+        assertEquals(0, summary.warnings().stream()
+                .filter(warning -> warning.contains("new physical template slots will be scaffolded"))
+                .count());
     }
 
     @Test

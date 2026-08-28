@@ -13,6 +13,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertAttachmentFace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyKind;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunKind;
@@ -73,6 +74,8 @@ public record MKWorkspaceExportManifest(
     private static final String COURTYARD_CONTENT_KIND = "courtyard";
     private static final String CONTENT_KIND_TAG = "workspace_content_kind";
     private static final String CONTENT_SIZE_TAG = "workspace_content_size";
+    private static final String INSERT_SOCKET_MAX_SIZE_TAG = "workspace_insert_socket_max_square_size";
+    @Deprecated(forRemoval = false)
     private static final String COURTYARD_SOCKET_MAX_SIZE_TAG = "workspace_courtyard_socket_max_square_size";
     public static final Codec<MKWorkspaceExportManifest> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.INT.fieldOf("schema_version").forGetter(MKWorkspaceExportManifest::schemaVersion),
@@ -629,7 +632,11 @@ public record MKWorkspaceExportManifest(
             MKWorkspaceInsertFamilyKind kind,
             int width,
             int height,
-            int depth
+            int depth,
+            Optional<MKWorkspaceInsertAttachmentFace> attachmentFace,
+            int faceUOffset,
+            int faceVOffset,
+            String templateJigsawFinalState
     ) {
         public static final Codec<ExportInsertFamily> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.STRING.fieldOf("family_id").forGetter(ExportInsertFamily::familyId),
@@ -637,12 +644,24 @@ public record MKWorkspaceExportManifest(
                         .forGetter(ExportInsertFamily::kind),
                 Codec.INT.fieldOf("width").forGetter(ExportInsertFamily::width),
                 Codec.INT.fieldOf("height").forGetter(ExportInsertFamily::height),
-                Codec.INT.fieldOf("depth").forGetter(ExportInsertFamily::depth)
+                Codec.INT.fieldOf("depth").forGetter(ExportInsertFamily::depth),
+                MKWorkspaceInsertAttachmentFace.CODEC.optionalFieldOf("attachment_face")
+                        .forGetter(ExportInsertFamily::attachmentFace),
+                Codec.INT.optionalFieldOf("face_u_offset", 0).forGetter(ExportInsertFamily::faceUOffset),
+                Codec.INT.optionalFieldOf("face_v_offset", 0).forGetter(ExportInsertFamily::faceVOffset),
+                Codec.STRING.optionalFieldOf("template_jigsaw_final_state", "minecraft:air")
+                        .forGetter(ExportInsertFamily::templateJigsawFinalState)
         ).apply(instance, ExportInsertFamily::new));
+
+        public ExportInsertFamily(String familyId, MKWorkspaceInsertFamilyKind kind, int width, int height,
+                                  int depth) {
+            this(familyId, kind, width, height, depth, Optional.empty(), 0, 0, "minecraft:air");
+        }
 
         public static ExportInsertFamily from(MKWorkspaceInsertFamilyDefinition insertFamily) {
             return new ExportInsertFamily(insertFamily.familyId(), insertFamily.kind(), insertFamily.width(),
-                    insertFamily.height(), insertFamily.depth());
+                    insertFamily.height(), insertFamily.depth(), insertFamily.attachmentFace(),
+                    insertFamily.faceUOffset(), insertFamily.faceVOffset(), insertFamily.templateJigsawFinalState());
         }
 
         public ResourceLocation poolId(MKWorkspaceExportManifest manifest) {
@@ -750,7 +769,10 @@ public record MKWorkspaceExportManifest(
                             .findFirst() : Optional.empty());
             java.util.Optional<MKWorkspaceRuntimePieceInfo> runtimeInfo = runtimePiece
                     .map(MKWorkspacePieceDefinition::tags)
-                    .flatMap(MKWorkspaceRuntimePieceInfo::fromTags);
+                    .flatMap(MKWorkspaceRuntimePieceInfo::fromTags)
+                    .or(() -> runtimePiece
+                            .filter(MKWorkspaceExportManifest::isRuntimeInsertFamilyVariant)
+                            .map(MKWorkspaceExportManifest::defaultInsertRuntimePieceInfo));
             if (runtimeInfo.isEmpty() || runtimePiece.isEmpty()) {
                 return java.util.Optional.empty();
             }
@@ -1519,8 +1541,7 @@ public record MKWorkspaceExportManifest(
                                              boolean allowTemplatePieces) {
         for (MKWorkspaceInsertFamilyDefinition insertFamily : workspace.insertFamilies()) {
             LinkedHashSet<String> childBaseNames = pieces.stream()
-                    .filter(piece -> allowTemplatePieces ||
-                            !"template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance")))
+                    .filter(MKWorkspaceExportManifest::isRuntimeInsertFamilyVariant)
                     .filter(piece -> insertFamily.familyId().equals(piece.tags().get(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID)))
                     .filter(piece -> insertFamily.kind().getSerializedName().equals(piece.tags()
                             .getOrDefault(MKInsertFamilyPools.TAG_INSERT_FAMILY_KIND,
@@ -1538,7 +1559,7 @@ public record MKWorkspaceExportManifest(
                                              LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool) {
         for (ExportInsertFamily insertFamily : manifest.settings().insertFamilies()) {
             LinkedHashSet<String> childBaseNames = manifest.pieces().stream()
-                    .filter(piece -> !"template".equals(piece.workspacePieceKind()))
+                    .filter(MKWorkspaceExportManifest::isRuntimeInsertFamilyVariant)
                     .filter(piece -> insertFamily.familyId().equals(piece.tags()
                             .get(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID)))
                     .filter(piece -> insertFamily.kind().getSerializedName().equals(piece.tags()
@@ -1550,6 +1571,50 @@ public record MKWorkspaceExportManifest(
                 childrenByPool.put(insertFamily.poolId(manifest), childBaseNames);
             }
         }
+    }
+
+    private static boolean isRuntimeInsertFamilyVariant(MKWorkspacePieceDefinition piece) {
+        return effectiveVariantIndex(piece.tags(), piece.variantIndex()) > 0 &&
+                !"template".equals(piece.tags().getOrDefault("workspace_piece_kind", "instance"));
+    }
+
+    private static boolean isRuntimeInsertFamilyVariant(ExportPiece piece) {
+        return effectiveVariantIndex(piece.tags(), piece.variantIndex()) > 0 &&
+                !"template".equals(piece.workspacePieceKind());
+    }
+
+    private static int effectiveVariantIndex(Map<String, String> tags, int fallback) {
+        String value = tags.get("workspace_variant_index");
+        if (value == null || value.isBlank()) {
+            return fallback;
+        }
+        try {
+            return Math.max(0, Integer.parseInt(value));
+        } catch (NumberFormatException ignored) {
+            return fallback;
+        }
+    }
+
+    private static MKWorkspaceRuntimePieceInfo defaultInsertRuntimePieceInfo(MKWorkspacePieceDefinition piece) {
+        return new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,
+                true, true, true, false, defaultInsertTopologyGroup(piece.tags()), false, true);
+    }
+
+    private static String defaultInsertTopologyGroup(Map<String, String> tags) {
+        String runtimeGroup = tags.get(MKWorkspaceRuntimePieceInfo.TOPOLOGY_GROUP_TAG);
+        if (runtimeGroup != null && !runtimeGroup.isBlank()) {
+            return runtimeGroup;
+        }
+        String workspaceGroup = tags.get("workspace_topology_group");
+        if (workspaceGroup != null && !workspaceGroup.isBlank()) {
+            return workspaceGroup;
+        }
+        String slotId = tags.getOrDefault("workspace_topology_slot_id", "");
+        int separator = slotId.indexOf('.');
+        if (separator > 0) {
+            return slotId.substring(0, separator);
+        }
+        return "";
     }
 
     private static void addFloorMaskPoolChild(LinkedHashMap<ResourceLocation, LinkedHashSet<String>> childrenByPool,
@@ -1587,7 +1652,8 @@ public record MKWorkspaceExportManifest(
             return false;
         }
         int contentSize = parsePositiveInt(tags.get(CONTENT_SIZE_TAG));
-        int socketMaxSize = parsePositiveInt(tags.get(COURTYARD_SOCKET_MAX_SIZE_TAG));
+        int socketMaxSize = parsePositiveInt(tags.getOrDefault(INSERT_SOCKET_MAX_SIZE_TAG,
+                tags.get(COURTYARD_SOCKET_MAX_SIZE_TAG)));
         return contentSize > 0 && socketMaxSize > 0 && contentSize <= socketMaxSize;
     }
 

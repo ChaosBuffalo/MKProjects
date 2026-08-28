@@ -20,23 +20,19 @@ public class WorkspaceFormPage extends WorkspacePageBase {
 
         addTitle(screen, root, Component.literal("Workspace Configuration"));
         addHeaderText(screen, root, Component.literal(
-                "Edit the workspace through focused v2 sections. Global screens handle naming, margins, template families, openings, and insert data."));
+                "Edit the workspace through focused v2 sections. Global screens handle naming, margins, and openings."));
         addHeaderText(screen, root, Component.literal(screen.draftSession().summary()));
 
         int firstButtonY = screen.panelY() + 130;
         addNavigationButton(screen, root, firstButtonY, "Identity & Bounds", "form_identity");
         addNavigationButton(screen, root, firstButtonY + screen.buttonHeight() + screen.buttonGap(),
-                "Template Families", WorkspaceFormFamiliesPage.ID);
-        addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 2),
                 "Opening Profiles", "form_openings");
-        addNavigationButton(screen, root, firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 3),
-                "Insert Families", WorkspaceFormInsertFamiliesPage.ID);
 
         MKButton resetDefaults = new MKButton(Component.literal("Reset Planner Defaults"), 220,
                 screen.buttonHeight());
         root.addWidget(resetDefaults);
         root.addConstraintToWidget(new CenterXConstraint(), resetDefaults);
-        resetDefaults.setY(firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 4));
+        resetDefaults.setY(firstButtonY + ((screen.buttonHeight() + screen.buttonGap()) * 2));
         resetDefaults.setPressedCallback((button, mouseButton) -> {
             screen.draftSession().resetCurrentTopologyDefaults();
             screen.flagNeedSetup();

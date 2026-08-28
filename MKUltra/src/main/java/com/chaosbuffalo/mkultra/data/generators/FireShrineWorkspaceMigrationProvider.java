@@ -15,6 +15,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertAttachmentFace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyKind;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceMaterialPalette;
@@ -68,7 +69,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 public class FireShrineWorkspaceMigrationProvider implements DataProvider {
     private static final String STRUCTURE_NAME = "fire_shrine_new";
@@ -158,8 +158,10 @@ public class FireShrineWorkspaceMigrationProvider implements DataProvider {
     }
 
     private void saveAuthoringTemplates(CachedOutput output, List<MKWorkspacePieceDefinition> pieces) throws IOException {
-        Map<String, MKWorkspacePieceDefinition> byName = pieces.stream()
-                .collect(Collectors.toMap(MKWorkspacePieceDefinition::pieceName, piece -> piece));
+        Map<String, MKWorkspacePieceDefinition> byName = new LinkedHashMap<>();
+        for (MKWorkspacePieceDefinition piece : pieces) {
+            byName.putIfAbsent(piece.pieceName(), piece);
+        }
         ResourceLocation platformContentsPool = MKWorkspaceInsertFamilyDefinition.poolId(MKUltra.MODID,
                 STRUCTURE_NAME, PLATFORM_CONTENTS_INSERT_FAMILY);
         ResourceLocation pillarPool = MKWorkspaceInsertFamilyDefinition.poolId(MKUltra.MODID,
@@ -264,9 +266,11 @@ public class FireShrineWorkspaceMigrationProvider implements DataProvider {
     private List<MKWorkspaceInsertFamilyDefinition> insertFamilies() {
         return List.of(
                 new MKWorkspaceInsertFamilyDefinition(PLATFORM_CONTENTS_INSERT_FAMILY,
-                        MKWorkspaceInsertFamilyKind.COURTYARD_SOCKET, 9, 11, 9),
+                        MKWorkspaceInsertFamilyKind.COURTYARD_SOCKET, 9, 11, 9,
+                        Optional.of(MKWorkspaceInsertAttachmentFace.BOTTOM), 4, 4, "minecraft:air"),
                 new MKWorkspaceInsertFamilyDefinition(PILLAR_INSERT_FAMILY,
-                        MKWorkspaceInsertFamilyKind.COURTYARD_SOCKET, 5, 20, 5)
+                        MKWorkspaceInsertFamilyKind.COURTYARD_SOCKET, 5, 20, 5,
+                        Optional.of(MKWorkspaceInsertAttachmentFace.BOTTOM), 2, 2, "minecraft:air")
         );
     }
 
@@ -331,18 +335,12 @@ public class FireShrineWorkspaceMigrationProvider implements DataProvider {
 
     private List<MKPlannedPiece> insertPieces() {
         return List.of(
-                insertTemplate(PLATFORM_CONTENTS_INSERT_FAMILY, PLATFORM_CONTENTS_INSERT_FAMILY, 9, 9, 11),
                 insertVariant("fire_shrine_gazebo", PLATFORM_CONTENTS_INSERT_FAMILY,
                         PLATFORM_CONTENTS_INSERT_FAMILY, 9, 9, 11, 1),
                 insertVariant("fire_shrine_lava_fountain", PLATFORM_CONTENTS_INSERT_FAMILY,
                         PLATFORM_CONTENTS_INSERT_FAMILY, 9, 9, 11, 2),
-                insertTemplate(PILLAR_INSERT_FAMILY, PILLAR_INSERT_FAMILY, 5, 5, 20),
                 insertVariant("fire_shrine_pillar", PILLAR_INSERT_FAMILY, PILLAR_INSERT_FAMILY, 5, 5, 20, 1)
         );
-    }
-
-    private MKPlannedPiece insertTemplate(String pieceName, String insertFamilyId, int width, int length, int height) {
-        return insertPiece(pieceName, insertFamilyId, pieceName, width, length, height, "template", 0);
     }
 
     private MKPlannedPiece insertVariant(String pieceName, String insertFamilyId, String baseName, int width,
@@ -361,7 +359,7 @@ public class FireShrineWorkspaceMigrationProvider implements DataProvider {
         tags.put("tower_piece_kind", "insert");
         tags.put(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID, insertFamilyId);
         tags.put(MKInsertFamilyPools.TAG_INSERT_FAMILY_KIND,
-                MKWorkspaceInsertFamilyKind.COURTYARD_SOCKET.getSerializedName());
+                MKWorkspaceInsertFamilyKind.INSERT_SOCKET.getSerializedName());
         new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,
                 true, true, true, false, "hub_spoke", false, true).applyToTags(tags);
         MKWorkspaceMaterialPalette palette = MKWorkspaceMaterialPalette.defaultPalette();
@@ -390,6 +388,12 @@ public class FireShrineWorkspaceMigrationProvider implements DataProvider {
                 2
         );
         BlockPos structureBlockPos = context.origin().offset(-2, 1, context.length() / 2);
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>(plannedPiece.tags());
+        if (tags.containsKey(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID) &&
+                !tags.containsKey("workspace_piece_kind")) {
+            tags.put("workspace_piece_kind", "template");
+            tags.putIfAbsent("workspace_variant_index", "0");
+        }
         return new MKWorkspacePieceDefinition(
                 UUID.nameUUIDFromBytes((STRUCTURE_NAME + ":" + plannedPiece.pieceName())
                         .getBytes(java.nio.charset.StandardCharsets.UTF_8)),
@@ -397,7 +401,7 @@ public class FireShrineWorkspaceMigrationProvider implements DataProvider {
                 plannedPiece.pieceName(),
                 plannedPiece.roleId(),
                 plannedPiece.plannerId(),
-                parseIntTag(plannedPiece.tags(), "workspace_variant_index", 0),
+                parseIntTag(tags, "workspace_variant_index", 0),
                 effectiveDimensions,
                 connectors,
                 context.origin(),
@@ -407,7 +411,7 @@ public class FireShrineWorkspaceMigrationProvider implements DataProvider {
                 structureBlockPos.west(),
                 List.of(),
                 List.of(),
-                new LinkedHashMap<>(plannedPiece.tags())
+                tags
         );
     }
 

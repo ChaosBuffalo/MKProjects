@@ -34,8 +34,13 @@ public final class MKWorkspacePieceGeometry {
     }
 
     public static boolean isCourtyardSocketInsert(Map<String, String> tags) {
-        return MKWorkspaceInsertFamilyKind.COURTYARD_SOCKET.getSerializedName()
-                .equals(tags.get(MKInsertFamilyPools.TAG_INSERT_FAMILY_KIND));
+        return isInsertSocketInsert(tags);
+    }
+
+    public static boolean isInsertSocketInsert(Map<String, String> tags) {
+        String kind = tags.get(MKInsertFamilyPools.TAG_INSERT_FAMILY_KIND);
+        return MKWorkspaceInsertFamilyKind.INSERT_SOCKET.getSerializedName().equals(kind) ||
+                MKWorkspaceInsertFamilyKind.COURTYARD_SOCKET.getSerializedName().equals(kind);
     }
 
     public static int effectiveShellMargin(MKStructureWorkspace workspace, MKWorkspacePieceDefinition piece) {

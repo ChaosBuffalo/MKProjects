@@ -40,12 +40,10 @@ import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
-import com.chaosbuffalo.mkwidgets.client.gui.pickers.MKCreativeBlockPickerSource;
-import com.chaosbuffalo.mkwidgets.client.gui.pickers.MKCreativePickerCategory;
 import com.chaosbuffalo.mkwidgets.client.gui.screens.MKScreen;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKBlockSlot;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
-import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKCreativeGridPicker;
+import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKCreativeBlockPickerPanel;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKModal;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
@@ -96,14 +94,11 @@ public class MKWorkspaceScreen extends MKScreen {
     private MKWorkspaceStairAuthoringConfig detailStairConfig;
     private BlockPickerRequest blockPickerRequest;
     private MKModal blockPickerModal;
-    private String blockPickerCategoryId;
-    private String blockPickerQuery = "";
     private ResourceLocation blockSwapSourceBlock;
     private ResourceLocation blockSwapTargetBlock;
     private MKModal unsavedDraftModal;
     private boolean forceClose;
     private boolean wasResized;
-    private final MKCreativeBlockPickerSource blockPickerSource = new MKCreativeBlockPickerSource();
     private final WorkspaceTopologySlotEditor topologySlotEditor = new WorkspaceTopologySlotEditor(this);
     private final WorkspaceDraftSession draftSession;
     private List<ScrollViewState> pendingScrollViewStates = List.of();
@@ -542,6 +537,11 @@ public class MKWorkspaceScreen extends MKScreen {
         flagNeedSetup();
     }
 
+    public void selectWorkspaceTopologySlot(String topologyKey) {
+        selectedTopologyKey = topologyKey;
+        resetTopologySlotOverrides();
+    }
+
     public boolean openWorkspaceTopologySlotForPrefix(String topologyPrefix) {
         for (Map.Entry<String, List<MKWorkspacePieceDefinition>> entry : groupPiecesByTopology().entrySet()) {
             if (entry.getValue().stream().anyMatch(piece -> pieceMatchesTopologyPrefix(piece, topologyPrefix))) {
@@ -633,7 +633,8 @@ public class MKWorkspaceScreen extends MKScreen {
         if (selectedTopologyKey == null) {
             return List.of();
         }
-        return groupPiecesByTopology().getOrDefault(selectedTopologyKey, List.of());
+        return draftSession.filterPendingDeletedVariants(groupPiecesByTopology()
+                .getOrDefault(selectedTopologyKey, List.of()));
     }
 
     public void clearSelectedTopologyKey() {
@@ -701,120 +702,6 @@ public class MKWorkspaceScreen extends MKScreen {
     public void resize(Minecraft minecraft, int width, int height) {
         super.resize(minecraft, width, height);
         wasResized = true;
-    }
-
-    private MKLayout buildCreativeBlockPickerContent(int xPos, int yPos, int pickerWidth, int pickerHeight) {
-        int contentWidth = pickerWidth - 42;
-        MKLayout root = new MKLayout(xPos, yPos, pickerWidth, pickerHeight);
-        root.setMargins(8, 8, 8, 8);
-        root.setPaddingTop(8).setPaddingBot(8);
-
-        if (blockPickerRequest == null) {
-            MKText title = makeWhiteText(Component.literal("Choose Block"));
-            root.addWidget(title);
-            root.addConstraintToWidget(MarginConstraint.TOP, title);
-            root.addConstraintToWidget(new CenterXConstraint(), title);
-
-            MKText message = makeWhiteText(Component.literal("No block picker request is active."));
-            message.setWidth(contentWidth);
-            message.setY(yPos + 64);
-            root.addWidget(message);
-            root.addConstraintToWidget(new CenterXConstraint(), message);
-
-            MKButton back = new MKButton(Component.literal("Back"), 120, BUTTON_HEIGHT);
-            back.setY(yPos + pickerHeight - BOTTOM_PADDING - BUTTON_HEIGHT);
-            root.addWidget(back);
-            root.addConstraintToWidget(new CenterXConstraint(), back);
-            back.setPressedCallback((button, mouseButton) -> {
-                closeBlockPicker();
-                return true;
-            });
-            return root;
-        }
-
-        MKText title = makeWhiteText(Component.literal(blockPickerRequest.title()));
-        root.addWidget(title);
-        root.addConstraintToWidget(MarginConstraint.TOP, title);
-        root.addConstraintToWidget(new CenterXConstraint(), title);
-
-        List<MKCreativePickerCategory> categories = blockPickerSource.categories(minecraft);
-        MKCreativePickerCategory selectedCategory = selectedBlockPickerCategory(categories);
-
-        MKTextFieldWidget searchField = makeField("Search", blockPickerQuery);
-        searchField.setWidth(contentWidth);
-        searchField.setY(yPos + 34);
-        root.addWidget(searchField);
-        root.addConstraintToWidget(new CenterXConstraint(), searchField);
-
-        int footerY = yPos + pickerHeight - BOTTOM_PADDING - BUTTON_HEIGHT;
-        int pickerTop = yPos + 64;
-        int pickerAreaHeight = footerY - pickerTop - 8;
-        int categoryWidth = 116;
-        int gridX = xPos + 18 + categoryWidth + 8;
-        int gridWidth = pickerWidth - categoryWidth - 44;
-
-        MKCreativeGridPicker grid = new MKCreativeGridPicker(gridX, pickerTop, gridWidth, pickerAreaHeight);
-        grid.setSelectedId(blockPickerRequest.currentValue());
-        if (selectedCategory != null) {
-            grid.setEntries(blockPickerSource.entries(minecraft, selectedCategory, blockPickerQuery));
-        }
-        grid.setSelectionCallback(entry -> {
-            blockPickerRequest.selectionCallback().accept(entry.id());
-            closeBlockPicker();
-        });
-        root.addWidget(grid);
-
-        searchField.setTextChangeCallback((field, value) -> {
-            blockPickerQuery = value;
-            grid.resetScroll();
-            if (selectedCategory != null) {
-                grid.setEntries(blockPickerSource.entries(minecraft, selectedCategory, value));
-            }
-        });
-
-        MKScrollView categoryScroll = new MKScrollView(xPos + 12, pickerTop, categoryWidth, pickerAreaHeight);
-        categoryScroll.setScrollVelocity(6.0).setDoScrollX(false).setScrollMarginY(6);
-        root.addWidget(categoryScroll);
-
-        MKStackLayoutVertical categoryContent = new MKStackLayoutVertical(0, 0, categoryWidth - 4);
-        categoryContent.setPaddingTop(0).setPaddingBot(0);
-        categoryScroll.addWidget(categoryContent);
-        for (MKCreativePickerCategory category : categories) {
-            MKButton categoryButton = new MKButton(category.displayName(), categoryWidth - 8, BUTTON_HEIGHT);
-            categoryButton.setTooltip(category.displayName());
-            categoryButton.setEnabled(selectedCategory == null || !category.id().equals(selectedCategory.id()));
-            categoryButton.setPressedCallback((button, mouseButton) -> {
-                blockPickerCategoryId = category.id();
-                grid.resetScroll();
-                grid.setEntries(blockPickerSource.entries(minecraft, category, searchField.getText()));
-                return true;
-            });
-            categoryContent.addWidget(categoryButton);
-        }
-        finalizeScrollView(categoryScroll, "creative_block_picker", false);
-
-        MKButton cancel = new MKButton(Component.literal("Cancel"), 100, BUTTON_HEIGHT);
-        cancel.setX(xPos + (pickerWidth / 2) - 104);
-        cancel.setY(footerY);
-        root.addWidget(cancel);
-        cancel.setPressedCallback((button, mouseButton) -> {
-            closeBlockPicker();
-            return true;
-        });
-
-        if (blockPickerRequest.allowClear()) {
-            MKButton clear = new MKButton(Component.literal("Clear"), 100, BUTTON_HEIGHT);
-            clear.setX(xPos + (pickerWidth / 2) + 4);
-            clear.setY(footerY);
-            root.addWidget(clear);
-            clear.setPressedCallback((button, mouseButton) -> {
-                blockPickerRequest.selectionCallback().accept(ResourceLocation.withDefaultNamespace("air"));
-                closeBlockPicker();
-                return true;
-            });
-        }
-
-        return root;
     }
 
     private void addRow(MKStackLayoutVertical root, MKText label, MKButton button) {
@@ -1076,8 +963,6 @@ public class MKWorkspaceScreen extends MKScreen {
             closeBlockPicker();
         }
         blockPickerRequest = new BlockPickerRequest(title, currentValue, setter, allowClear);
-        blockPickerCategoryId = null;
-        blockPickerQuery = "";
 
         int pickerWidth = Math.min(560, Math.max(320, width - 32));
         int pickerHeight = Math.min(440, Math.max(300, height - 32));
@@ -1086,7 +971,11 @@ public class MKWorkspaceScreen extends MKScreen {
 
         MKModal modal = new MKBlockingModal();
         modal.setCloseOnClickOutside(false);
-        modal.addWidget(buildCreativeBlockPickerContent(pickerX, pickerY, pickerWidth, pickerHeight));
+        modal.addWidget(new MKCreativeBlockPickerPanel(pickerX, pickerY, pickerWidth, pickerHeight,
+                Component.literal(blockPickerRequest.title()), blockPickerRequest.currentValue(), value -> {
+            blockPickerRequest.selectionCallback().accept(value);
+            closeBlockPicker();
+        }, this::closeBlockPicker, blockPickerRequest.allowClear()));
         modal.setOnCloseCallback(() -> {
             if (blockPickerModal == modal) {
                 blockPickerModal = null;
@@ -1107,24 +996,6 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private void clearBlockPickerState() {
         blockPickerRequest = null;
-        blockPickerCategoryId = null;
-        blockPickerQuery = "";
-    }
-
-    private MKCreativePickerCategory selectedBlockPickerCategory(List<MKCreativePickerCategory> categories) {
-        if (categories.isEmpty()) {
-            return null;
-        }
-        if (blockPickerCategoryId != null) {
-            for (MKCreativePickerCategory category : categories) {
-                if (category.id().equals(blockPickerCategoryId)) {
-                    return category;
-                }
-            }
-        }
-        MKCreativePickerCategory selected = categories.getFirst();
-        blockPickerCategoryId = selected.id();
-        return selected;
     }
 
     private String shortBlockId(ResourceLocation blockId) {

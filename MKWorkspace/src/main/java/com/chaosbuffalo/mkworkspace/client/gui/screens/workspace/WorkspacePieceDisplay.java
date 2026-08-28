@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspacePieceTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
@@ -52,11 +53,23 @@ public final class WorkspacePieceDisplay {
             return "linear_run:" + linearRunFamilyId + ":" +
                     piece.tags().getOrDefault("workspace_linear_run_path_kind", "branch");
         }
+        String insertFamilyId = piece.tags().get(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID);
+        if (insertFamilyId != null) {
+            return "insert_family:" + insertFamilyId;
+        }
         String familyId = piece.tags().get("workspace_family_id");
         if (familyId != null) {
             return "room:" + piece.tags().getOrDefault("workspace_topology_slot_id",
                     piece.tags().getOrDefault("workspace_topology_group", "main")) + ":" +
                     familyId + ":" + piece.tags().getOrDefault("workspace_horizontal_exits", "none");
+        }
+        String baseName = getBaseName(piece);
+        if (!baseName.isBlank()) {
+            return "base:" + baseName;
+        }
+        String topologySlotId = piece.tags().get("workspace_topology_slot_id");
+        if (topologySlotId != null && !topologySlotId.isBlank()) {
+            return "slot:" + topologySlotId;
         }
         return "role:" + piece.roleId();
     }
@@ -67,11 +80,23 @@ public final class WorkspacePieceDisplay {
             return "Linear Run / " + linearRunFamilyId + " / " +
                     formatTopologyLabel(piece.tags().getOrDefault("workspace_linear_run_path_kind", "branch"));
         }
+        String insertFamilyId = piece.tags().get(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID);
+        if (insertFamilyId != null) {
+            return "Insert Family / " + insertFamilyId;
+        }
         String familyId = piece.tags().get("workspace_family_id");
         if (familyId != null) {
             return formatTopologyLabel(piece.tags().getOrDefault("workspace_topology_slot_id",
                     piece.tags().getOrDefault("workspace_topology_group", "main"))) +
                     " / " + familyId;
+        }
+        String baseName = getBaseName(piece);
+        if (!baseName.isBlank()) {
+            return formatTopologyLabel(baseName);
+        }
+        String topologySlotId = piece.tags().get("workspace_topology_slot_id");
+        if (topologySlotId != null && !topologySlotId.isBlank()) {
+            return formatTopologyLabel(topologySlotId);
         }
         return formatTopologyLabel(piece.roleId());
     }

@@ -25,6 +25,7 @@ import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspacePieceTa
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceResolvedFamilySettings;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateCloneTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
@@ -68,7 +69,11 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
     public static final String CONTENT_REQUIRES_PATH_TAG = "workspace_content_requires_path";
     public static final String CONTENT_CONNECTOR_EDGE_TAG = "workspace_content_connector_edge";
     public static final String CONTENT_WALKWAY_CONTINUATION_LENGTH_TAG = "workspace_content_walkway_continuation_length";
+    public static final String INSERT_SOCKET_ID_TAG = "workspace_insert_socket_id";
+    public static final String INSERT_SOCKET_MAX_SIZE_TAG = "workspace_insert_socket_max_square_size";
+    @Deprecated(forRemoval = false)
     public static final String COURTYARD_SOCKET_ID_TAG = "workspace_courtyard_socket_id";
+    @Deprecated(forRemoval = false)
     public static final String COURTYARD_SOCKET_MAX_SIZE_TAG = "workspace_courtyard_socket_max_square_size";
     public static final String COURTYARD_AVAILABLE_HORIZONTAL_SPAN_TAG = "workspace_courtyard_available_horizontal_span";
     public static final String COURTYARD_AVAILABLE_VERTICAL_SPAN_TAG = "workspace_courtyard_available_vertical_span";
@@ -564,7 +569,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
             return false;
         }
         int contentSize = parsePositiveInt(tags.get(CONTENT_SIZE_TAG));
-        int socketMaxSize = parsePositiveInt(tags.get(COURTYARD_SOCKET_MAX_SIZE_TAG));
+        int socketMaxSize = parsePositiveInt(tags.getOrDefault(INSERT_SOCKET_MAX_SIZE_TAG,
+                tags.get(COURTYARD_SOCKET_MAX_SIZE_TAG)));
         return contentSize > 0 && socketMaxSize > 0 && contentSize <= socketMaxSize;
     }
 
@@ -700,6 +706,7 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
         pieces.addAll(createCourtyardContentPieces(workspace, courtyardPlan));
         pieces.addAll(floorTopologyPlanner.createFloorTopologyPieces(workspace,
                 activeVerticalStackFamiliesForFloorTopology(workspace)));
+        pieces.addAll(createInsertFamilyTemplatePieces(workspace));
         return List.copyOf(pieces);
     }
 
@@ -1674,8 +1681,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                 Integer.toString(settings.courtyardWalkwayContinuationLength()));
         MKWorkspaceStableSlotIdentity.apply(tags, "keep_courtyard_content", "keep.courtyard.content");
         if (socket != null) {
-            tags.put(COURTYARD_SOCKET_ID_TAG, socket.slotId());
-            tags.put(COURTYARD_SOCKET_MAX_SIZE_TAG, Integer.toString(socket.maxSquareSize()));
+            tags.put(INSERT_SOCKET_ID_TAG, socket.slotId());
+            tags.put(INSERT_SOCKET_MAX_SIZE_TAG, Integer.toString(socket.maxSquareSize()));
         }
         new MKWorkspaceRuntimePieceInfo(false, MKJigsawPieceRole.ROOM, 0, 0,
                 true, true, false, false).applyToTags(tags);
@@ -2110,6 +2117,8 @@ public class MKWalledKeepWorkspacePlanner implements MKWorkspacePlanner {
                 .ifPresent(source -> tags.put("workspace_source_topology_slot_id", source));
         family.settingsTopologySlotIdOpt()
                 .ifPresent(source -> tags.put("workspace_settings_topology_slot_id", source));
+        family.templateCloneSourcePieceNameOpt()
+                .ifPresent(source -> tags.put(MKWorkspaceTemplateCloneTags.SOURCE_PIECE_NAME_TAG, source));
         MKWorkspacePaletteTags.apply(tags, resolvedFamily.palette());
         return tags;
     }

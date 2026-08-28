@@ -14,6 +14,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.network.chat.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class WorkspacePageBase {
@@ -125,6 +126,11 @@ public abstract class WorkspacePageBase {
 
     protected MKStackLayoutHorizontal addApplyBackButtonRow(MKWorkspaceScreen screen, MKLayout root,
                                                             String backTargetState) {
+        return addApplyBackButtonRow(screen, root, () -> screen.goBackOrSwitchTo(backTargetState));
+    }
+
+    protected MKStackLayoutHorizontal addApplyBackButtonRow(MKWorkspaceScreen screen, MKLayout root,
+                                                            Runnable backAction) {
         MKStackLayoutHorizontal row = new MKStackLayoutHorizontal(0, 0, screen.buttonHeight());
         row.setPaddingLeft(4).setPaddingRight(4);
 
@@ -142,7 +148,7 @@ public abstract class WorkspacePageBase {
 
         MKButton back = new MKButton(Component.literal("Back"), 120, screen.buttonHeight());
         back.setPressedCallback((button, mouseButton) -> {
-            screen.goBackOrSwitchTo(backTargetState);
+            backAction.run();
             return true;
         });
         row.addWidget(back);
@@ -164,10 +170,17 @@ public abstract class WorkspacePageBase {
 
     protected void addRelayoutImpactReport(MKWorkspaceScreen screen, MKStackLayoutVertical content,
                                            MKWorkspaceInvalidationReport report) {
+        for (String line : relayoutImpactReportLines(report)) {
+            addText(screen, content, line);
+        }
+    }
+
+    protected List<String> relayoutImpactReportLines(MKWorkspaceInvalidationReport report) {
         List<MKWorkspaceRelayoutImpact> impacts = report.relayoutImpacts();
         if (impacts.isEmpty()) {
-            return;
+            return List.of();
         }
+        ArrayList<String> lines = new ArrayList<>();
         long unchanged = countImpacts(impacts, "preserved");
         long moved = countImpacts(impacts, "moved");
         long expanded = countImpacts(impacts, "expanded");
@@ -175,18 +188,19 @@ public abstract class WorkspacePageBase {
         long rebuilt = countImpacts(impacts, "rebuild");
         long removed = countImpacts(impacts, "removed");
         long patched = countImpacts(impacts, "scaffold_patch");
-        addText(screen, content, "These changes will add " + added + " pieces, rebuild " + rebuilt +
+        lines.add("These changes will add " + added + " pieces, rebuild " + rebuilt +
                 " pieces, remove " + removed + " pieces, move " + moved + " pieces, expand " +
                 expanded + " pieces, patch " + patched + " pieces, and leave " + unchanged +
                 " pieces unchanged.");
 
-        addImpactSection(screen, content, "Added", impacts, "new");
-        addImpactSection(screen, content, "Rebuilt", impacts, "rebuild");
-        addImpactSection(screen, content, "Removed", impacts, "removed");
-        addImpactSection(screen, content, "Moved", impacts, "moved");
-        addImpactSection(screen, content, "Expanded", impacts, "expanded");
-        addImpactSection(screen, content, "Patched", impacts, "scaffold_patch");
-        addImpactSection(screen, content, "Unchanged", impacts, "preserved");
+        addImpactSectionLines(lines, "Added", impacts, "new");
+        addImpactSectionLines(lines, "Rebuilt", impacts, "rebuild");
+        addImpactSectionLines(lines, "Removed", impacts, "removed");
+        addImpactSectionLines(lines, "Moved", impacts, "moved");
+        addImpactSectionLines(lines, "Expanded", impacts, "expanded");
+        addImpactSectionLines(lines, "Patched", impacts, "scaffold_patch");
+        addImpactSectionLines(lines, "Unchanged", impacts, "preserved");
+        return List.copyOf(lines);
     }
 
     private long countImpacts(List<MKWorkspaceRelayoutImpact> impacts, String outcome) {
@@ -197,21 +211,34 @@ public abstract class WorkspacePageBase {
 
     private void addImpactSection(MKWorkspaceScreen screen, MKStackLayoutVertical content, String title,
                                   List<MKWorkspaceRelayoutImpact> impacts, String outcome) {
+        for (String line : impactSectionLines(title, impacts, outcome)) {
+            addText(screen, content, line);
+        }
+    }
+
+    private void addImpactSectionLines(List<String> lines, String title, List<MKWorkspaceRelayoutImpact> impacts,
+                                       String outcome) {
+        lines.addAll(impactSectionLines(title, impacts, outcome));
+    }
+
+    private List<String> impactSectionLines(String title, List<MKWorkspaceRelayoutImpact> impacts, String outcome) {
         List<MKWorkspaceRelayoutImpact> matching = impacts.stream()
                 .filter(impact -> outcome.equals(impact.outcome()))
                 .toList();
         if (matching.isEmpty()) {
-            return;
+            return List.of();
         }
-        addText(screen, content, title);
+        ArrayList<String> lines = new ArrayList<>();
+        lines.add(title);
         int shown = Math.min(10, matching.size());
         for (int i = 0; i < shown; i++) {
-            addText(screen, content, "- " + formatRelayoutImpact(matching.get(i)));
+            lines.add("- " + formatRelayoutImpact(matching.get(i)));
         }
         int hidden = matching.size() - shown;
         if (hidden > 0) {
-            addText(screen, content, "- and " + hidden + " more");
+            lines.add("- and " + hidden + " more");
         }
+        return List.copyOf(lines);
     }
 
     private String formatRelayoutImpact(MKWorkspaceRelayoutImpact impact) {

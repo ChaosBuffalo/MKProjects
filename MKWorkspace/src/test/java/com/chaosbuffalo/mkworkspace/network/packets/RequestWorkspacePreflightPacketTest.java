@@ -11,6 +11,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePlannerId;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVariantAddition;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -24,6 +25,7 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class RequestWorkspacePreflightPacketTest {
     @Test
@@ -44,6 +46,28 @@ class RequestWorkspacePreflightPacketTest {
             RequestWorkspacePreflightPacket decoded = new RequestWorkspacePreflightPacket(buffer);
 
             assertEquals(acceptedRemaps, decoded.acceptedRemaps());
+        } finally {
+            buffer.release();
+        }
+    }
+
+    @Test
+    void packetRoundTripsDeletedVariantPieceIds() {
+        List<UUID> deletedVariantPieceIds = List.of(UUID.randomUUID(), UUID.randomUUID());
+        List<MKWorkspaceVariantAddition> addedVariants = List.of(
+                new MKWorkspaceVariantAddition("base_room", "base_room_1"));
+        RequestWorkspacePreflightPacket packet = new RequestWorkspacePreflightPacket(
+                MKStructureWorkspace.createDraft(BlockPos.ZERO), List.of(), addedVariants, deletedVariantPieceIds,
+                false);
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+        try {
+            packet.toBytes(buffer);
+
+            RequestWorkspacePreflightPacket decoded = new RequestWorkspacePreflightPacket(buffer);
+
+            assertEquals(addedVariants, decoded.addedVariants());
+            assertEquals(deletedVariantPieceIds, decoded.deletedVariantPieceIds());
+            assertFalse(decoded.workspaceSettingsDirty());
         } finally {
             buffer.release();
         }

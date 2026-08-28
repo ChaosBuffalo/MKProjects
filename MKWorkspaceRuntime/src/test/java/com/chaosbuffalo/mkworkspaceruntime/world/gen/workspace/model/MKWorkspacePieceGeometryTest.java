@@ -14,12 +14,26 @@ class MKWorkspacePieceGeometryTest {
         Map<String, String> tags = Map.of(
                 MKWorkspacePieceGeometry.TAG_TOWER_PIECE_KIND, "insert",
                 MKInsertFamilyPools.TAG_INSERT_FAMILY_ID, "fire_shrine_platform_contents",
-                MKInsertFamilyPools.TAG_INSERT_FAMILY_KIND, MKWorkspaceInsertFamilyKind.COURTYARD_SOCKET.getSerializedName()
+                MKInsertFamilyPools.TAG_INSERT_FAMILY_KIND, MKWorkspaceInsertFamilyKind.INSERT_SOCKET.getSerializedName()
         );
 
         assertTrue(MKWorkspacePieceGeometry.isExactBoundsScaffold(tags));
         assertTrue(MKWorkspacePieceGeometry.isEmptyScaffold(tags));
         assertFalse(MKWorkspacePieceGeometry.isFloorLinkInsert(tags));
+    }
+
+    @Test
+    void legacyCourtyardSocketInsertKindStillScaffoldsAsInsertSocket() {
+        Map<String, String> tags = Map.of(
+                MKWorkspacePieceGeometry.TAG_TOWER_PIECE_KIND, "insert",
+                MKInsertFamilyPools.TAG_INSERT_FAMILY_ID, "fire_shrine_platform_contents",
+                MKInsertFamilyPools.TAG_INSERT_FAMILY_KIND,
+                MKWorkspaceInsertFamilyKind.COURTYARD_SOCKET.getSerializedName()
+        );
+
+        assertTrue(MKWorkspacePieceGeometry.isInsertSocketInsert(tags));
+        assertTrue(MKWorkspacePieceGeometry.isExactBoundsScaffold(tags));
+        assertTrue(MKWorkspacePieceGeometry.isEmptyScaffold(tags));
     }
 
     @Test

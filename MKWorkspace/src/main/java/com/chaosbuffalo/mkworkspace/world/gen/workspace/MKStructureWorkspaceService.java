@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace;
 
 import com.chaosbuffalo.mkworkspace.network.packets.OpenWorkspaceScreenPacket;
+import com.chaosbuffalo.mkworkspace.MKWorkspace;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.MKStructureWorkspaceImportService;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.MKWorkspaceAnchor;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.capability.IMKStructureWorkspaceData;
@@ -16,6 +17,7 @@ import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceStableS
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceTopologyPaletteMerge;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVariantAddition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceFloorTopologyMutationPreflightService;
@@ -59,6 +61,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -120,6 +123,28 @@ public class MKStructureWorkspaceService {
 
     public Optional<MKStructureWorkspace> createOrUpdateWorkspace(ServerLevel level, MKStructureWorkspace workspace,
                                                                   List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
+        return createOrUpdateWorkspace(level, workspace, acceptedRemaps, List.of(), List.of());
+    }
+
+    public Optional<MKStructureWorkspace> createOrUpdateWorkspace(ServerLevel level, MKStructureWorkspace workspace,
+                                                                  List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps,
+                                                                  List<UUID> deletedVariantPieceIds) {
+        return createOrUpdateWorkspace(level, workspace, acceptedRemaps, List.of(), deletedVariantPieceIds);
+    }
+
+    public Optional<MKStructureWorkspace> createOrUpdateWorkspace(ServerLevel level, MKStructureWorkspace workspace,
+                                                                 List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps,
+                                                                 List<MKWorkspaceVariantAddition> addedVariants,
+                                                                 List<UUID> deletedVariantPieceIds) {
+        return createOrUpdateWorkspace(level, workspace, acceptedRemaps, addedVariants, deletedVariantPieceIds,
+                true);
+    }
+
+    public Optional<MKStructureWorkspace> createOrUpdateWorkspace(ServerLevel level, MKStructureWorkspace workspace,
+                                                                 List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps,
+                                                                 List<MKWorkspaceVariantAddition> addedVariants,
+                                                                 List<UUID> deletedVariantPieceIds,
+                                                                 boolean includeRequestedSettingsChanges) {
         List<String> errors = validateWorkspace(workspace);
         if (!errors.isEmpty()) {
             return Optional.empty();
@@ -128,7 +153,36 @@ public class MKStructureWorkspaceService {
         Optional<MKStructureWorkspace> existingOpt = data.getWorkspaceByAnchor(workspace.anchor());
         if (existingOpt.isPresent()) {
             MKStructureWorkspace existing = existingOpt.get();
+            if (!addedVariants.isEmpty() || !deletedVariantPieceIds.isEmpty()) {
+            long nowEpochMillis = System.currentTimeMillis();
+            MKWorkspaceMutationPreflight mutationPreflight = preflightWorkspaceUpdate(existing, workspace,
+                    nowEpochMillis, acceptedRemaps, addedVariants, deletedVariantPieceIds,
+                    includeRequestedSettingsChanges);
+            boolean terminalVariantMutation = isTerminalVariantMutationReport(mutationPreflight.report());
+            logUpdateBranch("variant_mutations", existing, workspace,
+                    "addedVariants=" + addedVariants.size() +
+                            " deletedVariants=" + deletedVariantPieceIds.size() +
+                            " settingsDirty=" + includeRequestedSettingsChanges +
+                            " followupRelayout=" + !terminalVariantMutation +
+                            " operation=" + mutationPreflight.report().recommendedOperation() +
+                            " safety=" + mutationPreflight.report().safety().getSerializedName());
+                Optional<MKStructureWorkspace> mutated = applyWorkspaceVariantMutations(level, existing,
+                        addedVariants, deletedVariantPieceIds);
+                if (mutated.isEmpty()) {
+                    return Optional.empty();
+                }
+                if (terminalVariantMutation) {
+                    return mutated;
+                }
+                MKStructureWorkspace continuation = workspaceForUpdate(mutated.get(), workspace,
+                        mutated.get().pieces(), System.currentTimeMillis(), mutated.get().layerStates());
+                return applyWorkspaceUpdateByPreflightOperation(level, mutated.get(), continuation, acceptedRemaps,
+                        mutationPreflight.report());
+            }
             if (canRelayoutPreviewMarginOnly(existing, workspace)) {
+                logUpdateBranch("preview_margin_relayout", existing, workspace,
+                        "existingPreviewMargin=" + existing.previewMargin() +
+                                " requestedPreviewMargin=" + workspace.previewMargin());
                 try {
                     return relayoutService.relayoutPreviewMargin(level, existing, workspace.previewMargin())
                             .map(MKWorkspacePieceRelayoutService.RelayoutResult::workspace);
@@ -137,6 +191,7 @@ public class MKStructureWorkspaceService {
                 }
             }
             if (canSwapPaletteOnly(existing, workspace)) {
+                logUpdateBranch("palette_swap", existing, workspace, "");
                 try {
                     mutationService.swapMaterialPalettes(level, existing, workspace);
                     return data.getWorkspace(existing.id());
@@ -145,6 +200,8 @@ public class MKStructureWorkspaceService {
                 }
             }
             if (canRenameIdentityOnly(existing, workspace)) {
+                logUpdateBranch("identity_rename", existing, workspace,
+                        "requestedWorkspace=" + workspace.namespace() + ":" + workspace.structureName());
                 try {
                     return Optional.of(identityRenameService.rename(level, existing,
                             workspace.namespace(), workspace.structureName()).workspace());
@@ -153,6 +210,9 @@ public class MKStructureWorkspaceService {
                 }
             }
             if (canExpandMarginsOnly(existing, workspace)) {
+                logUpdateBranch("margin_expansion", existing, workspace,
+                        "requestedShellMargin=" + workspace.shellMargin() +
+                                " requestedExteriorAirMargin=" + workspace.exteriorAirMargin());
                 try {
                     return marginExpansionService.expandMargins(level, existing,
                                     workspace.shellMargin(), workspace.exteriorAirMargin())
@@ -162,48 +222,112 @@ public class MKStructureWorkspaceService {
                 }
             }
             if (canRegenerateHallwayRoutingOnly(existing, workspace)) {
+                logUpdateBranch("hallway_routing_regeneration", existing, workspace, "");
                 return regenerateHallwayRouting(level, existing, workspace);
             }
             if (canRefreshLinkRenderingOnly(existing, workspace)) {
+                logUpdateBranch("link_rendering_refresh", existing, workspace, "");
                 return refreshLinkRenderingMetadata(level, existing, workspace);
             }
             if (canApplyRampartAccessPatch(existing, workspace)) {
+                logUpdateBranch("rampart_access_patch", existing, workspace, "");
                 return patchRampartAccessOpenings(level, existing, workspace);
             }
-            if (canApplyCatalogRelayout(existing, workspace, acceptedRemaps)) {
+            if (hasCatalogAffectingSettingsChange(existing, workspace) &&
+                    canApplyCatalogRelayout(existing, workspace, acceptedRemaps)) {
+                logUpdateBranch("catalog_preserving_relayout", existing, workspace,
+                        "acceptedRemaps=" + acceptedRemaps.size());
                 return relayoutCatalogPreservingPieces(level, existing, workspace, acceptedRemaps);
             }
-            MKStructureWorkspace updated = new MKStructureWorkspace(
-                    existing.id(),
-                    workspace.anchor(),
-                    workspace.namespace(),
-                    workspace.structureName(),
-                    workspace.topologyProfile(),
-                    workspace.dimensions(),
-                    workspace.palette(),
-                    workspace.stairConfig(),
-                    workspace.verticalAccessPlacement(),
-                    workspace.shellMargin(),
-                    workspace.verticalShellMargin(),
-                    workspace.exteriorAirMargin(),
-                    workspace.previewMargin(),
-                    workspace.verticalAccessSpec(),
-                    workspace.familyDefinitions(),
-                    workspace.openingProfiles(),
-                    workspace.linearRunFamilies(),
-                    workspace.insertFamilies(),
-                    existing.createdAt(),
-                    System.currentTimeMillis(),
-                    existing.pieces(),
-                    existing.layerStates()
-            );
-            data.updateWorkspace(updated);
-            syncBlockEntity(level, updated.anchor(), updated.id());
-            return Optional.of(updated);
+            logUpdateBranch("metadata_update_only", existing, workspace, "");
+            return applyMetadataUpdate(level, existing, workspace);
         }
         data.createWorkspace(workspace);
+        MKWorkspace.LOGGER.info("Workspace update branch=create_new anchor={} workspace={}:{} pieces={}",
+                workspace.anchor().toShortString(), workspace.namespace(), workspace.structureName(),
+                workspace.pieces().size());
         syncBlockEntity(level, workspace.anchor(), workspace.id());
         return Optional.of(workspace);
+    }
+
+    private void logUpdateBranch(String branch, MKStructureWorkspace existing, MKStructureWorkspace requested,
+                                 String detail) {
+        MKWorkspace.LOGGER.info("Workspace update branch={} anchor={} workspace={}:{} existingPieces={} requestedPieces={} {}",
+                branch,
+                requested.anchor().toShortString(),
+                requested.namespace(),
+                requested.structureName(),
+                existing.pieces().size(),
+                requested.pieces().size(),
+                detail);
+    }
+
+    private Optional<MKStructureWorkspace> applyWorkspaceUpdateByPreflightOperation(
+            ServerLevel level,
+            MKStructureWorkspace existing,
+            MKStructureWorkspace requested,
+            List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps,
+            MKWorkspaceInvalidationReport report) {
+        return switch (report.recommendedOperation()) {
+            case "none" -> {
+                logUpdateBranch("metadata_update_only", existing, requested, "sourcePreflight=true");
+                yield applyMetadataUpdate(level, existing, requested);
+            }
+            case "preserve_catalog_relayout" -> {
+                logUpdateBranch("catalog_preserving_relayout", existing, requested,
+                        "acceptedRemaps=" + acceptedRemaps.size() + " sourcePreflight=true");
+                yield relayoutCatalogPreservingPieces(level, existing, requested, acceptedRemaps);
+            }
+            case "regenerate_hallway_routing" -> {
+                logUpdateBranch("hallway_routing_regeneration", existing, requested, "sourcePreflight=true");
+                yield regenerateHallwayRouting(level, existing, requested);
+            }
+            case "refresh_link_rendering" -> {
+                logUpdateBranch("link_rendering_refresh", existing, requested, "sourcePreflight=true");
+                yield refreshLinkRenderingMetadata(level, existing, requested);
+            }
+            case "patch_rampart_access_openings" -> {
+                logUpdateBranch("rampart_access_patch", existing, requested, "sourcePreflight=true");
+                yield patchRampartAccessOpenings(level, existing, requested);
+            }
+            default -> {
+                logUpdateBranch("preflight_operation_fallback", existing, requested,
+                        "operation=" + report.recommendedOperation() +
+                                " safety=" + report.safety().getSerializedName());
+                yield createOrUpdateWorkspace(level, requested, acceptedRemaps);
+            }
+        };
+    }
+
+    private Optional<MKStructureWorkspace> applyMetadataUpdate(ServerLevel level, MKStructureWorkspace existing,
+                                                               MKStructureWorkspace requested) {
+        MKStructureWorkspace updated = new MKStructureWorkspace(
+                existing.id(),
+                requested.anchor(),
+                requested.namespace(),
+                requested.structureName(),
+                requested.topologyProfile(),
+                requested.dimensions(),
+                requested.palette(),
+                requested.stairConfig(),
+                requested.verticalAccessPlacement(),
+                requested.shellMargin(),
+                requested.verticalShellMargin(),
+                requested.exteriorAirMargin(),
+                requested.previewMargin(),
+                requested.verticalAccessSpec(),
+                requested.familyDefinitions(),
+                requested.openingProfiles(),
+                requested.linearRunFamilies(),
+                requested.insertFamilies(),
+                existing.createdAt(),
+                System.currentTimeMillis(),
+                existing.pieces(),
+                existing.layerStates()
+        );
+        IMKStructureWorkspaceData.get(level).updateWorkspace(updated);
+        syncBlockEntity(level, updated.anchor(), updated.id());
+        return Optional.of(updated);
     }
 
     public boolean canApplyPreviewMarginRelayout(ServerLevel level, MKStructureWorkspace requested) {
@@ -275,10 +399,35 @@ public class MKStructureWorkspaceService {
     public Optional<MKWorkspaceMutationPreflight> preflightWorkspaceUpdate(ServerLevel level,
                                                                            MKStructureWorkspace requested,
                                                                            List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
+        return preflightWorkspaceUpdate(level, requested, acceptedRemaps, List.of(), List.of());
+    }
+
+    public Optional<MKWorkspaceMutationPreflight> preflightWorkspaceUpdate(ServerLevel level,
+                                                                           MKStructureWorkspace requested,
+                                                                           List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps,
+                                                                           List<UUID> deletedVariantPieceIds) {
+        return preflightWorkspaceUpdate(level, requested, acceptedRemaps, List.of(), deletedVariantPieceIds);
+    }
+
+    public Optional<MKWorkspaceMutationPreflight> preflightWorkspaceUpdate(ServerLevel level,
+                                                                           MKStructureWorkspace requested,
+                                                                           List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps,
+                                                                           List<MKWorkspaceVariantAddition> addedVariants,
+                                                                           List<UUID> deletedVariantPieceIds) {
+        return preflightWorkspaceUpdate(level, requested, acceptedRemaps, addedVariants, deletedVariantPieceIds,
+                true);
+    }
+
+    public Optional<MKWorkspaceMutationPreflight> preflightWorkspaceUpdate(ServerLevel level,
+                                                                           MKStructureWorkspace requested,
+                                                                           List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps,
+                                                                           List<MKWorkspaceVariantAddition> addedVariants,
+                                                                           List<UUID> deletedVariantPieceIds,
+                                                                           boolean includeRequestedSettingsChanges) {
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         return data.getWorkspaceByAnchor(requested.anchor())
                 .map(existing -> preflightWorkspaceUpdate(existing, requested, System.currentTimeMillis(),
-                        acceptedRemaps));
+                        acceptedRemaps, addedVariants, deletedVariantPieceIds, includeRequestedSettingsChanges));
     }
 
     public MKWorkspaceMutationPreflight preflightWorkspaceUpdate(MKStructureWorkspace existing,
@@ -291,22 +440,66 @@ public class MKStructureWorkspaceService {
                                                                  MKStructureWorkspace requested,
                                                                  long nowEpochMillis,
                                                                  List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
-        List<MKWorkspaceInvalidationReport> floorReports = floorTopologyReports(existing, requested, nowEpochMillis);
+        return preflightWorkspaceUpdate(existing, requested, nowEpochMillis, acceptedRemaps, List.of(), List.of());
+    }
+
+    public MKWorkspaceMutationPreflight preflightWorkspaceUpdate(MKStructureWorkspace existing,
+                                                                 MKStructureWorkspace requested,
+                                                                 long nowEpochMillis,
+                                                                 List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps,
+                                                                 List<UUID> deletedVariantPieceIds) {
+        return preflightWorkspaceUpdate(existing, requested, nowEpochMillis, acceptedRemaps, List.of(),
+                deletedVariantPieceIds);
+    }
+
+    public MKWorkspaceMutationPreflight preflightWorkspaceUpdate(MKStructureWorkspace existing,
+                                                                 MKStructureWorkspace requested,
+                                                                 long nowEpochMillis,
+                                                                 List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps,
+                                                                 List<MKWorkspaceVariantAddition> addedVariants,
+                                                                 List<UUID> deletedVariantPieceIds) {
+        return preflightWorkspaceUpdate(existing, requested, nowEpochMillis, acceptedRemaps, addedVariants,
+                deletedVariantPieceIds, true);
+    }
+
+    public MKWorkspaceMutationPreflight preflightWorkspaceUpdate(MKStructureWorkspace existing,
+                                                                 MKStructureWorkspace requested,
+                                                                 long nowEpochMillis,
+                                                                 List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps,
+                                                                 List<MKWorkspaceVariantAddition> addedVariants,
+                                                                 List<UUID> deletedVariantPieceIds,
+                                                                 boolean includeRequestedSettingsChanges) {
+        MKStructureWorkspace effectiveRequested = includeRequestedSettingsChanges ? requested : existing;
+        List<MKWorkspaceInvalidationReport> floorReports = floorTopologyReports(existing, effectiveRequested,
+                nowEpochMillis);
         MKWorkspaceInvalidationReport floorReport = mergeReports(floorReports);
-        Optional<MKWorkspaceInvalidationReport> rampartAccessReport = rampartAccessPatchReport(existing, requested);
+        Optional<MKWorkspaceInvalidationReport> rampartAccessReport = rampartAccessPatchReport(existing,
+                effectiveRequested);
         if (rampartAccessReport.isPresent()) {
-            return preflightForReport(existing, rampartAccessReport.get(), nowEpochMillis);
+            return preflightForReport(existing, withVariantMutationReport(existing, rampartAccessReport.get(),
+                    addedVariants, deletedVariantPieceIds), nowEpochMillis);
         }
-        if (canConsiderCatalogRelayout(floorReport)) {
+        boolean hasVariantMutation = !addedVariants.isEmpty() || !deletedVariantPieceIds.isEmpty();
+        if (canConsiderCatalogRelayout(floorReport) &&
+                (floorReport.hasInvalidatedLayer(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS) ||
+                        hasCatalogAffectingSettingsChange(existing, effectiveRequested))) {
             Optional<MKWorkspacePieceRelayoutService.CatalogRelayoutSummary> catalogSummary =
-                    catalogRelayoutSummary(existing, requested, nowEpochMillis, acceptedRemaps);
+                    catalogRelayoutSummary(existing, effectiveRequested, nowEpochMillis, acceptedRemaps);
             if (catalogSummary.isPresent() && catalogSummary.get().hasWork()) {
-                return preflightForReport(existing, catalogRelayoutReport(catalogSummary.get(), floorReport),
+                return preflightForReport(existing, withVariantMutationReport(existing,
+                                catalogRelayoutReport(catalogSummary.get(), floorReport), addedVariants,
+                                deletedVariantPieceIds),
                         nowEpochMillis);
             }
         }
-        return preflightForReport(existing, withDestructiveRegenerationImpacts(existing, requested, floorReport,
-                nowEpochMillis), nowEpochMillis);
+        if (hasVariantMutation && isNoChangeReport(floorReport)) {
+            return preflightForReport(existing, withVariantMutationReport(existing, floorReport,
+                    addedVariants, deletedVariantPieceIds), nowEpochMillis);
+        }
+        MKWorkspaceInvalidationReport report = withDestructiveRegenerationImpacts(existing, effectiveRequested,
+                floorReport, nowEpochMillis);
+        return preflightForReport(existing, withVariantMutationReport(existing, report, addedVariants,
+                deletedVariantPieceIds), nowEpochMillis);
     }
 
     private MKWorkspaceMutationPreflight preflightForReport(MKStructureWorkspace existing,
@@ -321,6 +514,17 @@ public class MKStructureWorkspaceService {
     private boolean canConsiderCatalogRelayout(MKWorkspaceInvalidationReport floorReport) {
         return "none".equals(floorReport.recommendedOperation()) ||
                 floorReport.hasInvalidatedLayer(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS);
+    }
+
+    boolean hasCatalogAffectingSettingsChange(MKStructureWorkspace existing, MKStructureWorkspace requested) {
+        return !Objects.equals(existing.topologyProfile(), requested.topologyProfile()) ||
+                !Objects.equals(existing.dimensions(), requested.dimensions()) ||
+                !Objects.equals(existing.verticalAccessPlacement(), requested.verticalAccessPlacement()) ||
+                !Objects.equals(existing.verticalAccessSpec(), requested.verticalAccessSpec()) ||
+                !Objects.equals(existing.familyDefinitions(), requested.familyDefinitions()) ||
+                !Objects.equals(existing.openingProfiles(), requested.openingProfiles()) ||
+                !Objects.equals(existing.linearRunFamilies(), requested.linearRunFamilies()) ||
+                !Objects.equals(existing.insertFamilies(), requested.insertFamilies());
     }
 
     private MKWorkspaceInvalidationReport withDestructiveRegenerationImpacts(
@@ -509,7 +713,7 @@ public class MKStructureWorkspaceService {
         if (reports.size() == 1) {
             return reports.getFirst().summary();
         }
-        return "Workspace update affects " + reports.size() + " floor topology sections; highest safety is " +
+        return "Workspace update affects " + reports.size() + " mutation groups; highest safety is " +
                 safety.getSerializedName() + ".";
     }
 
@@ -670,8 +874,7 @@ public class MKStructureWorkspaceService {
         final String targetBasePieceName = resolvedBasePieceName;
 
         List<MKPlannedPiece> canonicalPieces = plannerRegistry.plannerFor(workspace).createCanonicalPieces(workspace);
-        Map<String, MKPlannedPiece> canonicalByBaseName = canonicalPieces.stream()
-                .collect(Collectors.toMap(MKPlannedPiece::pieceName, piece -> piece));
+        Map<String, MKPlannedPiece> canonicalByBaseName = canonicalPiecesByLookupName(canonicalPieces);
         MKPlannedPiece basePiece = canonicalByBaseName.get(targetBasePieceName);
         if (basePiece == null) {
             return Optional.empty();
@@ -682,6 +885,8 @@ public class MKStructureWorkspaceService {
         MKPlannedPiece variantPiece = toVariantPiece(basePiece, nextVariantIndex);
         List<MKPlannedPiece> layoutPieces = physicalVariantLayoutPieces(workspace, canonicalPieces, canonicalByBaseName,
                 List.of(variantPiece));
+        MKWorkspaceGridLayout.Placement placement = alignedVariantPlacement(workspace, targetBasePieceName,
+                nextVariantIndex, variantPiece, layoutPieces);
 
         MKWorkspacePieceDefinition templatePiece = resolveVariantSourcePiece(workspace, targetBasePieceName,
                 nextVariantIndex, sourcePiece);
@@ -690,7 +895,7 @@ public class MKStructureWorkspaceService {
         }
 
         MKWorkspacePieceDefinition generatedPiece = scaffoldBuilder.cloneFromTemplate(level, workspace, templatePiece,
-                variantPiece, layoutPieces);
+                variantPiece, placement);
         List<MKWorkspacePieceDefinition> updatedPieces = new java.util.ArrayList<>(workspace.pieces());
         updatedPieces.add(generatedPiece);
         MKStructureWorkspace updated = workspace.withPieces(updatedPieces);
@@ -739,24 +944,16 @@ public class MKStructureWorkspaceService {
             return Optional.of(workspace);
         }
         List<MKPlannedPiece> canonicalPieces = plannerRegistry.plannerFor(workspace).createCanonicalPieces(workspace);
-        Map<String, MKPlannedPiece> canonicalByBaseName = canonicalPieces.stream()
-                .collect(Collectors.toMap(MKPlannedPiece::pieceName, piece -> piece));
+        Map<String, MKPlannedPiece> canonicalByBaseName = canonicalPiecesByLookupName(canonicalPieces);
 
         List<MKWorkspacePieceDefinition> templatePieces = new ArrayList<>();
         List<MKPlannedPiece> variantPieces = new ArrayList<>();
-        Integer rowVariantIndex = null;
-        boolean sameVariantRow = true;
         for (String basePieceName : basePieceNames) {
             MKPlannedPiece basePiece = canonicalByBaseName.get(basePieceName);
             if (basePiece == null) {
                 return Optional.empty();
             }
             int nextVariantIndex = nextPhysicalVariantIndex(workspace, basePieceName);
-            if (rowVariantIndex == null) {
-                rowVariantIndex = nextVariantIndex;
-            } else if (rowVariantIndex != nextVariantIndex) {
-                sameVariantRow = false;
-            }
             MKPlannedPiece variantPiece = toVariantPiece(basePiece, nextVariantIndex);
             MKWorkspacePieceDefinition templatePiece = resolveVariantSourcePiece(workspace, basePieceName,
                     nextVariantIndex, null);
@@ -772,14 +969,14 @@ public class MKStructureWorkspaceService {
                 .toList();
         List<MKPlannedPiece> layoutPieces = physicalVariantLayoutPieces(workspace, canonicalPieces, canonicalByBaseName,
                 physicalVariantPieces);
-        if (sameVariantRow) {
-            scaffoldBuilder.clearLayoutAreaForPieces(level, workspace, layoutPieces, physicalVariantPieces);
-        }
 
         List<MKWorkspacePieceDefinition> generatedPieces = new ArrayList<>();
         for (int i = 0; i < variantPieces.size(); i++) {
+            MKPlannedPiece variantPiece = variantPieces.get(i);
+            MKWorkspaceGridLayout.Placement placement = alignedVariantPlacement(workspace, getBaseName(variantPiece),
+                    getVariantIndex(variantPiece), variantPiece, layoutPieces);
             generatedPieces.add(scaffoldBuilder.cloneFromTemplate(level, workspace, templatePieces.get(i),
-                    variantPieces.get(i), layoutPieces));
+                    variantPiece, placement));
         }
 
         List<MKWorkspacePieceDefinition> updatedPieces = new ArrayList<>(workspace.pieces());
@@ -788,6 +985,236 @@ public class MKStructureWorkspaceService {
         data.updateWorkspace(updated);
         syncBlockEntity(level, anchor, updated.id());
         return Optional.of(updated);
+    }
+
+    public Optional<MKStructureWorkspace> deleteWorkspaceVariant(ServerLevel level, BlockPos anchor, UUID pieceId) {
+        IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
+        Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
+        if (workspaceOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        MKStructureWorkspace workspace = workspaceOpt.get();
+        Optional<MKWorkspacePieceDefinition> variantOpt = workspace.pieces().stream()
+                .filter(piece -> piece.pieceId().equals(pieceId))
+                .filter(piece -> piece.variantIndex() > 0)
+                .filter(piece -> usesPhysicalWorkspaceCell(piece.tags()))
+                .findFirst();
+        if (variantOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        writeBackupBeforeMutation(level, workspace, "delete-variant", "variant deletion");
+        MKWorkspacePieceDefinition variant = variantOpt.get();
+        scaffoldBuilder.clearExistingPieceContents(level, List.of(variant), workspace.anchor());
+        List<MKWorkspacePieceDefinition> updatedPieces = workspace.pieces().stream()
+                .filter(piece -> !piece.pieceId().equals(pieceId))
+                .toList();
+        MKStructureWorkspace updated = workspace.withPieces(updatedPieces);
+        data.updateWorkspace(updated);
+        syncBlockEntity(level, anchor, updated.id());
+        return Optional.of(updated);
+    }
+
+    private Optional<MKStructureWorkspace> applyWorkspaceVariantMutations(ServerLevel level,
+                                                                          MKStructureWorkspace existing,
+                                                                          List<MKWorkspaceVariantAddition> addedVariants,
+                                                                          List<UUID> deletedVariantPieceIds) {
+        MKStructureWorkspace current = existing;
+        if (!deletedVariantPieceIds.isEmpty()) {
+            Optional<MKStructureWorkspace> deleted = applyWorkspaceVariantDeletions(level, current,
+                    deletedVariantPieceIds);
+            if (deleted.isEmpty()) {
+                return Optional.empty();
+            }
+            current = deleted.get();
+        }
+        for (MKWorkspaceVariantAddition addition : addedVariants) {
+            if (addition.basePieceName().isBlank()) {
+                return Optional.empty();
+            }
+            Optional<MKStructureWorkspace> added = addWorkspaceVariant(level, current.anchor(),
+                    addition.basePieceName(), addition.sourcePieceName());
+            if (added.isEmpty()) {
+                return Optional.empty();
+            }
+            current = added.get();
+        }
+        Optional<MKWorkspaceInvalidationReport> report = variantMutationReport(existing, addedVariants,
+                deletedVariantPieceIds);
+        if (report.isPresent()) {
+            long nowEpochMillis = System.currentTimeMillis();
+            MKStructureWorkspace workspaceWithDirtyLayers = preflightForReport(current, report.get(), nowEpochMillis)
+                    .workspaceWithDirtyLayers();
+            current = workspaceForUpdate(current, current, current.pieces(), nowEpochMillis,
+                    workspaceWithDirtyLayers.layerStates());
+            IMKStructureWorkspaceData.get(level).updateWorkspace(current);
+            syncBlockEntity(level, current.anchor(), current.id());
+        }
+        return Optional.of(current);
+    }
+
+    private Optional<MKStructureWorkspace> applyWorkspaceVariantDeletions(ServerLevel level,
+                                                                          MKStructureWorkspace existing,
+                                                                          List<UUID> deletedVariantPieceIds) {
+        List<MKWorkspacePieceDefinition> variants = workspaceVariantPiecesForDeletion(existing, deletedVariantPieceIds);
+        if (variants.isEmpty()) {
+            return Optional.empty();
+        }
+        LinkedHashSet<UUID> removedIds = variants.stream()
+                .map(MKWorkspacePieceDefinition::pieceId)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        scaffoldBuilder.clearExistingPieceContents(level, variants, existing.anchor());
+        List<MKWorkspacePieceDefinition> remainingPieces = existing.pieces().stream()
+                .filter(piece -> !removedIds.contains(piece.pieceId()))
+                .toList();
+        long nowEpochMillis = System.currentTimeMillis();
+        MKWorkspaceInvalidationReport report = variantMutationReport(existing, List.of(), deletedVariantPieceIds)
+                .orElseGet(() -> MKWorkspaceInvalidationReport.noChanges("No variant changes were staged."));
+        MKStructureWorkspace workspaceWithDirtyLayers = preflightForReport(existing, report, nowEpochMillis)
+                .workspaceWithDirtyLayers();
+        MKStructureWorkspace updated = workspaceForUpdate(existing, existing, remainingPieces, nowEpochMillis,
+                workspaceWithDirtyLayers.layerStates());
+        IMKStructureWorkspaceData.get(level).updateWorkspace(updated);
+        syncBlockEntity(level, existing.anchor(), updated.id());
+        return Optional.of(updated);
+    }
+
+    private MKWorkspaceInvalidationReport withVariantMutationReport(MKStructureWorkspace existing,
+                                                                    MKWorkspaceInvalidationReport report,
+                                                                    List<MKWorkspaceVariantAddition> addedVariants,
+                                                                    List<UUID> deletedVariantPieceIds) {
+        Optional<MKWorkspaceInvalidationReport> variantReport = variantMutationReport(existing, addedVariants,
+                deletedVariantPieceIds);
+        if (variantReport.isEmpty()) {
+            return report;
+        }
+        if (isNoChangeReport(report)) {
+            return variantReport.get();
+        }
+        return mergeReports(List.of(report, variantReport.get()));
+    }
+
+    private Optional<MKWorkspaceInvalidationReport> variantMutationReport(MKStructureWorkspace existing,
+                                                                          List<MKWorkspaceVariantAddition> addedVariants,
+                                                                          List<UUID> deletedVariantPieceIds) {
+        List<MKWorkspacePieceDefinition> deletedVariants = workspaceVariantPiecesForDeletion(existing,
+                deletedVariantPieceIds);
+        List<MKWorkspaceRelayoutImpact> additionImpacts = workspaceVariantAdditionImpacts(existing, addedVariants);
+        if (deletedVariants.isEmpty() && additionImpacts.isEmpty()) {
+            return Optional.empty();
+        }
+        ArrayList<MKWorkspaceRelayoutImpact> impacts = new ArrayList<>(additionImpacts);
+        impacts.addAll(deletedVariants.stream()
+                .map(piece -> new MKWorkspaceRelayoutImpact(
+                        "removed",
+                        piece.pieceName(),
+                        getBaseName(piece),
+                        piece.variantIndex(),
+                        piece.plannerId().toString(),
+                        stableSlotKey(piece.tags()),
+                        "authored variant scaffold will be cleared from the workspace"
+                ))
+                .toList());
+        int addedCount = additionImpacts.size();
+        int deletedCount = deletedVariants.size();
+        return Optional.of(new MKWorkspaceInvalidationReport(
+                List.of(
+                        MKWorkspaceGeneratedLayer.PREVIEW_LAYOUT,
+                        MKWorkspaceGeneratedLayer.SCAFFOLD_BLOCKS,
+                        MKWorkspaceGeneratedLayer.SIDECAR_BLOCKS,
+                        MKWorkspaceGeneratedLayer.RUNTIME_METADATA
+                ),
+                impacts.stream()
+                        .map(impact -> MKWorkspacePlannerId.of(impact.plannerId()))
+                        .toList(),
+                List.of(),
+                List.of(),
+                MKWorkspaceMutationSafety.SAFE_RELAYOUT,
+                variantMutationSummary(addedCount, deletedCount),
+                "relayout_workspace_variants",
+                List.of(),
+                List.of(),
+                impacts
+        ));
+    }
+
+    private List<MKWorkspaceRelayoutImpact> workspaceVariantAdditionImpacts(MKStructureWorkspace workspace,
+                                                                            List<MKWorkspaceVariantAddition> addedVariants) {
+        if (addedVariants.isEmpty() || workspace.pieces().isEmpty()) {
+            return List.of();
+        }
+        List<MKPlannedPiece> canonicalPieces = plannerRegistry.plannerFor(workspace).createCanonicalPieces(workspace);
+        Map<String, MKPlannedPiece> canonicalByBaseName = canonicalPiecesByLookupName(canonicalPieces);
+        Map<String, Integer> nextVariantIndexes = addedVariants.stream()
+                .map(MKWorkspaceVariantAddition::basePieceName)
+                .distinct()
+                .collect(Collectors.toMap(baseName -> baseName,
+                        baseName -> nextPhysicalVariantIndex(workspace, baseName),
+                        (left, ignored) -> left));
+        ArrayList<MKWorkspaceRelayoutImpact> impacts = new ArrayList<>();
+        for (MKWorkspaceVariantAddition addition : addedVariants) {
+            MKPlannedPiece basePiece = canonicalByBaseName.get(addition.basePieceName());
+            if (basePiece == null || !usesPhysicalWorkspaceCell(basePiece)) {
+                continue;
+            }
+            int variantIndex = nextVariantIndexes.getOrDefault(addition.basePieceName(), 1);
+            nextVariantIndexes.put(addition.basePieceName(), variantIndex + 1);
+            MKPlannedPiece variantPiece = toVariantPiece(basePiece, variantIndex);
+            impacts.add(new MKWorkspaceRelayoutImpact(
+                    "new",
+                    variantPiece.pieceName(),
+                    getBaseName(variantPiece),
+                    variantIndex,
+                    variantPiece.plannerId().toString(),
+                    stableSlotKey(variantPiece.tags()),
+                    addition.sourcePieceName() == null ?
+                            "new authored variant scaffold will be cloned from the template" :
+                            "new authored variant scaffold will be cloned from " + addition.sourcePieceName()
+            ));
+        }
+        return List.copyOf(impacts);
+    }
+
+    private String variantMutationSummary(int addedCount, int deletedCount) {
+        if (addedCount > 0 && deletedCount > 0) {
+            return "Adding " + addedCount + " and deleting " + deletedCount +
+                    " workspace variants will relayout authored scaffold only.";
+        }
+        if (addedCount > 0) {
+            return addedCount == 1 ?
+                    "Adding 1 workspace variant will place new authored scaffold in the workspace grid." :
+                    "Adding " + addedCount + " workspace variants will place new authored scaffold in the workspace grid.";
+        }
+        return deletedCount == 1 ?
+                "Deleting 1 workspace variant will clear authored scaffold only." :
+                "Deleting " + deletedCount + " workspace variants will clear authored scaffold only.";
+    }
+
+    private List<MKWorkspacePieceDefinition> workspaceVariantPiecesForDeletion(MKStructureWorkspace workspace,
+                                                                               List<UUID> deletedVariantPieceIds) {
+        if (deletedVariantPieceIds.isEmpty()) {
+            return List.of();
+        }
+        LinkedHashSet<UUID> requestedIds = new LinkedHashSet<>(deletedVariantPieceIds);
+        return workspace.pieces().stream()
+                .filter(piece -> requestedIds.contains(piece.pieceId()))
+                .filter(piece -> piece.variantIndex() > 0)
+                .filter(piece -> usesPhysicalWorkspaceCell(piece.tags()))
+                .toList();
+    }
+
+    private boolean isNoChangeReport(MKWorkspaceInvalidationReport report) {
+        return report.invalidatedLayers().isEmpty() && "none".equals(report.recommendedOperation());
+    }
+
+    boolean isTerminalVariantMutationReport(MKWorkspaceInvalidationReport report) {
+        return "relayout_workspace_variants".equals(report.recommendedOperation()) &&
+                report.safety() == MKWorkspaceMutationSafety.SAFE_RELAYOUT &&
+                !report.hasInvalidatedLayer(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS) &&
+                !report.relayoutImpacts().isEmpty() &&
+                report.relayoutImpacts().stream()
+                        .allMatch(impact -> "new".equals(impact.outcome()) ||
+                                "removed".equals(impact.outcome()));
     }
 
     List<String> physicalTemplateBasePieceNames(MKStructureWorkspace workspace) {
@@ -819,19 +1246,82 @@ public class MKStructureWorkspaceService {
                                                      List<MKPlannedPiece> canonicalPieces,
                                                      Map<String, MKPlannedPiece> canonicalByBaseName,
                                                      List<MKPlannedPiece> newVariantPieces) {
-        ArrayList<MKPlannedPiece> layoutPieces = canonicalPieces.stream()
-                .filter(this::usesPhysicalWorkspaceCell)
-                .map(this::toTemplatePiece)
-                .collect(Collectors.toCollection(ArrayList::new));
-        layoutPieces.addAll(workspace.pieces().stream()
-                .filter(piece -> piece.variantIndex() > 0)
+        ArrayList<MKPlannedPiece> layoutPieces = workspace.pieces().stream()
                 .filter(piece -> usesPhysicalWorkspaceCell(piece.tags()))
-                .map(piece -> toExistingVariantPiece(piece, canonicalByBaseName))
+                .sorted(Comparator.comparingInt(MKWorkspacePieceDefinition::variantIndex)
+                        .thenComparingInt(piece -> piece.previewBounds().minX())
+                        .thenComparingInt(piece -> piece.previewBounds().minZ())
+                        .thenComparing(MKWorkspacePieceDefinition::pieceName))
+                .map(piece -> toExistingLayoutPiece(piece, canonicalByBaseName))
+                .collect(Collectors.toCollection(ArrayList::new));
+        LinkedHashSet<String> existingBaseNames = layoutPieces.stream()
+                .map(this::getBaseName)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        layoutPieces.addAll(canonicalPieces.stream()
+                .filter(this::usesPhysicalWorkspaceCell)
+                .filter(piece -> existingBaseNames.add(getBaseName(piece)))
+                .map(this::toTemplatePiece)
                 .toList());
         layoutPieces.addAll(newVariantPieces.stream()
                 .filter(this::usesPhysicalWorkspaceCell)
                 .toList());
         return List.copyOf(layoutPieces);
+    }
+
+    MKWorkspaceGridLayout.Placement alignedVariantPlacement(MKStructureWorkspace workspace, String targetBaseName,
+                                                           int targetVariantIndex, MKPlannedPiece targetPiece,
+                                                           List<MKPlannedPiece> layoutPieces) {
+        MKWorkspaceGridLayout.Placement plannedPlacement = placementForLayoutPiece(workspace, targetPiece, layoutPieces);
+        int columnX = workspace.pieces().stream()
+                .filter(piece -> targetBaseName.equals(getBaseName(piece)))
+                .filter(piece -> usesPhysicalWorkspaceCell(piece.tags()))
+                .map(piece -> piece.previewBounds().minX())
+                .min(Integer::compareTo)
+                .orElse(plannedPlacement.previewBounds().minX());
+        int rowZ = workspace.pieces().stream()
+                .filter(piece -> piece.variantIndex() == targetVariantIndex)
+                .filter(piece -> usesPhysicalWorkspaceCell(piece.tags()))
+                .map(piece -> piece.previewBounds().minZ())
+                .min(Integer::compareTo)
+                .orElse(plannedPlacement.previewBounds().minZ());
+        return movePlacementOrigin(plannedPlacement, columnX, rowZ);
+    }
+
+    private MKWorkspaceGridLayout.Placement placementForLayoutPiece(MKStructureWorkspace workspace,
+                                                                    MKPlannedPiece targetPiece,
+                                                                    List<MKPlannedPiece> layoutPieces) {
+        List<MKWorkspaceGridLayout.Placement> placements = new MKWorkspaceGridLayout().assignPlacements(
+                workspace.anchor(),
+                layoutPieces,
+                workspace.shellMargin(),
+                workspace.verticalShellMargin(),
+                workspace.exteriorAirMargin(),
+                workspace.previewMargin(),
+                MKWorkspaceScaffoldBuilder.GRID_COLUMNS,
+                MKWorkspaceScaffoldBuilder.CELL_PADDING
+        );
+        int index = layoutPieces.indexOf(targetPiece);
+        if (index < 0) {
+            throw new IllegalArgumentException("piece is not present in layout list");
+        }
+        return placements.get(index);
+    }
+
+    private MKWorkspaceGridLayout.Placement movePlacementOrigin(MKWorkspaceGridLayout.Placement placement,
+                                                               int minX, int minZ) {
+        BoundingBox bounds = placement.previewBounds();
+        int dx = minX - bounds.minX();
+        int dz = minZ - bounds.minZ();
+        BlockPos origin = placement.previewOrigin().offset(dx, 0, dz);
+        BoundingBox movedBounds = new BoundingBox(
+                bounds.minX() + dx,
+                bounds.minY(),
+                bounds.minZ() + dz,
+                bounds.maxX() + dx,
+                bounds.maxY(),
+                bounds.maxZ() + dz
+        );
+        return new MKWorkspaceGridLayout.Placement(origin, movedBounds);
     }
 
     private int nextPhysicalVariantIndex(MKStructureWorkspace workspace, String basePieceName) {
@@ -1113,6 +1603,10 @@ public class MKStructureWorkspaceService {
         }
     }
 
+    public void writeApplyChangesBackup(ServerLevel level, MKStructureWorkspace workspace) {
+        writeBackupBeforeMutation(level, workspace, "apply-changes", "applying workspace changes");
+    }
+
     public Optional<MKStructureWorkspace> importWorkspaceFromManifest(ServerLevel level, BlockPos anchor,
                                                                      ResourceLocation manifestId) {
         return importWorkspaceFromManifestWithValidation(level, anchor, manifestId).workspaceOpt();
@@ -1192,6 +1686,25 @@ public class MKStructureWorkspaceService {
         );
     }
 
+    private MKPlannedPiece toExistingLayoutPiece(MKWorkspacePieceDefinition piece,
+                                                 Map<String, MKPlannedPiece> canonicalByBaseName) {
+        String baseName = getBaseName(piece);
+        MKPlannedPiece basePiece = canonicalByBaseName.get(baseName);
+        if (basePiece == null) {
+            throw new IllegalStateException("missing canonical piece for base name " + baseName);
+        }
+        return new MKPlannedPiece(
+                basePiece.roleId(),
+                piece.pieceName(),
+                basePiece.interiorWidth(),
+                basePiece.interiorLength(),
+                basePiece.interiorHeight(),
+                basePiece.connectors(),
+                withWorkspaceTags(basePiece, piece.variantIndex() == 0 ? "template" : "instance", piece.variantIndex()),
+                piece.plannerId()
+        );
+    }
+
     private boolean usesPhysicalWorkspaceCell(MKPlannedPiece piece) {
         return usesPhysicalWorkspaceCell(piece.tags());
     }
@@ -1202,10 +1715,19 @@ public class MKStructureWorkspaceService {
 
     private Map<String, String> withWorkspaceTags(MKPlannedPiece basePiece, String pieceKind, int variantIndex) {
         java.util.LinkedHashMap<String, String> tags = new java.util.LinkedHashMap<>(basePiece.tags());
-        tags.put(MKWorkspaceGridLayout.TAG_BASE_NAME, basePiece.pieceName());
+        tags.put(MKWorkspaceGridLayout.TAG_BASE_NAME, getBaseName(basePiece));
         tags.put(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, Integer.toString(variantIndex));
         tags.put("workspace_piece_kind", pieceKind);
         return tags;
+    }
+
+    private Map<String, MKPlannedPiece> canonicalPiecesByLookupName(List<MKPlannedPiece> canonicalPieces) {
+        java.util.LinkedHashMap<String, MKPlannedPiece> piecesByName = new java.util.LinkedHashMap<>();
+        for (MKPlannedPiece piece : canonicalPieces) {
+            piecesByName.putIfAbsent(piece.pieceName(), piece);
+            piecesByName.putIfAbsent(getBaseName(piece), piece);
+        }
+        return Map.copyOf(piecesByName);
     }
 
     private MKWorkspacePieceDefinition resolveVariantSourcePiece(MKStructureWorkspace workspace, String targetBaseName,
@@ -1249,6 +1771,14 @@ public class MKStructureWorkspaceService {
 
     private String getBaseName(MKPlannedPiece piece) {
         return piece.tags().getOrDefault(MKWorkspaceGridLayout.TAG_BASE_NAME, piece.pieceName());
+    }
+
+    private int getVariantIndex(MKPlannedPiece piece) {
+        try {
+            return Integer.parseInt(piece.tags().getOrDefault(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "0"));
+        } catch (NumberFormatException ignored) {
+            return 0;
+        }
     }
 
     private boolean canRelayoutPreviewMarginOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
@@ -1666,8 +2196,7 @@ public class MKStructureWorkspaceService {
     private CatalogRelayoutTargets catalogRelayoutTargets(MKStructureWorkspace existing,
                                                           MKStructureWorkspace requested) {
         List<MKPlannedPiece> canonicalPieces = plannerRegistry.plannerFor(requested).createCanonicalPieces(requested);
-        Map<String, MKPlannedPiece> canonicalByBaseName = canonicalPieces.stream()
-                .collect(Collectors.toMap(MKPlannedPiece::pieceName, piece -> piece));
+        Map<String, MKPlannedPiece> canonicalByBaseName = canonicalPiecesByLookupName(canonicalPieces);
         Map<String, MKPlannedPiece> canonicalByStableSlot = canonicalPieces.stream()
                 .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
                 .filter(piece -> !stableSlotKey(piece.tags()).isBlank())

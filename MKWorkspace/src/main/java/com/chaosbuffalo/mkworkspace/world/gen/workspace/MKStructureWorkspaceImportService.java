@@ -295,7 +295,11 @@ public class MKStructureWorkspaceImportService {
                         insertFamily.kind(),
                         insertFamily.width(),
                         insertFamily.height(),
-                        insertFamily.depth()
+                        insertFamily.depth(),
+                        insertFamily.attachmentFace(),
+                        insertFamily.faceUOffset(),
+                        insertFamily.faceVOffset(),
+                        insertFamily.templateJigsawFinalState()
                 ))
                 .toList();
         long now = System.currentTimeMillis();

@@ -1,6 +1,8 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace;
 
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFloorRoomKind;
@@ -10,6 +12,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyKind;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceLayerStateService;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
@@ -17,15 +20,18 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceMutationPreflight;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceMutationSafety;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceGeometry;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePlannerId;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWalledKeepPlannerSettings;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVariantAddition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedConnector;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedPiece;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWorkspacePlanner;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
@@ -57,10 +63,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class MKStructureWorkspaceServicePreflightTest {
     private static final ResourceLocation RENAMED_BASE_PLANNER_ID =
             ResourceLocation.fromNamespaceAndPath("mknpc_test", "renamed_base_catalog");
+    private static final ResourceLocation INSERT_FAMILY_CATALOG_PLANNER_ID =
+            ResourceLocation.fromNamespaceAndPath("mknpc_test", "insert_family_catalog");
+    private static final ResourceLocation CONNECTOR_POOL_CATALOG_PLANNER_ID =
+            ResourceLocation.fromNamespaceAndPath("mknpc_test", "connector_pool_catalog");
+    private static final ResourceLocation FLAT_PLATFORM_CATALOG_PLANNER_ID =
+            ResourceLocation.fromNamespaceAndPath("mknpc_test", "flat_platform_catalog");
     private final MKStructureWorkspaceService service = new MKStructureWorkspaceService();
 
     static {
         MKWorkspacePlannerRegistry.registerShared(new RenamedBaseCatalogPlanner());
+        MKWorkspacePlannerRegistry.registerShared(new InsertFamilyCatalogPlanner());
+        MKWorkspacePlannerRegistry.registerShared(new ConnectorPoolCatalogPlanner());
+        MKWorkspacePlannerRegistry.registerShared(new FlatPlatformCatalogPlanner());
     }
 
     @Test
@@ -203,6 +218,95 @@ class MKStructureWorkspaceServicePreflightTest {
     }
 
     @Test
+    void catalogRelayoutPreservesLegacyInsertSocketPiecesWhenInsertFamiliesChange() {
+        MKWorkspaceInsertFamilyDefinition platformContents =
+                MKWorkspaceInsertFamilyDefinition.insertSocket("fire_shrine_platform_contents", 5, 5, 3);
+        MKWorkspaceInsertFamilyDefinition pillars =
+                MKWorkspaceInsertFamilyDefinition.insertSocket("fire_shrine_pillars", 5, 5, 3);
+        MKStructureWorkspace existing = withTopologyProfile(MKStructureWorkspace.createDraft(BlockPos.ZERO),
+                insertFamilyCatalogProfile());
+        existing = withInsertFamilies(existing, List.of(platformContents));
+        existing = existing.withPieces(List.of(
+                legacyInsertFamilyPiece("fire_shrine_platform_contents", platformContents, 0, "template"),
+                legacyInsertFamilyPiece("fire_shrine_gazebo", platformContents, 1, "instance")
+        ));
+        MKStructureWorkspace requested = withInsertFamilies(existing, List.of(platformContents, pillars));
+
+        MKWorkspaceMutationPreflight preflight = service.preflightWorkspaceUpdate(existing, requested, 123L);
+
+        assertEquals("preserve_catalog_relayout", preflight.report().recommendedOperation());
+        assertFalse(preflight.report().relayoutImpacts().stream()
+                        .filter(impact -> platformContents.familyId().equals(impact.baseName()))
+                        .anyMatch(impact -> "new".equals(impact.outcome()) ||
+                                "removed".equals(impact.outcome()) ||
+                                "rebuild".equals(impact.outcome())),
+                () -> "existing insert socket family should not churn: " +
+                        preflight.report().relayoutImpacts());
+        assertEquals(2, preflight.report().relayoutImpacts().stream()
+                        .filter(impact -> platformContents.familyId().equals(impact.baseName()))
+                        .filter(impact -> "preserved".equals(impact.outcome()) ||
+                                "moved".equals(impact.outcome()) ||
+                                "expanded".equals(impact.outcome()))
+                        .count(),
+                () -> "expected template and variant to be preserved by insert socket identity: " +
+                        preflight.report().relayoutImpacts());
+    }
+
+    @Test
+    void catalogRelayoutDoesNotRebuildForConnectorPoolOnlyChanges() {
+        ConnectorPoolCatalogPlanner planner = new ConnectorPoolCatalogPlanner();
+        MKStructureWorkspace existing = withTopologyProfile(MKStructureWorkspace.createDraft(BlockPos.ZERO),
+                connectorPoolCatalogProfile());
+        MKPlannedPiece existingPlan = planner.createCanonicalPieces(existing).getFirst();
+        existing = existing.withPieces(List.of(plannedTemplatePieceWithTargetBounds(existing, existingPlan,
+                List.of(
+                        connectorPoolCatalogConnector(existing, "old_route"),
+                        authoredInsertConnector(existing, "route_target")
+                ))));
+        MKStructureWorkspace requested = withInsertFamilies(existing, List.of(
+                MKWorkspaceInsertFamilyDefinition.insertSocket("route_target", 5, 5, 3)));
+
+        MKWorkspaceMutationPreflight preflight = service.preflightWorkspaceUpdate(existing, requested, 123L);
+
+        assertEquals("preserve_catalog_relayout", preflight.report().recommendedOperation());
+        assertFalse(preflight.report().relayoutImpacts().stream()
+                        .filter(impact -> existingPlan.pieceName().equals(impact.baseName()))
+                        .anyMatch(impact -> "rebuild".equals(impact.outcome())),
+                () -> "pool-only connector route changes should preserve authored blocks: " +
+                        preflight.report().relayoutImpacts());
+        assertTrue(preflight.report().relayoutImpacts().stream()
+                        .filter(impact -> existingPlan.pieceName().equals(impact.baseName()))
+                        .anyMatch(impact -> "preserved".equals(impact.outcome()) ||
+                                "moved".equals(impact.outcome()) ||
+                                "expanded".equals(impact.outcome())),
+                () -> "expected pool-only connector route change to be preserved: " +
+                        preflight.report().relayoutImpacts());
+    }
+
+    @Test
+    void catalogRelayoutDoesNotExpandExactBoundsFlatPlatformWhenAddingFamily() {
+        FlatPlatformCatalogPlanner planner = new FlatPlatformCatalogPlanner();
+        MKStructureWorkspace existing = withTopologyProfile(MKStructureWorkspace.createDraft(BlockPos.ZERO),
+                flatPlatformCatalogProfile());
+        MKPlannedPiece flatPlatform = planner.createCanonicalPieces(existing).getFirst();
+        existing = existing.withPieces(List.of(plannedPiece(flatPlatform, flatPlatform.pieceName() + "_template",
+                0, flatPlatform.plannerId(), "template", flatPlatform.interiorWidth(),
+                flatPlatform.interiorLength(), flatPlatform.interiorHeight())));
+        MKStructureWorkspace requested = withInsertFamilies(existing, List.of(
+                MKWorkspaceInsertFamilyDefinition.insertSocket("added_insert", 5, 5, 3)));
+
+        MKWorkspaceMutationPreflight preflight = service.preflightWorkspaceUpdate(existing, requested, 123L);
+
+        assertEquals("preserve_catalog_relayout", preflight.report().recommendedOperation());
+        assertFalse(preflight.report().relayoutImpacts().stream()
+                        .filter(impact -> flatPlatform.pieceName().equals(impact.baseName()))
+                        .anyMatch(impact -> "expanded".equals(impact.outcome()) ||
+                                "rebuild".equals(impact.outcome())),
+                () -> "flat platform exact bounds should not expand to shell defaults: " +
+                        preflight.report().relayoutImpacts());
+    }
+
+    @Test
     void catalogRelayoutDoesNotFallbackDestructiveForDuplicateLegacyVariantPlannerIds() {
         MKWorkspacePlannerId duplicatePlannerId = MKWorkspacePlannerId.of("legacy.duplicate.floor_room");
         MKStructureWorkspace existing = withTopologyProfile(MKStructureWorkspace.createDraft(BlockPos.ZERO),
@@ -243,6 +347,125 @@ class MKStructureWorkspaceServicePreflightTest {
                 service.physicalTemplateBasePieceNames(workspace));
         assertEquals(List.of("room_without_variant", "rotated_authoring"),
                 service.basePieceNamesWithoutPhysicalVariants(workspace));
+    }
+
+    @Test
+    void variantDeletionPreflightReportsStagedWorkspaceMutation() {
+        MKWorkspacePieceDefinition template = variantAwarePiece("room_template", "room", 0,
+                MKWorkspacePlannerId.of("utility.room"));
+        MKWorkspacePieceDefinition variant = variantAwarePiece("room_1", "room", 1,
+                MKWorkspacePlannerId.of("utility.room").child("variant_1"));
+        MKStructureWorkspace existing = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withPieces(List.of(template, variant));
+
+        MKWorkspaceMutationPreflight preflight = service.preflightWorkspaceUpdate(existing, existing, 123L,
+                List.of(), List.of(variant.pieceId()));
+
+        assertEquals("relayout_workspace_variants", preflight.report().recommendedOperation());
+        assertEquals(MKWorkspaceMutationSafety.SAFE_RELAYOUT, preflight.report().safety());
+        assertFalse(preflight.report().invalidatedLayers().contains(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS));
+        assertTrue(preflight.report().invalidatedLayers().contains(MKWorkspaceGeneratedLayer.PREVIEW_LAYOUT));
+        assertTrue(preflight.report().invalidatedLayers().contains(MKWorkspaceGeneratedLayer.SCAFFOLD_BLOCKS));
+        assertEquals(List.of(), preflight.report().orphanedTemplateBindings());
+        assertTrue(service.isTerminalVariantMutationReport(preflight.report()));
+        assertEquals(1, preflight.report().relayoutImpacts().stream()
+                .filter(impact -> "removed".equals(impact.outcome()) &&
+                        variant.pieceName().equals(impact.pieceName()))
+                .count());
+    }
+
+    @Test
+    void variantOnlyPreflightIgnoresRequestedSettingsDrift() {
+        MKWorkspacePieceDefinition template = variantAwarePiece("room_template", "room", 0,
+                MKWorkspacePlannerId.of("utility.room"));
+        MKWorkspacePieceDefinition variant = variantAwarePiece("room_1", "room", 1,
+                MKWorkspacePlannerId.of("utility.room").child("variant_1"));
+        MKStructureWorkspace existing = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withPieces(List.of(template, variant));
+        MKStructureWorkspace requestedWithDrift = withInsertFamilies(existing, List.of(
+                MKWorkspaceInsertFamilyDefinition.floorLinkHallway("unexpected_insert_family", 5, 5, 3)));
+
+        MKWorkspaceMutationPreflight preflight = service.preflightWorkspaceUpdate(existing, requestedWithDrift, 123L,
+                List.of(), List.of(), List.of(variant.pieceId()), false);
+
+        assertEquals("relayout_workspace_variants", preflight.report().recommendedOperation());
+        assertEquals(MKWorkspaceMutationSafety.SAFE_RELAYOUT, preflight.report().safety());
+        assertFalse(preflight.report().invalidatedLayers().contains(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS));
+        assertEquals(1, preflight.report().relayoutImpacts().size());
+        assertEquals(variant.pieceName(), preflight.report().relayoutImpacts().getFirst().pieceName());
+    }
+
+    @Test
+    void variantAdditionPreflightReportsRelayoutOnly() {
+        MKWalledKeepWorkspacePlanner planner = new MKWalledKeepWorkspacePlanner();
+        MKStructureWorkspace existing = walledKeepWorkspace(planner);
+        MKPlannedPiece plannedPiece = planner.createCanonicalPieces(existing).stream()
+                .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
+                .findFirst()
+                .orElseThrow();
+        String baseName = plannedPiece.pieceName();
+        existing = existing.withPieces(List.of(plannedTemplatePiece(plannedPiece)));
+
+        MKWorkspaceMutationPreflight preflight = service.preflightWorkspaceUpdate(existing, existing, 123L,
+                List.of(), List.of(new MKWorkspaceVariantAddition(baseName, null)), List.of());
+
+        assertEquals("relayout_workspace_variants", preflight.report().recommendedOperation());
+        assertEquals(MKWorkspaceMutationSafety.SAFE_RELAYOUT, preflight.report().safety());
+        assertFalse(preflight.report().invalidatedLayers().contains(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS));
+        assertTrue(preflight.report().invalidatedLayers().contains(MKWorkspaceGeneratedLayer.PREVIEW_LAYOUT));
+        assertTrue(preflight.report().invalidatedLayers().contains(MKWorkspaceGeneratedLayer.SCAFFOLD_BLOCKS));
+        assertTrue(service.isTerminalVariantMutationReport(preflight.report()));
+        assertEquals(1, preflight.report().relayoutImpacts().stream()
+                .filter(impact -> "new".equals(impact.outcome()) &&
+                        (baseName + "_1").equals(impact.pieceName()))
+                .count());
+    }
+
+    @Test
+    void catalogAffectingSettingsChangeIgnoresDraftIdentityPiecesAndLayerStates() {
+        MKWorkspacePieceDefinition template = variantAwarePiece("room_template", "room", 0,
+                MKWorkspacePlannerId.of("utility.room"));
+        MKWorkspacePieceDefinition variant = variantAwarePiece("room_1", "room", 1,
+                MKWorkspacePlannerId.of("utility.room").child("variant_1"));
+        MKStructureWorkspace existing = MKStructureWorkspace.createDraft(BlockPos.ZERO)
+                .withPieces(List.of(template, variant));
+        MKStructureWorkspace requestedDraft = service.workspaceForUpdate(existing, existing, List.of(), 456L,
+                List.of());
+
+        assertFalse(service.hasCatalogAffectingSettingsChange(existing, requestedDraft));
+    }
+
+    @Test
+    void catalogAffectingSettingsChangeDetectsInsertFamilies() {
+        MKStructureWorkspace existing = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        MKStructureWorkspace requested = withInsertFamilies(existing, List.of(
+                MKWorkspaceInsertFamilyDefinition.floorLinkHallway("new_insert", 5, 5, 3)));
+
+        assertTrue(service.hasCatalogAffectingSettingsChange(existing, requested));
+    }
+
+    @Test
+    void variantMutationCombinedWithCatalogChangeIsNotTerminalVariantOnly() {
+        MKStructureWorkspace existing = withTopologyProfile(MKStructureWorkspace.createDraft(BlockPos.ZERO),
+                renamedBaseProfile());
+        MKWorkspacePieceDefinition variant = variantAwarePiece("old_floor_room_1", "old_floor_room", 1,
+                MKWorkspacePlannerId.of("renamed.base.old_floor_room").child("variant_1"));
+        existing = existing.withPieces(List.of(
+                variantAwarePiece("old_floor_room_template", "old_floor_room", 0,
+                        MKWorkspacePlannerId.of("renamed.base.old_floor_room")),
+                variant
+        ));
+        MKStructureWorkspace requested = withInsertFamilies(existing, List.of(
+                MKWorkspaceInsertFamilyDefinition.floorLinkHallway("trigger_new_base", 5, 5, 3)));
+
+        MKWorkspaceMutationPreflight preflight = service.preflightWorkspaceUpdate(existing, requested, 123L,
+                List.of(), List.of(variant.pieceId()));
+
+        assertEquals("mixed_workspace_update", preflight.report().recommendedOperation());
+        assertFalse(service.isTerminalVariantMutationReport(preflight.report()));
+        assertTrue(preflight.report().relayoutImpacts().stream()
+                .anyMatch(impact -> "removed".equals(impact.outcome()) &&
+                        variant.pieceName().equals(impact.pieceName())));
     }
 
     @Test
@@ -423,6 +646,22 @@ class MKStructureWorkspaceServicePreflightTest {
                 plannedPiece.plannerId(), "template");
     }
 
+    private static MKWorkspacePieceDefinition plannedTemplatePieceWithTargetBounds(MKStructureWorkspace workspace,
+                                                                                   MKPlannedPiece plannedPiece) {
+        return plannedTemplatePieceWithTargetBounds(workspace, plannedPiece, List.of());
+    }
+
+    private static MKWorkspacePieceDefinition plannedTemplatePieceWithTargetBounds(MKStructureWorkspace workspace,
+                                                                                   MKPlannedPiece plannedPiece,
+                                                                                   List<MKWorkspaceConnectorDefinition> connectors) {
+        return plannedPiece(plannedPiece, plannedPiece.pieceName() + "_template", 0,
+                plannedPiece.plannerId(), "template",
+                plannedPiece.interiorWidth() + (2 * (workspace.shellMargin() + workspace.exteriorAirMargin())),
+                plannedPiece.interiorLength() + (2 * (workspace.shellMargin() + workspace.exteriorAirMargin())),
+                plannedPiece.interiorHeight() + (2 * workspace.verticalShellMargin()),
+                connectors);
+    }
+
     private static MKWorkspacePieceDefinition plannedVariantPiece(MKPlannedPiece plannedPiece) {
         return plannedPiece(plannedPiece, plannedPiece.pieceName() + "_1", 1,
                 plannedPiece.plannerId().child("variant_1"), "instance");
@@ -431,6 +670,26 @@ class MKStructureWorkspaceServicePreflightTest {
     private static MKWorkspacePieceDefinition plannedPiece(MKPlannedPiece plannedPiece, String pieceName,
                                                           int variantIndex, MKWorkspacePlannerId plannerId,
                                                           String pieceKind) {
+        return plannedPiece(plannedPiece, pieceName, variantIndex, plannerId, pieceKind,
+                plannedPiece.interiorWidth() + 2,
+                plannedPiece.interiorLength() + 2,
+                plannedPiece.interiorHeight(),
+                List.of());
+    }
+
+    private static MKWorkspacePieceDefinition plannedPiece(MKPlannedPiece plannedPiece, String pieceName,
+                                                          int variantIndex, MKWorkspacePlannerId plannerId,
+                                                          String pieceKind, int exportWidth, int exportLength,
+                                                          int exportHeight) {
+        return plannedPiece(plannedPiece, pieceName, variantIndex, plannerId, pieceKind, exportWidth, exportLength,
+                exportHeight, List.of());
+    }
+
+    private static MKWorkspacePieceDefinition plannedPiece(MKPlannedPiece plannedPiece, String pieceName,
+                                                          int variantIndex, MKWorkspacePlannerId plannerId,
+                                                          String pieceKind, int exportWidth, int exportLength,
+                                                          int exportHeight,
+                                                          List<MKWorkspaceConnectorDefinition> connectors) {
         LinkedHashMap<String, String> tags = new LinkedHashMap<>(plannedPiece.tags());
         tags.put(MKWorkspaceGridLayout.TAG_BASE_NAME, plannedPiece.pieceName());
         tags.put(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, Integer.toString(variantIndex));
@@ -446,12 +705,86 @@ class MKStructureWorkspaceServicePreflightTest {
                         plannedPiece.interiorHeight(), plannedPiece.interiorHeight(), plannedPiece.interiorHeight(),
                         3, 3, 3),
                 1,
+                connectors,
+                BlockPos.ZERO,
+                new BoundingBox(0, 0, 0, exportWidth - 1, exportHeight - 1, exportLength - 1),
+                new BoundingBox(0, 0, 0, exportWidth - 1, exportHeight - 1, exportLength - 1),
+                BlockPos.ZERO,
+                BlockPos.ZERO,
+                List.of(),
+                List.of(),
+                tags
+        );
+    }
+
+    private static MKWorkspaceConnectorDefinition connectorPoolCatalogConnector(MKStructureWorkspace workspace,
+                                                                                String targetPoolName) {
+        ResourceLocation targetPool = ResourceLocation.fromNamespaceAndPath(workspace.namespace(),
+                workspace.structureName() + "/" + targetPoolName);
+        return new MKWorkspaceConnectorDefinition(
+                MKConnectorRole.MAIN_FORWARD,
+                Direction.NORTH,
+                BlockPos.ZERO,
+                3,
+                2,
+                0,
+                0,
+                ResourceLocation.fromNamespaceAndPath(workspace.namespace(),
+                        MKConnectorRole.MAIN_FORWARD.getSerializedName()),
+                targetPool,
+                targetPool,
+                ResourceLocation.parse("minecraft:empty")
+        );
+    }
+
+    private static MKWorkspaceConnectorDefinition authoredInsertConnector(MKStructureWorkspace workspace,
+                                                                          String insertFamilyId) {
+        ResourceLocation targetPool = MKWorkspaceInsertFamilyDefinition.poolId(workspace.namespace(),
+                workspace.structureName(), insertFamilyId);
+        return new MKWorkspaceConnectorDefinition(
+                MKConnectorRole.LINK_CANDIDATE,
+                Direction.UP,
+                BlockPos.ZERO,
+                1,
+                1,
+                0,
+                0,
+                ResourceLocation.fromNamespaceAndPath(workspace.namespace(), "base"),
+                ResourceLocation.fromNamespaceAndPath(workspace.namespace(), "attach"),
+                targetPool,
+                ResourceLocation.parse("minecraft:empty")
+        );
+    }
+
+    private static MKWorkspacePieceDefinition legacyInsertFamilyPiece(String pieceName,
+                                                                      MKWorkspaceInsertFamilyDefinition family,
+                                                                      int variantIndex,
+                                                                      String pieceKind) {
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>();
+        tags.put(MKWorkspaceGridLayout.TAG_BASE_NAME, family.familyId());
+        tags.put(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, Integer.toString(variantIndex));
+        tags.put("workspace_piece_kind", pieceKind);
+        tags.put(MKWorkspacePieceGeometry.TAG_TOWER_PIECE_KIND,
+                family.kind() == MKWorkspaceInsertFamilyKind.FLOOR_LINK_HALLWAY ?
+                        MKWorkspacePieceGeometry.TOWER_PIECE_KIND_FLOOR_LINK_INSERT :
+                        "insert_socket_template");
+        tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID, family.familyId());
+        tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_KIND, family.kind().getSerializedName());
+        return new MKWorkspacePieceDefinition(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                pieceName,
+                "workspace.insert_family." + family.kind().getSerializedName(),
+                MKWorkspacePlannerId.of("legacy.insert_family." + family.familyId())
+                        .child(variantIndex == 0 ? "template" : "variant_" + variantIndex),
+                variantIndex,
+                new MKWorkspaceDimensions(family.width(), family.depth(), family.height(), family.height(),
+                        family.height(), 3, 3, 3),
+                1,
                 List.of(),
                 BlockPos.ZERO,
-                new BoundingBox(0, 0, 0, plannedPiece.interiorWidth() - 1,
-                        plannedPiece.interiorHeight() - 1, plannedPiece.interiorLength() - 1),
-                new BoundingBox(0, 0, 0, plannedPiece.interiorWidth() + 1,
-                        plannedPiece.interiorHeight() - 1, plannedPiece.interiorLength() + 1),
+                new BoundingBox(0, 0, 0, family.width() - 1, family.height() - 1, family.depth() - 1),
+                new BoundingBox(0, 0, 0, family.width() - 1, family.height() - 1, family.depth() - 1),
                 BlockPos.ZERO,
                 BlockPos.ZERO,
                 List.of(),
@@ -644,6 +977,20 @@ class MKStructureWorkspaceServicePreflightTest {
         return new MKWorkspaceTopologyProfile(RENAMED_BASE_PLANNER_ID, List.of(), TerrainAdjustment.BEARD_THIN);
     }
 
+    private static MKWorkspaceTopologyProfile insertFamilyCatalogProfile() {
+        return new MKWorkspaceTopologyProfile(INSERT_FAMILY_CATALOG_PLANNER_ID, List.of(), TerrainAdjustment.BEARD_THIN);
+    }
+
+    private static MKWorkspaceTopologyProfile connectorPoolCatalogProfile() {
+        return new MKWorkspaceTopologyProfile(CONNECTOR_POOL_CATALOG_PLANNER_ID, List.of(),
+                TerrainAdjustment.BEARD_THIN);
+    }
+
+    private static MKWorkspaceTopologyProfile flatPlatformCatalogProfile() {
+        return new MKWorkspaceTopologyProfile(FLAT_PLATFORM_CATALOG_PLANNER_ID, List.of(),
+                TerrainAdjustment.BEARD_THIN);
+    }
+
     private static final class RenamedBaseCatalogPlanner implements MKWorkspacePlanner {
         @Override
         public ResourceLocation plannerId() {
@@ -690,6 +1037,145 @@ class MKStructureWorkspaceServicePreflightTest {
                     tags,
                     MKWorkspacePlannerId.of("renamed.base").child(baseName)
             ));
+        }
+    }
+
+    private static final class InsertFamilyCatalogPlanner implements MKWorkspacePlanner {
+        @Override
+        public ResourceLocation plannerId() {
+            return INSERT_FAMILY_CATALOG_PLANNER_ID;
+        }
+
+        @Override
+        public MKWorkspaceTopologySchema schema() {
+            return new MKWorkspaceTopologySchema(INSERT_FAMILY_CATALOG_PLANNER_ID, List.of(), List.of(), List.of(),
+                    List.of());
+        }
+
+        @Override
+        public MKWorkspaceTopologyProfile createDefaultTopologyProfile() {
+            return insertFamilyCatalogProfile();
+        }
+
+        @Override
+        public List<MKWorkspaceRoomFamilyDefinition> createDefaultRoomFamilyDefinitions(
+                MKWorkspaceDimensions dimensions) {
+            return List.of();
+        }
+
+        @Override
+        public List<MKWorkspaceLinearRunFamilyDefinition> createDefaultLinearRunFamilyDefinitions(
+                MKWorkspaceDimensions dimensions, MKWorkspaceMaterialPalette palette) {
+            return List.of();
+        }
+
+        @Override
+        public List<MKPlannedPiece> createCanonicalPieces(MKStructureWorkspace workspace) {
+            return MKWorkspacePlanner.createCommonInsertFamilyTemplatePieces(workspace);
+        }
+    }
+
+    private static final class ConnectorPoolCatalogPlanner implements MKWorkspacePlanner {
+        @Override
+        public ResourceLocation plannerId() {
+            return CONNECTOR_POOL_CATALOG_PLANNER_ID;
+        }
+
+        @Override
+        public MKWorkspaceTopologySchema schema() {
+            return new MKWorkspaceTopologySchema(CONNECTOR_POOL_CATALOG_PLANNER_ID, List.of(), List.of(), List.of(),
+                    List.of());
+        }
+
+        @Override
+        public MKWorkspaceTopologyProfile createDefaultTopologyProfile() {
+            return connectorPoolCatalogProfile();
+        }
+
+        @Override
+        public List<MKWorkspaceRoomFamilyDefinition> createDefaultRoomFamilyDefinitions(
+                MKWorkspaceDimensions dimensions) {
+            return List.of();
+        }
+
+        @Override
+        public List<MKWorkspaceLinearRunFamilyDefinition> createDefaultLinearRunFamilyDefinitions(
+                MKWorkspaceDimensions dimensions, MKWorkspaceMaterialPalette palette) {
+            return List.of();
+        }
+
+        @Override
+        public List<MKPlannedPiece> createCanonicalPieces(MKStructureWorkspace workspace) {
+            String targetPool = workspace.insertFamilies().isEmpty() ? "old_route" : "new_route";
+            LinkedHashMap<String, String> tags = new LinkedHashMap<>();
+            tags.put(MKWorkspaceGridLayout.TAG_BASE_NAME, "pool_sensitive_room");
+            tags.put(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "0");
+            tags.put("workspace_piece_kind", "template");
+            MKWorkspaceStableSlotIdentity.apply(tags, "test_room", "stable.pool_sensitive_room");
+            return List.of(new MKPlannedPiece(
+                    "test.pool_sensitive_room",
+                    "pool_sensitive_room",
+                    MKWorkspaceDimensions.defaultDimensions().roomWidth(),
+                    MKWorkspaceDimensions.defaultDimensions().roomLength(),
+                    MKWorkspaceDimensions.defaultDimensions().roomHeight(),
+                    List.of(new MKPlannedConnector(MKConnectorRole.MAIN_FORWARD, Direction.NORTH, 3, 2,
+                            targetPool, null)),
+                    tags,
+                    MKWorkspacePlannerId.of("connector.pool_sensitive_room")
+            ));
+        }
+    }
+
+    private static final class FlatPlatformCatalogPlanner implements MKWorkspacePlanner {
+        @Override
+        public ResourceLocation plannerId() {
+            return FLAT_PLATFORM_CATALOG_PLANNER_ID;
+        }
+
+        @Override
+        public MKWorkspaceTopologySchema schema() {
+            return new MKWorkspaceTopologySchema(FLAT_PLATFORM_CATALOG_PLANNER_ID, List.of(), List.of(), List.of(),
+                    List.of());
+        }
+
+        @Override
+        public MKWorkspaceTopologyProfile createDefaultTopologyProfile() {
+            return flatPlatformCatalogProfile();
+        }
+
+        @Override
+        public List<MKWorkspaceRoomFamilyDefinition> createDefaultRoomFamilyDefinitions(
+                MKWorkspaceDimensions dimensions) {
+            return List.of();
+        }
+
+        @Override
+        public List<MKWorkspaceLinearRunFamilyDefinition> createDefaultLinearRunFamilyDefinitions(
+                MKWorkspaceDimensions dimensions, MKWorkspaceMaterialPalette palette) {
+            return List.of();
+        }
+
+        @Override
+        public List<MKPlannedPiece> createCanonicalPieces(MKStructureWorkspace workspace) {
+            LinkedHashMap<String, String> tags = new LinkedHashMap<>();
+            tags.put(MKWorkspaceGridLayout.TAG_BASE_NAME, "flat_platform_room");
+            tags.put(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "0");
+            tags.put("workspace_piece_kind", "template");
+            tags.put("workspace_flat_platform_kind", "spoke");
+            MKWorkspaceStableSlotIdentity.apply(tags, "test_room", "stable.flat_platform_room");
+            java.util.ArrayList<MKPlannedPiece> pieces = new java.util.ArrayList<>();
+            pieces.add(new MKPlannedPiece(
+                    "test.flat_platform_room",
+                    "flat_platform_room",
+                    15,
+                    11,
+                    30,
+                    List.of(),
+                    tags,
+                    MKWorkspacePlannerId.of("flat.platform_room")
+            ));
+            pieces.addAll(MKWorkspacePlanner.createCommonInsertFamilyTemplatePieces(workspace));
+            return List.copyOf(pieces);
         }
     }
 }

@@ -2,7 +2,6 @@ package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mkworkspace.network.packets.ExportWorkspacePiecesPacket;
-import com.chaosbuffalo.mkworkspace.network.packets.RequestWorkspacePreflightPacket;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceGeneratedLayerState;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceInvalidationReport;
@@ -42,11 +41,10 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         int contentHeight = screen.panelY() + screen.panelHeight() - buttonAreaHeight - 8 - contentTop;
         WorkspacePlannerLayout layout = addPlannerLayout(screen, root, contentTop, contentHeight);
         addPlannerOverview(screen, layout, workspace);
-        addTemplateAuthoringSummary(screen, layout.settingsContent(), workspace);
         finishPlannerLayout(screen, layout);
 
         int footerY = screen.panelY() + screen.panelHeight() - screen.bottomPadding() - screen.buttonHeight();
-        int[] footerWidths = {90, 150, 120, 150, 170};
+        int[] footerWidths = {90, 150, 120, 150, 160};
         int footerGap = 8;
         int footerWidth = footerWidths[0] + footerWidths[1] + footerWidths[2] + footerWidths[3] + footerWidths[4] +
                 (footerGap * 4);
@@ -89,11 +87,11 @@ public class WorkspaceManagePage extends WorkspacePageBase {
             return true;
         });
 
-        MKButton editTemplates = addFooterButton(root,
-                Component.translatable("mknpc.workspace.button.edit_template_settings"), footerWidths[4],
+        MKButton workspaceSettings = addFooterButton(root,
+                Component.literal("Workspace Settings"), footerWidths[4],
                 footerX + footerWidths[0] + footerWidths[1] + footerWidths[2] + footerWidths[3] +
                         (footerGap * 4), footerY);
-        editTemplates.setPressedCallback((button, mouseButton) -> {
+        workspaceSettings.setPressedCallback((button, mouseButton) -> {
             screen.pushState(WorkspaceFormPage.ID);
             screen.flagNeedSetup();
             return true;
@@ -122,6 +120,7 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         }
         WorkspacePlannerClientRegistry.getClientContributor(workspace.topologyProfile().plannerId())
                 .addWorkspaceOverviewLayout(screen, layout, screen.draftSession());
+        addTemplateAuthoringSummary(screen, layout.previewContent(), workspace);
         addLayerStateSummary(screen, content, workspace);
         addPreflightReport(screen, content, screen.preflight());
 
@@ -129,8 +128,7 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         content.addWidget(preflight);
         content.addConstraintToWidget(new CenterXConstraint(), preflight);
         preflight.setPressedCallback((button, mouseButton) -> {
-            PacketDistributor.sendToServer(new RequestWorkspacePreflightPacket(
-                    screen.draftSession().buildWorkspaceDraft(), screen.draftSession().acceptedRemaps()));
+            screen.draftSession().requestPreflight();
             return true;
         });
 
@@ -213,8 +211,7 @@ public class WorkspaceManagePage extends WorkspacePageBase {
                 content.addConstraintToWidget(new CenterXConstraint(), acceptAllSafe);
                 acceptAllSafe.setPressedCallback((button, mouseButton) -> {
                     screen.draftSession().acceptAllSafeRemaps(report);
-                    PacketDistributor.sendToServer(new RequestWorkspacePreflightPacket(
-                            screen.draftSession().buildWorkspaceDraft(), screen.draftSession().acceptedRemaps()));
+                    screen.draftSession().requestPreflight();
                     screen.flagNeedSetup();
                     return true;
                 });

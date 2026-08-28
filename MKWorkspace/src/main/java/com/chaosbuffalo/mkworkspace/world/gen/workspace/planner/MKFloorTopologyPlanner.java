@@ -15,8 +15,6 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MK
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceFoundationPolicy;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
-import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
-import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyKind;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
@@ -104,41 +102,8 @@ public class MKFloorTopologyPlanner {
             }
             pieces.addAll(createFloorLinearRunPieces(workspace, settings, context));
         }
-        pieces.addAll(createInsertFamilyTemplatePieces(workspace));
+        pieces.addAll(MKWorkspacePlanner.createCommonInsertFamilyTemplatePieces(workspace));
         return List.copyOf(pieces);
-    }
-
-    private List<MKPlannedPiece> createInsertFamilyTemplatePieces(MKStructureWorkspace workspace) {
-        return workspace.insertFamilies().stream()
-                .filter(insertFamily -> insertFamily.kind() == MKWorkspaceInsertFamilyKind.FLOOR_LINK_HALLWAY)
-                .map(this::createInsertFamilyTemplatePiece)
-                .toList();
-    }
-
-    private MKPlannedPiece createInsertFamilyTemplatePiece(MKWorkspaceInsertFamilyDefinition insertFamily) {
-        LinkedHashMap<String, String> tags = new LinkedHashMap<>();
-        String slotId = "workspace.insert_family." + insertFamily.kind().getSerializedName();
-        tags.put("topology_role", slotId);
-        tags.put("workspace_topology_slot_id", slotId);
-        tags.put("workspace_topology_role_id", slotId);
-        tags.put("tower_piece_kind", "floor_link_insert");
-        tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID, insertFamily.familyId());
-        tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_KIND,
-                insertFamily.kind().getSerializedName());
-        MKWorkspaceStableSlotIdentity.apply(tags, "floor_insert_family",
-                "floor.insert_family." + insertFamily.familyId());
-        tags.put("workspace_insert_family_width", Integer.toString(insertFamily.width()));
-        tags.put("workspace_insert_family_height", Integer.toString(insertFamily.height()));
-        tags.put("workspace_insert_family_depth", Integer.toString(insertFamily.depth()));
-        return new MKPlannedPiece(
-                slotId,
-                insertFamily.familyId(),
-                insertFamily.width(),
-                insertFamily.depth(),
-                insertFamily.height(),
-                List.of(),
-                tags
-        );
     }
 
     private List<MKPlannedPiece> createFloorLinearRunPieces(MKStructureWorkspace workspace,

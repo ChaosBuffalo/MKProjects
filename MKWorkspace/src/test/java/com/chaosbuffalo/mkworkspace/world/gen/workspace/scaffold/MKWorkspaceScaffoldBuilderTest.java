@@ -15,10 +15,13 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MKWorkspaceScaffoldBuilderTest {
     @Test
@@ -153,6 +156,44 @@ class MKWorkspaceScaffoldBuilderTest {
         assertEquals(42, clearBounds.maxX());
         assertEquals(92, clearBounds.maxY());
         assertEquals(52, clearBounds.maxZ());
+    }
+
+    @Test
+    void existingPieceContentClearPositionsUseExactPreviewBoundsAndSidecars() {
+        MKWorkspaceScaffoldBuilder builder = new MKWorkspaceScaffoldBuilder();
+        MKWorkspacePieceDefinition piece = new MKWorkspacePieceDefinition(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "piece_a_1",
+                "test.piece_a_1",
+                1,
+                MKWorkspaceDimensions.defaultDimensions(),
+                1,
+                List.of(),
+                new BlockPos(12, 64, 12),
+                new BoundingBox(12, 64, 12, 14, 66, 14),
+                new BoundingBox(10, 63, 10, 16, 67, 16),
+                new BlockPos(9, 64, 13),
+                new BlockPos(8, 64, 13),
+                List.of(new BlockPos(17, 65, 13)),
+                List.of(new BlockPos(12, 62, 12)),
+                Map.of()
+        );
+
+        Set<BlockPos> positions = builder.collectExistingPieceContentPositions(List.of(piece));
+
+        assertTrue(positions.contains(new BlockPos(10, 63, 10)));
+        assertTrue(positions.contains(new BlockPos(16, 67, 16)));
+        assertTrue(positions.contains(piece.structureBlockPos()));
+        assertTrue(positions.contains(piece.signPos()));
+        assertTrue(positions.contains(piece.markerPositions().getFirst()));
+        assertTrue(positions.contains(piece.generatedStairPositions().getFirst()));
+        assertFalse(positions.contains(new BlockPos(9, 63, 10)));
+        assertFalse(positions.contains(new BlockPos(10, 62, 10)));
+        assertFalse(positions.contains(new BlockPos(10, 63, 9)));
+        assertFalse(positions.contains(new BlockPos(17, 67, 16)));
+        assertFalse(positions.contains(new BlockPos(16, 68, 16)));
+        assertFalse(positions.contains(new BlockPos(16, 67, 17)));
     }
 
     @Test

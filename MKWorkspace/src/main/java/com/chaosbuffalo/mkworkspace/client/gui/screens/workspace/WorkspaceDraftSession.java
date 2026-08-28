@@ -18,6 +18,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyKind;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceFloorTopologyInvalidationAnalyzer;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceInvalidationReport;
@@ -39,6 +40,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceTopologyPaletteMerge;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVariantAddition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePlannerScopeSettings;
@@ -58,6 +60,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.IntStream;
@@ -65,13 +68,20 @@ import java.util.stream.IntStream;
 public class WorkspaceDraftSession {
     private final MKWorkspaceScreen screen;
     private Draft draft;
+    private Draft cleanDraft;
     private int selectedFamilyIndex;
     private int selectedFamilyExitIndex;
     private int selectedOpeningIndex;
     private int selectedLinearRunIndex;
     private int selectedInsertFamilyIndex;
+    private String selectedTemplateFamilyId;
+    private String selectedTemplateFamilyTemplateKey;
+    private String selectedTemplateFamilyEditId;
     private boolean dirty;
+    private boolean workspaceSettingsDirty;
     private List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps = List.of();
+    private List<MKWorkspaceVariantAddition> pendingAddedVariants = List.of();
+    private List<UUID> pendingDeletedVariantPieceIds = List.of();
     final WorkspaceDraftViewState viewState = new WorkspaceDraftViewState();
     private final MKWorkspaceFloorTopologyInvalidationAnalyzer floorTopologyInvalidationAnalyzer =
             new MKWorkspaceFloorTopologyInvalidationAnalyzer();
@@ -154,22 +164,53 @@ public class WorkspaceDraftSession {
         return dirty;
     }
 
+    boolean workspaceSettingsDirty() {
+        return workspaceSettingsDirty;
+    }
+
     public void copyViewStateFrom(WorkspaceDraftSession source) {
         if (source.draft != null) {
             draft = source.copyDraft();
         }
+        cleanDraft = source.cleanDraft == null ? null : copyDraft(source.cleanDraft);
         dirty = source.dirty;
+        workspaceSettingsDirty = source.workspaceSettingsDirty;
+        selectedTemplateFamilyId = source.selectedTemplateFamilyId;
+        selectedTemplateFamilyTemplateKey = source.selectedTemplateFamilyTemplateKey;
+        selectedTemplateFamilyEditId = source.selectedTemplateFamilyEditId;
         viewState.copyFrom(source.viewState);
         acceptedRemaps = List.copyOf(source.acceptedRemaps);
+        pendingAddedVariants = List.copyOf(source.pendingAddedVariants);
+        pendingDeletedVariantPieceIds = List.copyOf(source.pendingDeletedVariantPieceIds);
     }
 
     public void markDirty() {
+        dirty = true;
+        workspaceSettingsDirty = true;
+        acceptedRemaps = List.of();
+        reconcileNoOpWorkspaceSettingsDirty();
+    }
+
+    private void markVariantMutationDirty() {
         dirty = true;
         acceptedRemaps = List.of();
     }
 
     public void clearDirty() {
         dirty = false;
+        workspaceSettingsDirty = false;
+        pendingAddedVariants = List.of();
+        pendingDeletedVariantPieceIds = List.of();
+        cleanDraft = draft == null ? null : copyDraft();
+    }
+
+    private void reconcileNoOpWorkspaceSettingsDirty() {
+        if (workspaceSettingsDirty && cleanDraft != null && draftSettingsEqual(draft(), cleanDraft)) {
+            workspaceSettingsDirty = false;
+        }
+        if (!workspaceSettingsDirty && !hasPendingVariantMutations()) {
+            dirty = false;
+        }
     }
 
     public int acceptAllSafeRemaps(MKWorkspaceInvalidationReport report) {
@@ -187,9 +228,60 @@ public class WorkspaceDraftSession {
         return List.copyOf(acceptedRemaps);
     }
 
+    public List<UUID> pendingDeletedVariantPieceIds() {
+        return List.copyOf(pendingDeletedVariantPieceIds);
+    }
+
+    public List<MKWorkspaceVariantAddition> pendingAddedVariants() {
+        return List.copyOf(pendingAddedVariants);
+    }
+
+    public void stageVariantAddition(String basePieceName) {
+        stageVariantAddition(basePieceName, null);
+    }
+
+    public void stageVariantAddition(String basePieceName, String sourcePieceName) {
+        ArrayList<MKWorkspaceVariantAddition> updated = new ArrayList<>(pendingAddedVariants);
+        updated.add(new MKWorkspaceVariantAddition(basePieceName, sourcePieceName));
+        pendingAddedVariants = List.copyOf(updated);
+        markVariantMutationDirty();
+    }
+
+    public void stageVariantDeletion(UUID pieceId) {
+        if (!pendingDeletedVariantPieceIds.contains(pieceId)) {
+            ArrayList<UUID> updated = new ArrayList<>(pendingDeletedVariantPieceIds);
+            updated.add(pieceId);
+            pendingDeletedVariantPieceIds = List.copyOf(updated);
+        }
+        markVariantMutationDirty();
+    }
+
+    public List<MKWorkspacePieceDefinition> filterPendingDeletedVariants(List<MKWorkspacePieceDefinition> pieces) {
+        if (pendingDeletedVariantPieceIds.isEmpty()) {
+            return pieces;
+        }
+        return pieces.stream()
+                .filter(piece -> !pendingDeletedVariantPieceIds.contains(piece.pieceId()))
+                .toList();
+    }
+
+    private boolean hasPendingVariantMutations() {
+        return !pendingAddedVariants.isEmpty() || !pendingDeletedVariantPieceIds.isEmpty();
+    }
+
+    private boolean variantMutationOnly() {
+        return hasPendingVariantMutations() && !workspaceSettingsDirty && screen.workspace() != null;
+    }
+
+    MKStructureWorkspace workspaceForSubmit() {
+        if (variantMutationOnly()) {
+            return screen.workspace();
+        }
+        return buildWorkspaceDraft();
+    }
+
     public void submit() {
-        snapDraftVerticalAccess();
-        MKStructureWorkspace draft = buildWorkspaceDraft();
+        MKStructureWorkspace draft = workspaceForSubmit();
         if (requiresRegenerateConfirmation()) {
             requestPreflight(draft);
             screen.pushState("generate_confirm");
@@ -200,7 +292,11 @@ public class WorkspaceDraftSession {
     }
 
     public void send() {
-        sendUpdate(buildWorkspaceDraft());
+        sendUpdate(workspaceForSubmit());
+    }
+
+    public void requestPreflight() {
+        requestPreflight(workspaceForSubmit());
     }
 
     public String namespace() {
@@ -433,11 +529,40 @@ public class WorkspaceDraftSession {
         selectedInsertFamilyIndex = index;
     }
 
+    public String selectedTemplateFamilyId() {
+        return selectedTemplateFamilyId;
+    }
+
+    public void selectedTemplateFamilyId(String value) {
+        selectedTemplateFamilyId = value;
+    }
+
+    public String selectedTemplateFamilyTemplateKey() {
+        return selectedTemplateFamilyTemplateKey;
+    }
+
+    public void selectedTemplateFamilyTemplateKey(String value) {
+        selectedTemplateFamilyTemplateKey = value;
+    }
+
+    public String selectedTemplateFamilyEditId() {
+        return selectedTemplateFamilyEditId;
+    }
+
+    public void selectedTemplateFamilyEditId(String value) {
+        selectedTemplateFamilyEditId = value;
+    }
+
     public List<MKWorkspaceRoomFamilyDefinition> familyDefinitions() {
         return List.copyOf(draft().familyDefinitions);
     }
 
     public int addFamilyDefinition(MKWorkspaceSlotSchema slot) {
+        Optional<Integer> handledByPlanner = plannerAdapter().addFamilyDefinition(this, slot);
+        if (handledByPlanner.isPresent()) {
+            markDirty();
+            return handledByPlanner.get();
+        }
         Optional<MKWorkspaceRoomFamilyDefinition> source = draft().familyDefinitions.stream()
                 .filter(family -> family.topologySlotId().equals(slot.slotId()))
                 .findFirst()
@@ -450,6 +575,45 @@ public class WorkspaceDraftSession {
         draft().familyDefinitions = List.copyOf(updated);
         markDirty();
         return draft().familyDefinitions.size() - 1;
+    }
+
+    public Optional<TemplateFamilyCreationSelection> addFamilyDefinitionFromPiece(
+            MKWorkspacePieceDefinition sourcePiece) {
+        String insertFamilyId = sourcePiece.tags().get(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID);
+        if (insertFamilyId != null && !insertFamilyId.isBlank()) {
+            int index = addInsertFamilyFromPiece(sourcePiece, insertFamilyId);
+            return Optional.of(new TemplateFamilyCreationSelection("insert:" + index, "insert:" + index));
+        }
+
+        Optional<MKWorkspaceSlotSchema> slot = topologySlot(topologySlotIdForSourcePiece(sourcePiece));
+        if (slot.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Optional<Integer> handledByPlanner = plannerAdapter().addFamilyDefinitionFromPiece(this, slot.get(),
+                sourcePiece);
+        int familyIndex;
+        if (handledByPlanner.isPresent()) {
+            familyIndex = handledByPlanner.get();
+            if (familyIndex >= 0 && familyIndex < draft().familyDefinitions.size()) {
+                applyTemplateCloneSourceToFamily(familyIndex, sourcePiece);
+            }
+            markDirty();
+        } else {
+            MKWorkspaceRoomFamilyDefinition source = sourceFamilyForPiece(sourcePiece, slot.get().slotId())
+                    .orElseGet(() -> defaultFamilyForTopologySlot(slot.get()));
+            MKWorkspaceRoomFamilyDefinition family = copyFamilyForTopologySlot(source, slot.get().slotId(),
+                    sourcePiece);
+            java.util.ArrayList<MKWorkspaceRoomFamilyDefinition> updated =
+                    new java.util.ArrayList<>(draft().familyDefinitions);
+            updated.add(family);
+            draft().familyDefinitions = List.copyOf(updated);
+            familyIndex = draft().familyDefinitions.size() - 1;
+            markDirty();
+        }
+
+        return Optional.of(new TemplateFamilyCreationSelection("slot:" + slot.get().slotId(),
+                "family:" + familyIndex));
     }
 
     public List<MKHorizontalOpeningProfile> openingProfiles() {
@@ -538,6 +702,49 @@ public class WorkspaceDraftSession {
         return draft().insertFamilies.size() - 1;
     }
 
+    private int addInsertFamilyFromPiece(MKWorkspacePieceDefinition sourcePiece, String sourceFamilyId) {
+        MKWorkspaceInsertFamilyDefinition sourceFamily = draft().insertFamilies.stream()
+                .filter(candidate -> sourceFamilyId.equals(candidate.familyId()))
+                .findFirst()
+                .orElseGet(() -> new MKWorkspaceInsertFamilyDefinition(
+                        sourceFamilyId,
+                        insertFamilyKindFromSourcePiece(sourcePiece),
+                        sourcePiece.effectiveDimensions().roomWidth(),
+                        sourcePiece.effectiveDimensions().roomHeight(),
+                        sourcePiece.effectiveDimensions().roomLength()
+                ));
+        MKWorkspaceInsertFamilyDefinition copiedFamily = new MKWorkspaceInsertFamilyDefinition(
+                nextUniqueInsertFamilyId(sourceFamilyId),
+                sourceFamily.kind(),
+                sourcePiece.effectiveDimensions().roomWidth(),
+                sourcePiece.effectiveDimensions().roomHeight(),
+                sourcePiece.effectiveDimensions().roomLength(),
+                sourceFamily.attachmentFace(),
+                sourceFamily.faceUOffset(),
+                sourceFamily.faceVOffset(),
+                sourceFamily.templateJigsawFinalState(),
+                sourcePiece.pieceName()
+        );
+        java.util.ArrayList<MKWorkspaceInsertFamilyDefinition> updated =
+                new java.util.ArrayList<>(draft().insertFamilies);
+        updated.add(copiedFamily);
+        draft().insertFamilies = List.copyOf(updated);
+        markDirty();
+        return draft().insertFamilies.size() - 1;
+    }
+
+    private MKWorkspaceInsertFamilyKind insertFamilyKindFromSourcePiece(MKWorkspacePieceDefinition sourcePiece) {
+        String kindName = sourcePiece.tags().get(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_KIND);
+        if (kindName != null) {
+            for (MKWorkspaceInsertFamilyKind kind : MKWorkspaceInsertFamilyKind.values()) {
+                if (kind.getSerializedName().equals(kindName)) {
+                    return kind.canonical();
+                }
+            }
+        }
+        return MKWorkspaceInsertFamilyKind.FLOOR_LINK_HALLWAY;
+    }
+
     public void replaceLinearRunFamily(int index, MKWorkspaceLinearRunFamilyDefinition updatedFamily) {
         java.util.ArrayList<MKWorkspaceLinearRunFamilyDefinition> updated =
                 new java.util.ArrayList<>(draft().linearRunFamilies);
@@ -577,6 +784,9 @@ public class WorkspaceDraftSession {
         draft().linearRunFamilies = List.copyOf(updated);
         markDirty();
         return draft().linearRunFamilies.size() - 1;
+    }
+
+    public record TemplateFamilyCreationSelection(String selectedFamilyId, String editId) {
     }
 
     public MKWorkspaceMaterialPalette resolvePlannerScopePalette(String scopeId) {
@@ -628,37 +838,44 @@ public class WorkspaceDraftSession {
     }
 
     public MKStructureWorkspace buildWorkspaceDraft() {
-        snapDraftVerticalAccess();
-        MKWorkspaceDimensions dimensions = legacyDimensionsFromTopologySettings();
-        MKWorkspaceMaterialPalette palette = palette();
-        MKWorkspaceStairAuthoringConfig stairConfig = makeStairConfig();
-        MKWorkspaceVerticalAccessSpec verticalAccessSpec = new MKWorkspaceVerticalAccessSpec(draft().shaftSize,
-                draft().verticalAccessPlacement, stairConfig);
-        long now = System.currentTimeMillis();
-        return new MKStructureWorkspace(
-                UUID.randomUUID(),
-                screen.anchor(),
-                draft().namespace.trim(),
-                draft().structureName.trim(),
-                draft().topologyProfile,
-                dimensions,
-                palette,
-                stairConfig,
-                draft().verticalAccessPlacement,
-                draft().shellMargin,
-                draft().verticalShellMargin,
-                draft().exteriorAirMargin,
-                draft().previewMargin,
-                verticalAccessSpec,
-                draft().familyDefinitions,
-                draft().openingProfiles,
-                draft().linearRunFamilies,
-                draft().insertFamilies,
-                now,
-                now,
-                List.of(),
-                List.of()
-        );
+        Draft previousDraft = draft();
+        Draft buildDraft = copyDraft(previousDraft);
+        draft = buildDraft;
+        try {
+            snapDraftVerticalAccess();
+            MKWorkspaceDimensions dimensions = legacyDimensionsFromTopologySettings();
+            MKWorkspaceMaterialPalette palette = palette();
+            MKWorkspaceStairAuthoringConfig stairConfig = makeStairConfig();
+            MKWorkspaceVerticalAccessSpec verticalAccessSpec = new MKWorkspaceVerticalAccessSpec(draft().shaftSize,
+                    draft().verticalAccessPlacement, stairConfig);
+            long now = System.currentTimeMillis();
+            return new MKStructureWorkspace(
+                    UUID.randomUUID(),
+                    screen.anchor(),
+                    draft().namespace.trim(),
+                    draft().structureName.trim(),
+                    draft().topologyProfile,
+                    dimensions,
+                    palette,
+                    stairConfig,
+                    draft().verticalAccessPlacement,
+                    draft().shellMargin,
+                    draft().verticalShellMargin,
+                    draft().exteriorAirMargin,
+                    draft().previewMargin,
+                    verticalAccessSpec,
+                    draft().familyDefinitions,
+                    draft().openingProfiles,
+                    draft().linearRunFamilies,
+                    draft().insertFamilies,
+                    now,
+                    now,
+                    List.of(),
+                    List.of()
+            );
+        } finally {
+            draft = previousDraft;
+        }
     }
 
     public void snapDraftVerticalAccess() {
@@ -740,6 +957,10 @@ public class WorkspaceDraftSession {
     }
 
     public void removeFamilyDefinition(int index) {
+        if (plannerAdapter().removeFamilyDefinition(this, index)) {
+            markDirty();
+            return;
+        }
         java.util.ArrayList<MKWorkspaceRoomFamilyDefinition> updated = new java.util.ArrayList<>(draft().familyDefinitions);
         updated.remove(index);
         draft().familyDefinitions = List.copyOf(updated);
@@ -869,19 +1090,22 @@ public class WorkspaceDraftSession {
     }
 
     private void sendFullRegenerate(MKStructureWorkspace draft) {
-        PacketDistributor.sendToServer(new CreateWorkspacePacket(draft, true, true, List.of()));
+        PacketDistributor.sendToServer(new CreateWorkspacePacket(draft, true, true, List.of(),
+                pendingAddedVariants, pendingDeletedVariantPieceIds, workspaceSettingsDirty));
         clearDirty();
         acceptedRemaps = List.of();
     }
 
     private void sendUpdate(MKStructureWorkspace draft) {
-        PacketDistributor.sendToServer(new CreateWorkspacePacket(draft, false, false, acceptedRemaps));
+        PacketDistributor.sendToServer(new CreateWorkspacePacket(draft, false, false, acceptedRemaps,
+                pendingAddedVariants, pendingDeletedVariantPieceIds, workspaceSettingsDirty));
         clearDirty();
         acceptedRemaps = List.of();
     }
 
     private void requestPreflight(MKStructureWorkspace draft) {
-        PacketDistributor.sendToServer(new RequestWorkspacePreflightPacket(draft, acceptedRemaps));
+        PacketDistributor.sendToServer(new RequestWorkspacePreflightPacket(draft, acceptedRemaps,
+                pendingAddedVariants, pendingDeletedVariantPieceIds, workspaceSettingsDirty));
     }
 
     private boolean requiresRegenerateConfirmation() {
@@ -1335,9 +1559,11 @@ public class WorkspaceDraftSession {
                         .toList(),
                 topVoidMargin,
                 bottomVoidMargin,
+                family.sourceTopologySlotId(),
+                family.settingsTopologySlotId(),
                 family.foundationPolicyOverride(),
                 family.paletteOverride()
-        );
+        ).withTemplateCloneSourcePieceName(family.templateCloneSourcePieceName());
     }
 
     private boolean familyAllowsTopVoidMargin(MKWorkspaceRoomFamilyDefinition family) {
@@ -1521,16 +1747,102 @@ public class WorkspaceDraftSession {
                         verticalStackIdForTopologySlot(topologySlotId)
                                 .orElseGet(() -> valueOrDefault(existing.verticalAccessGroupId(), topologySlotId)) : "",
                 existing.supportsVerticalAccess(),
-                existing.roomWidth(),
-                existing.roomLength(),
-                existing.roomHeight(),
+                resolvedFamilyRoomWidth(existing),
+                resolvedFamilyRoomLength(existing),
+                resolvedFamilyRoomHeight(existing),
                 existing.horizontalExtrusionMode(),
                 existing.horizontalExits(),
                 existing.topVoidMargin(),
                 existing.bottomVoidMargin(),
+                existing.sourceTopologySlotIdOrSelf(),
+                existing.settingsTopologySlotIdOrSelf(),
                 existing.foundationPolicyOverride(),
-                null
+                existing.paletteOverride()
         );
+    }
+
+    private MKWorkspaceRoomFamilyDefinition copyFamilyForTopologySlot(MKWorkspaceRoomFamilyDefinition existing,
+                                                                       String topologySlotId,
+                                                                       MKWorkspacePieceDefinition sourcePiece) {
+        return MKWorkspaceRoomFamilyDefinition.forTopologySlot(
+                nextUniqueFamilyBaseName(sourcePieceBasePrefix(sourcePiece)),
+                topologySlotMetadata(topologySlotId, existing.slotMetadata()),
+                existing.supportsVerticalAccess() ?
+                        verticalStackIdForTopologySlot(topologySlotId)
+                                .orElseGet(() -> valueOrDefault(existing.verticalAccessGroupId(), topologySlotId)) : "",
+                existing.supportsVerticalAccess(),
+                sourcePiece.effectiveDimensions().roomWidth(),
+                sourcePiece.effectiveDimensions().roomLength(),
+                sourcePiece.effectiveDimensions().roomHeight(),
+                existing.horizontalExtrusionMode(),
+                existing.horizontalExits(),
+                existing.topVoidMargin(),
+                existing.bottomVoidMargin(),
+                existing.sourceTopologySlotIdOrSelf(),
+                existing.settingsTopologySlotIdOrSelf(),
+                existing.foundationPolicyOverride(),
+                existing.paletteOverride()
+        ).withTemplateCloneSourcePieceName(sourcePiece.pieceName());
+    }
+
+    private void applyTemplateCloneSourceToFamily(int familyIndex, MKWorkspacePieceDefinition sourcePiece) {
+        MKWorkspaceRoomFamilyDefinition existing = draft().familyDefinitions.get(familyIndex);
+        MKWorkspaceRoomFamilyDefinition updated = MKWorkspaceRoomFamilyDefinition.forTopologySlot(
+                existing.baseName(),
+                existing.slotMetadata(),
+                existing.verticalAccessGroupId(),
+                existing.supportsVerticalAccess(),
+                sourcePiece.effectiveDimensions().roomWidth(),
+                sourcePiece.effectiveDimensions().roomLength(),
+                sourcePiece.effectiveDimensions().roomHeight(),
+                existing.horizontalExtrusionMode(),
+                existing.horizontalExits(),
+                existing.topVoidMargin(),
+                existing.bottomVoidMargin(),
+                existing.sourceTopologySlotIdOrSelf(),
+                existing.settingsTopologySlotIdOrSelf(),
+                existing.foundationPolicyOverride(),
+                existing.paletteOverride()
+        ).withTemplateCloneSourcePieceName(sourcePiece.pieceName());
+        java.util.ArrayList<MKWorkspaceRoomFamilyDefinition> updatedFamilies =
+                new java.util.ArrayList<>(draft().familyDefinitions);
+        updatedFamilies.set(familyIndex, normalizeFamilyDefinition(updated));
+        draft().familyDefinitions = List.copyOf(updatedFamilies);
+    }
+
+    private Optional<MKWorkspaceRoomFamilyDefinition> sourceFamilyForPiece(MKWorkspacePieceDefinition sourcePiece,
+                                                                           String topologySlotId) {
+        String familyId = sourcePiece.tags().get("workspace_family_id");
+        if (familyId != null && !familyId.isBlank()) {
+            Optional<MKWorkspaceRoomFamilyDefinition> family = draft().familyDefinitions.stream()
+                    .filter(candidate -> familyId.equals(candidate.baseName()))
+                    .findFirst();
+            if (family.isPresent()) {
+                return family;
+            }
+        }
+        String baseName = sourcePieceBasePrefix(sourcePiece);
+        return draft().familyDefinitions.stream()
+                .filter(candidate -> topologySlotId.equals(candidate.topologySlotId()))
+                .filter(candidate -> candidate.baseName().equals(baseName))
+                .findFirst()
+                .or(() -> draft().familyDefinitions.stream()
+                        .filter(candidate -> topologySlotId.equals(candidate.topologySlotId()))
+                        .findFirst())
+                .or(() -> plannerAdapter().sharedFamilySource(this, topologySlotId));
+    }
+
+    private String topologySlotIdForSourcePiece(MKWorkspacePieceDefinition sourcePiece) {
+        String sourceTopologySlotId = sourcePiece.tags().get("workspace_source_topology_slot_id");
+        if (sourceTopologySlotId != null && !sourceTopologySlotId.isBlank()) {
+            return sourceTopologySlotId;
+        }
+        String topologySlotId = sourcePiece.tags().get("workspace_topology_slot_id");
+        return topologySlotId == null ? "" : topologySlotId;
+    }
+
+    private String sourcePieceBasePrefix(MKWorkspacePieceDefinition sourcePiece) {
+        return sourcePiece.tags().getOrDefault("workspace_base_name", sourcePiece.pieceName());
     }
 
     MKWorkspaceRoomFamilyDefinition defaultFamilyForTopologySlot(MKWorkspaceSlotSchema slot) {
@@ -1648,9 +1960,14 @@ public class WorkspaceDraftSession {
     }
 
     private String nextUniqueFamilyBaseName() {
+        return nextUniqueFamilyBaseName("family");
+    }
+
+    public String nextUniqueFamilyBaseName(String prefix) {
+        String normalizedPrefix = normalizeIdentifierPrefix(prefix, "family");
         int index = 1;
         while (true) {
-            String candidate = "family_" + index;
+            String candidate = normalizedPrefix + "_" + index;
             boolean used = draft().familyDefinitions.stream().anyMatch(family -> family.baseName().equals(candidate));
             if (!used) {
                 return candidate;
@@ -1684,15 +2001,27 @@ public class WorkspaceDraftSession {
     }
 
     private String nextUniqueInsertFamilyId() {
+        return nextUniqueInsertFamilyId("insert_family");
+    }
+
+    private String nextUniqueInsertFamilyId(String prefix) {
+        String normalizedPrefix = normalizeIdentifierPrefix(prefix, "insert_family");
         int index = 1;
         while (true) {
-            String candidate = "insert_family_" + index;
+            String candidate = normalizedPrefix + "_" + index;
             boolean used = draft().insertFamilies.stream().anyMatch(insertFamily -> insertFamily.familyId().equals(candidate));
             if (!used) {
                 return candidate;
             }
             index++;
         }
+    }
+
+    private String normalizeIdentifierPrefix(String value, String fallback) {
+        String normalized = value == null || value.isBlank() ? fallback : value.trim();
+        normalized = normalized.toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9_]+", "_");
+        normalized = normalized.replaceAll("_+", "_").replaceAll("^_+|_+$", "");
+        return normalized.isBlank() ? fallback : normalized;
     }
 
     public MKWorkspaceRoomFamilyDefinition copyFamilyDefinition(MKWorkspaceRoomFamilyDefinition family,
@@ -1711,7 +2040,7 @@ public class WorkspaceDraftSession {
                 family.bottomVoidMargin(),
                 family.foundationPolicyOverride(),
                 paletteOverride.orElse(null)
-        );
+        ).withTemplateCloneSourcePieceName(family.templateCloneSourcePieceName());
     }
 
     public MKWorkspaceLinearRunFamilyDefinition copyLinearRunFamily(MKWorkspaceLinearRunFamilyDefinition linearRun,
@@ -1751,7 +2080,7 @@ public class WorkspaceDraftSession {
                 updated.bottomVoidMargin(),
                 existing.foundationPolicyOverride(),
                 updated.paletteOverride()
-        );
+        ).withTemplateCloneSourcePieceName(existing.templateCloneSourcePieceName());
     }
 
     private int makeOdd(int value) {
@@ -1790,25 +2119,49 @@ public class WorkspaceDraftSession {
     }
 
     private Draft copyDraft() {
+        return copyDraft(draft);
+    }
+
+    private Draft copyDraft(Draft source) {
         Draft copy = new Draft();
-        copy.namespace = draft.namespace;
-        copy.structureName = draft.structureName;
-        copy.topologyProfile = draft.topologyProfile;
-        copy.shaftSize = draft.shaftSize;
-        copy.verticalAccessPlacement = draft.verticalAccessPlacement;
-        copy.shellMargin = draft.shellMargin;
-        copy.verticalShellMargin = draft.verticalShellMargin;
-        copy.exteriorAirMargin = draft.exteriorAirMargin;
-        copy.previewMargin = draft.previewMargin;
-        copy.stairMode = draft.stairMode;
-        copy.stairRiseType = draft.stairRiseType;
-        copy.stairWidth = draft.stairWidth;
-        copy.palette = draft.palette;
-        copy.familyDefinitions = List.copyOf(draft.familyDefinitions);
-        copy.openingProfiles = List.copyOf(draft.openingProfiles);
-        copy.linearRunFamilies = List.copyOf(draft.linearRunFamilies);
-        copy.insertFamilies = List.copyOf(draft.insertFamilies);
+        copy.namespace = source.namespace;
+        copy.structureName = source.structureName;
+        copy.topologyProfile = source.topologyProfile;
+        copy.shaftSize = source.shaftSize;
+        copy.verticalAccessPlacement = source.verticalAccessPlacement;
+        copy.shellMargin = source.shellMargin;
+        copy.verticalShellMargin = source.verticalShellMargin;
+        copy.exteriorAirMargin = source.exteriorAirMargin;
+        copy.previewMargin = source.previewMargin;
+        copy.stairMode = source.stairMode;
+        copy.stairRiseType = source.stairRiseType;
+        copy.stairWidth = source.stairWidth;
+        copy.palette = source.palette;
+        copy.familyDefinitions = List.copyOf(source.familyDefinitions);
+        copy.openingProfiles = List.copyOf(source.openingProfiles);
+        copy.linearRunFamilies = List.copyOf(source.linearRunFamilies);
+        copy.insertFamilies = List.copyOf(source.insertFamilies);
         return copy;
+    }
+
+    private boolean draftSettingsEqual(Draft first, Draft second) {
+        return Objects.equals(first.namespace, second.namespace) &&
+                Objects.equals(first.structureName, second.structureName) &&
+                Objects.equals(first.topologyProfile, second.topologyProfile) &&
+                first.shaftSize == second.shaftSize &&
+                first.verticalAccessPlacement == second.verticalAccessPlacement &&
+                first.shellMargin == second.shellMargin &&
+                first.verticalShellMargin == second.verticalShellMargin &&
+                first.exteriorAirMargin == second.exteriorAirMargin &&
+                first.previewMargin == second.previewMargin &&
+                first.stairMode == second.stairMode &&
+                first.stairRiseType == second.stairRiseType &&
+                first.stairWidth == second.stairWidth &&
+                Objects.equals(first.palette, second.palette) &&
+                Objects.equals(first.familyDefinitions, second.familyDefinitions) &&
+                Objects.equals(first.openingProfiles, second.openingProfiles) &&
+                Objects.equals(first.linearRunFamilies, second.linearRunFamilies) &&
+                Objects.equals(first.insertFamilies, second.insertFamilies);
     }
 
     public static class Draft {

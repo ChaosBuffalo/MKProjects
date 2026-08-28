@@ -5,21 +5,26 @@ import com.chaosbuffalo.mkworkspace.network.packets.AddWorkspaceVariantPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.AddWorkspaceVariantsForAllPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.ClearWorkspaceStairsPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.CreateWorkspacePacket;
+import com.chaosbuffalo.mkworkspace.network.packets.CreateWorkspaceInsertSocketFamilyPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.DeleteWorkspacePacket;
+import com.chaosbuffalo.mkworkspace.network.packets.DeleteWorkspaceVariantPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.ExportWorkspacePiecesPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.GenerateAllWorkspaceStairsPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.GenerateWorkspacePacket;
 import com.chaosbuffalo.mkworkspace.network.packets.GenerateWorkspaceSamplePreviewPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.GenerateWorkspaceStairsPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.LoadWorkspaceFromManifestPacket;
+import com.chaosbuffalo.mkworkspace.network.packets.OpenWorkspaceInsertSocketScreenPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.OpenWorkspaceScreenPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.RequestWorkspacePieceChunkPacket;
+import com.chaosbuffalo.mkworkspace.network.packets.RequestWorkspaceInsertOverlayPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.RequestWorkspacePreflightPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.RestoreWorkspaceBackupPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.SetWorkspaceLayerLockPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.SwapWorkspaceBlockPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.TeleportToWorkspacePiecePacket;
 import com.chaosbuffalo.mkworkspace.network.packets.WorkspacePieceChunkPacket;
+import com.chaosbuffalo.mkworkspace.network.packets.WorkspaceInsertOverlayPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.WorkspacePreflightReportPacket;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -38,10 +43,20 @@ public class MKWorkspacePacketHandler {
                 OpenWorkspaceScreenPacket.STREAM_CODEC,
                 OpenWorkspaceScreenPacket::handle
         );
+        registrar.playToClient(
+                OpenWorkspaceInsertSocketScreenPacket.TYPE,
+                OpenWorkspaceInsertSocketScreenPacket.STREAM_CODEC,
+                OpenWorkspaceInsertSocketScreenPacket::handle
+        );
         registrar.playToServer(
                 CreateWorkspacePacket.TYPE,
                 CreateWorkspacePacket.STREAM_CODEC,
                 CreateWorkspacePacket::handle
+        );
+        registrar.playToServer(
+                CreateWorkspaceInsertSocketFamilyPacket.TYPE,
+                CreateWorkspaceInsertSocketFamilyPacket.STREAM_CODEC,
+                CreateWorkspaceInsertSocketFamilyPacket::handle
         );
         registrar.playToServer(
                 RequestWorkspacePreflightPacket.TYPE,
@@ -54,6 +69,11 @@ public class MKWorkspacePacketHandler {
                 RequestWorkspacePieceChunkPacket::handle
         );
         registrar.playToServer(
+                RequestWorkspaceInsertOverlayPacket.TYPE,
+                RequestWorkspaceInsertOverlayPacket.STREAM_CODEC,
+                RequestWorkspaceInsertOverlayPacket::handle
+        );
+        registrar.playToServer(
                 SetWorkspaceLayerLockPacket.TYPE,
                 SetWorkspaceLayerLockPacket.STREAM_CODEC,
                 SetWorkspaceLayerLockPacket::handle
@@ -62,6 +82,11 @@ public class MKWorkspacePacketHandler {
                 WorkspacePieceChunkPacket.TYPE,
                 WorkspacePieceChunkPacket.STREAM_CODEC,
                 WorkspacePieceChunkPacket::handle
+        );
+        registrar.playToClient(
+                WorkspaceInsertOverlayPacket.TYPE,
+                WorkspaceInsertOverlayPacket.STREAM_CODEC,
+                WorkspaceInsertOverlayPacket::handle
         );
         registrar.playToClient(
                 WorkspacePreflightReportPacket.TYPE,
@@ -102,6 +127,11 @@ public class MKWorkspacePacketHandler {
                 AddWorkspaceVariantsForAllPacket.TYPE,
                 AddWorkspaceVariantsForAllPacket.STREAM_CODEC,
                 AddWorkspaceVariantsForAllPacket::handle
+        );
+        registrar.playToServer(
+                DeleteWorkspaceVariantPacket.TYPE,
+                DeleteWorkspaceVariantPacket.STREAM_CODEC,
+                DeleteWorkspaceVariantPacket::handle
         );
         registrar.playToServer(
                 ExportWorkspacePiecesPacket.TYPE,

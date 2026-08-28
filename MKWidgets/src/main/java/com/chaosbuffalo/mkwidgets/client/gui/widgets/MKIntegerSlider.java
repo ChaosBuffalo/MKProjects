@@ -11,10 +11,10 @@ import java.util.function.IntConsumer;
 
 public class MKIntegerSlider extends MKWidget {
     private final String label;
-    private final int minValue;
-    private final int maxValue;
-    private final int step;
-    private final List<Integer> allowedValues;
+    private int minValue;
+    private int maxValue;
+    private int step;
+    private List<Integer> allowedValues;
     private final IntConsumer callback;
     private int value;
     private boolean dragging;
@@ -54,6 +54,32 @@ public class MKIntegerSlider extends MKWidget {
 
     public int value() {
         return value;
+    }
+
+    public void setValue(int value) {
+        int nextValue = clamp(value);
+        if (nextValue != this.value) {
+            this.value = nextValue;
+            callback.accept(this.value);
+        }
+    }
+
+    public void setRange(int minValue, int maxValue, int step) {
+        this.minValue = minValue;
+        this.maxValue = Math.max(minValue, maxValue);
+        this.step = Math.max(1, step);
+        this.allowedValues = List.of();
+        this.value = clamp(value);
+        setTooltip(Component.literal(label + " " + this.minValue + ".." + this.maxValue));
+    }
+
+    public void setAllowedValues(List<Integer> allowedValues) {
+        this.allowedValues = normalizeAllowedValues(allowedValues, value);
+        this.minValue = this.allowedValues.getFirst();
+        this.maxValue = this.allowedValues.getLast();
+        this.step = 1;
+        this.value = clamp(value);
+        setTooltip(Component.literal(label + " " + this.minValue + ".." + this.maxValue));
     }
 
     @Override

@@ -17,6 +17,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateCloneTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
@@ -575,6 +576,8 @@ public class MKWorkspaceVerticalStackPlanner {
                 .ifPresent(source -> tags.put("workspace_source_topology_slot_id", source));
         family.settingsTopologySlotIdOpt()
                 .ifPresent(source -> tags.put("workspace_settings_topology_slot_id", source));
+        family.templateCloneSourcePieceNameOpt()
+                .ifPresent(source -> tags.put(MKWorkspaceTemplateCloneTags.SOURCE_PIECE_NAME_TAG, source));
         MKWorkspacePaletteTags.apply(tags, paletteResolver.resolveFloorTopologyForFamily(workspace, family));
         return tags;
     }

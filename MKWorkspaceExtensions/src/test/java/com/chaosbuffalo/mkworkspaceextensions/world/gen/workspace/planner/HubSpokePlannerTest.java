@@ -146,8 +146,85 @@ class HubSpokePlannerTest {
                 .map(MKPlannedPiece::pieceName)
                 .toList();
 
-        assertEquals(List.of("hub_spoke_spoke_north", "hub_spoke_spoke_2_east"), authoringSpokes);
+        assertEquals(List.of("hub_spoke_spoke_north", "hub_spoke_spoke_2_north"), authoringSpokes);
         assertTrue(planner.validateTopology(workspace).isEmpty());
+    }
+
+    @Test
+    void overlappingSpokeTemplatesPopulateTheSameConcreteSlotPools() {
+        HubSpokePlannerSettings settings = new HubSpokePlannerSettings(List.of(
+                new HubSpokePlannerSettings.SpokeTemplate("fire_shrine_tower", "Tower", 15, 30,
+                        List.of(Direction.NORTH, Direction.SOUTH)),
+                new HubSpokePlannerSettings.SpokeTemplate("fire_shrine_tower_2", "Tower 2", 15, 30,
+                        List.of(Direction.NORTH, Direction.SOUTH)),
+                new HubSpokePlannerSettings.SpokeTemplate("fire_shrine_platform", "Platform", 15, 30,
+                        List.of(Direction.EAST, Direction.WEST))
+        ));
+        MKWorkspaceTopologyProfile profile = settings.applyTo(planner.createDefaultTopologyProfile());
+        MKStructureWorkspace workspace = workspaceWithProfileAndFamilies(profile,
+                planner.createDefaultRoomFamilyDefinitions(MKWorkspaceDimensions.defaultDimensions()));
+
+        List<MKPlannedPiece> spokes = planner.createCanonicalPieces(workspace).stream()
+                .filter(piece -> piece.roleId().equals(HubSpokePlanner.SPOKE_SLOT))
+                .toList();
+
+        assertEquals(List.of(
+                "fire_shrine_tower_north",
+                "fire_shrine_tower_2_north"
+        ), childrenForIncomingPool(spokes, "hub_spoke_slots/hub_spoke/spoke/north"));
+        assertEquals(List.of(
+                "fire_shrine_tower_south",
+                "fire_shrine_tower_2_south"
+        ), childrenForIncomingPool(spokes, "hub_spoke_slots/hub_spoke/spoke/south"));
+        assertEquals(List.of(
+                "fire_shrine_platform_east"
+        ), childrenForIncomingPool(spokes, "hub_spoke_slots/hub_spoke/spoke/east"));
+        assertEquals(List.of(
+                "fire_shrine_platform_west"
+        ), childrenForIncomingPool(spokes, "hub_spoke_slots/hub_spoke/spoke/west"));
+        assertEquals(List.of(
+                "fire_shrine_tower_north",
+                "fire_shrine_tower_2_north",
+                "fire_shrine_platform_east"
+        ), spokes.stream()
+                .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
+                .map(MKPlannedPiece::pieceName)
+                .toList());
+    }
+
+    @Test
+    void multipleCornerFamiliesPopulateTheSameConcreteSlotPools() {
+        HubSpokePlannerSettings settings = new HubSpokePlannerSettings(
+                HubSpokePlannerSettings.defaults().spokeTemplates(),
+                HubSpokePlannerSettings.CornerTemplateMode.PAIRED);
+        MKWorkspaceTopologyProfile profile = settings.applyTo(planner.createDefaultTopologyProfile());
+        java.util.ArrayList<MKWorkspaceRoomFamilyDefinition> families =
+                new java.util.ArrayList<>(planner.createDefaultRoomFamilyDefinitions(MKWorkspaceDimensions.defaultDimensions()));
+        families.add(cornerFamily("hub_spoke_corner_north_west", "hub_spoke.corner.north_west"));
+        families.add(cornerFamily("hub_spoke_corner_north_east", "hub_spoke.corner.north_east"));
+        families.add(cornerFamily("family_1", "hub_spoke.corner.north_west"));
+        MKStructureWorkspace workspace = workspaceWithProfileAndFamilies(profile, families);
+
+        List<MKPlannedPiece> corners = planner.createCanonicalPieces(workspace).stream()
+                .filter(piece -> piece.roleId().equals(HubSpokePlanner.CORNER_SLOT))
+                .toList();
+
+        assertEquals(List.of(
+                "hub_spoke_corner_north_west",
+                "family_1"
+        ), childrenForIncomingPool(corners, "hub_spoke_slots/hub_spoke/corner/north_west"));
+        assertEquals(List.of(
+                "hub_spoke_corner_south_east",
+                "family_1_south_east"
+        ), childrenForIncomingPool(corners, "hub_spoke_slots/hub_spoke/corner/south_east"));
+        assertEquals(List.of(
+                "hub_spoke_corner_north_west",
+                "family_1",
+                "hub_spoke_corner_north_east"
+        ), corners.stream()
+                .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
+                .map(MKPlannedPiece::pieceName)
+                .toList());
     }
 
     @Test
@@ -494,6 +571,33 @@ class HubSpokePlannerTest {
                 List.of(),
                 List.of()
         );
+    }
+
+    private List<String> childrenForIncomingPool(List<MKPlannedPiece> pieces, String poolName) {
+        return pieces.stream()
+                .filter(piece -> piece.connectors().stream()
+                        .anyMatch(connector -> poolName.equals(connector.incomingPoolName())))
+                .map(MKPlannedPiece::pieceName)
+                .toList();
+    }
+
+    private MKWorkspaceRoomFamilyDefinition cornerFamily(String baseName, String topologySlotId) {
+        return MKWorkspaceRoomFamilyDefinition.forTopologySlot(
+                baseName,
+                com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata
+                        .explicit(topologySlotId, "corner", "room", true),
+                "",
+                false,
+                7,
+                7,
+                HubSpokePlanner.defaultPlatformHeight(),
+                com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode
+                        .NO_EXTRUSION,
+                List.of(),
+                0,
+                0,
+                null,
+                null);
     }
 
     private MKWorkspaceRoomFamilyDefinition copyFamily(MKWorkspaceRoomFamilyDefinition family, int width, int length,

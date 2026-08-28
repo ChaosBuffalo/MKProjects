@@ -1143,13 +1143,13 @@ class TowerWorkspaceV2Test {
                 "7".equals(piece.tags().get("workspace_content_height"))));
 
         List<MKPlannedPiece> socketPieces = pieces.stream()
-                .filter(piece -> piece.tags().containsKey("workspace_courtyard_socket_id"))
+                .filter(piece -> piece.tags().containsKey(MKWalledKeepWorkspacePlanner.INSERT_SOCKET_ID_TAG))
                 .toList();
         assertEquals(7, socketPieces.size());
         assertFalse(socketPieces.stream().anyMatch(piece ->
-                "keep.courtyard.south".equals(piece.tags().get("workspace_courtyard_socket_id"))));
+                "keep.courtyard.south".equals(piece.tags().get(MKWalledKeepWorkspacePlanner.INSERT_SOCKET_ID_TAG))));
         for (MKPlannedPiece socketPiece : socketPieces) {
-            String socketId = socketPiece.tags().get("workspace_courtyard_socket_id");
+            String socketId = socketPiece.tags().get(MKWalledKeepWorkspacePlanner.INSERT_SOCKET_ID_TAG);
             Direction expectedFacing = switch (socketId) {
                 case "keep.courtyard.north_west", "keep.courtyard.north", "keep.courtyard.north_east" ->
                         Direction.SOUTH;
@@ -1161,7 +1161,8 @@ class TowerWorkspaceV2Test {
                     socketPiece.tags().get(MKWalledKeepWorkspacePlanner.CONTENT_CONNECTOR_EDGE_TAG));
             assertEquals(Integer.toString(MKWalledKeepCourtyardSettings.DEFAULT_CONTENT_TEMPLATE_SIZE),
                     socketPiece.tags().get("workspace_content_size"));
-            int maxSize = Integer.parseInt(socketPiece.tags().get("workspace_courtyard_socket_max_square_size"));
+            int maxSize = Integer.parseInt(socketPiece.tags()
+                    .get(MKWalledKeepWorkspacePlanner.INSERT_SOCKET_MAX_SIZE_TAG));
             assertTrue(maxSize >= 9);
             assertEquals(1, maxSize % 2);
             assertEquals("keep_courtyard_content",
@@ -1200,7 +1201,7 @@ class TowerWorkspaceV2Test {
         assertFalse(pieces.stream().anyMatch(piece ->
                 piece.pieceName().startsWith("keep_courtyard_path_")));
         assertFalse(pieces.stream().anyMatch(piece ->
-                piece.tags().containsKey(MKWalledKeepWorkspacePlanner.COURTYARD_SOCKET_ID_TAG)));
+                piece.tags().containsKey(MKWalledKeepWorkspacePlanner.INSERT_SOCKET_ID_TAG)));
         MKPlannedPiece entryApproach = pieces.stream()
                 .filter(piece -> piece.pieceName().equals("keep_entry_approach"))
                 .findFirst()

@@ -1,7 +1,6 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mkworkspace.network.packets.AddWorkspaceVariantsForAllPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.GenerateAllWorkspaceStairsPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.GenerateWorkspaceSamplePreviewPacket;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceSamplePreviewState;
@@ -13,6 +12,9 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.network.PacketDistributor;
+
+import java.util.LinkedHashSet;
+import java.util.List;
 
 public class WorkspaceUtilitiesPage extends WorkspacePageBase {
     public static final String ID = "utilities";
@@ -67,7 +69,7 @@ public class WorkspaceUtilitiesPage extends WorkspacePageBase {
         content.addWidget(addCopyForAll);
         content.addConstraintToWidget(new CenterXConstraint(), addCopyForAll);
         addCopyForAll.setPressedCallback((button, mouseButton) -> {
-            PacketDistributor.sendToServer(new AddWorkspaceVariantsForAllPacket(screen.anchor()));
+            stageVariantAdditions(screen, physicalTemplateBasePieceNames(screen));
             return true;
         });
 
@@ -75,8 +77,7 @@ public class WorkspaceUtilitiesPage extends WorkspacePageBase {
         content.addWidget(addMissingVariants);
         content.addConstraintToWidget(new CenterXConstraint(), addMissingVariants);
         addMissingVariants.setPressedCallback((button, mouseButton) -> {
-            PacketDistributor.sendToServer(new AddWorkspaceVariantsForAllPacket(screen.anchor(),
-                    AddWorkspaceVariantsForAllPacket.Mode.MISSING_ONLY));
+            stageVariantAdditions(screen, basePieceNamesWithoutPhysicalVariants(screen));
             return true;
         });
 
@@ -126,5 +127,36 @@ public class WorkspaceUtilitiesPage extends WorkspacePageBase {
 
     private Component sampleSeedText(boolean locked) {
         return Component.literal("Lock Seed: " + (locked ? "On" : "Off"));
+    }
+
+    private void stageVariantAdditions(MKWorkspaceScreen screen, List<String> baseNames) {
+        for (String baseName : baseNames) {
+            screen.draftSession().stageVariantAddition(baseName);
+        }
+        screen.flagNeedSetup();
+    }
+
+    private List<String> physicalTemplateBasePieceNames(MKWorkspaceScreen screen) {
+        return screen.workspace().pieces().stream()
+                .filter(piece -> piece.variantIndex() == 0)
+                .filter(WorkspacePieceDisplay::isAuthoredTemplatePiece)
+                .map(WorkspacePieceDisplay::getBaseName)
+                .distinct()
+                .toList();
+    }
+
+    private List<String> basePieceNamesWithoutPhysicalVariants(MKWorkspaceScreen screen) {
+        LinkedHashSet<String> basesWithVariants = screen.workspace().pieces().stream()
+                .filter(piece -> piece.variantIndex() > 0)
+                .filter(WorkspacePieceDisplay::isAuthoredTemplatePiece)
+                .map(WorkspacePieceDisplay::getBaseName)
+                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        return screen.workspace().pieces().stream()
+                .filter(piece -> piece.variantIndex() == 0)
+                .filter(WorkspacePieceDisplay::isAuthoredTemplatePiece)
+                .map(WorkspacePieceDisplay::getBaseName)
+                .distinct()
+                .filter(baseName -> !basesWithVariants.contains(baseName))
+                .toList();
     }
 }

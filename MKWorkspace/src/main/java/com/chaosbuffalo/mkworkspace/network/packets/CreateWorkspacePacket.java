@@ -4,10 +4,13 @@ import com.chaosbuffalo.mkworkspace.MKWorkspace;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.MKStructureWorkspaceService;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.MKWorkspacePreflightLogger;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.capability.IMKStructureWorkspaceData;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.insert.MKWorkspaceInsertOverlayService;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.insert.MKWorkspaceInsertOverlaySnapshot;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceCodecs;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVariantAddition;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -16,10 +19,12 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public class CreateWorkspacePacket implements CustomPacketPayload {
     public static final Type<CreateWorkspacePacket> TYPE = new Type<>(MKWorkspace.id("create_workspace"));
@@ -31,6 +36,9 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
     private final boolean generateAfterCreate;
     private final boolean fullRegenerate;
     private final List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps;
+    private final List<MKWorkspaceVariantAddition> addedVariants;
+    private final List<UUID> deletedVariantPieceIds;
+    private final boolean workspaceSettingsDirty;
 
     public CreateWorkspacePacket(MKStructureWorkspace workspace) {
         this(workspace, false);
@@ -48,10 +56,38 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
     public CreateWorkspacePacket(MKStructureWorkspace workspace, boolean generateAfterCreate,
                                  boolean fullRegenerate,
                                  List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
+        this(workspace, generateAfterCreate, fullRegenerate, acceptedRemaps, List.of());
+    }
+
+    public CreateWorkspacePacket(MKStructureWorkspace workspace, boolean generateAfterCreate,
+                                 boolean fullRegenerate,
+                                 List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps,
+                                 List<UUID> deletedVariantPieceIds) {
+        this(workspace, generateAfterCreate, fullRegenerate, acceptedRemaps, List.of(), deletedVariantPieceIds);
+    }
+
+    public CreateWorkspacePacket(MKStructureWorkspace workspace, boolean generateAfterCreate,
+                                 boolean fullRegenerate,
+                                 List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps,
+                                 List<MKWorkspaceVariantAddition> addedVariants,
+                                 List<UUID> deletedVariantPieceIds) {
+        this(workspace, generateAfterCreate, fullRegenerate, acceptedRemaps, addedVariants, deletedVariantPieceIds,
+                true);
+    }
+
+    public CreateWorkspacePacket(MKStructureWorkspace workspace, boolean generateAfterCreate,
+                                 boolean fullRegenerate,
+                                 List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps,
+                                 List<MKWorkspaceVariantAddition> addedVariants,
+                                 List<UUID> deletedVariantPieceIds,
+                                 boolean workspaceSettingsDirty) {
         this.workspaceTag = MKWorkspacePacketPayloads.editableWorkspaceTag(workspace);
         this.generateAfterCreate = generateAfterCreate;
         this.fullRegenerate = fullRegenerate;
         this.acceptedRemaps = List.copyOf(acceptedRemaps);
+        this.addedVariants = List.copyOf(addedVariants);
+        this.deletedVariantPieceIds = List.copyOf(deletedVariantPieceIds);
+        this.workspaceSettingsDirty = workspaceSettingsDirty;
     }
 
     public CreateWorkspacePacket(FriendlyByteBuf buffer) {
@@ -63,6 +99,9 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
         this.generateAfterCreate = buffer.readBoolean();
         this.fullRegenerate = buffer.readBoolean();
         this.acceptedRemaps = readAcceptedRemaps(buffer);
+        this.addedVariants = readAddedVariants(buffer);
+        this.deletedVariantPieceIds = readDeletedVariantPieceIds(buffer);
+        this.workspaceSettingsDirty = buffer.readBoolean();
     }
 
     @Override
@@ -76,6 +115,9 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
         buffer.writeBoolean(generateAfterCreate);
         buffer.writeBoolean(fullRegenerate);
         writeAcceptedRemaps(buffer, acceptedRemaps);
+        writeAddedVariants(buffer, addedVariants);
+        writeDeletedVariantPieceIds(buffer, deletedVariantPieceIds);
+        buffer.writeBoolean(workspaceSettingsDirty);
         MKWorkspacePacketPayloads.warnIfLarge("create_workspace", buffer.writerIndex() - startIndex);
     }
 
@@ -94,7 +136,8 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
                 .getWorkspaceByAnchor(workspace.anchor());
         if (existingOpt.isPresent() && !packet.fullRegenerate) {
             var preflight = service.preflightWorkspaceUpdate(existingOpt.get(), workspace, System.currentTimeMillis(),
-                    packet.acceptedRemaps);
+                    packet.acceptedRemaps, packet.addedVariants, packet.deletedVariantPieceIds,
+                    packet.workspaceSettingsDirty);
             new MKWorkspacePreflightLogger().logConfirmEffects("apply", player, workspace, preflight,
                     packet.acceptedRemaps);
             List<MKWorkspaceGeneratedLayer> lockedLayers =
@@ -105,6 +148,7 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
                                 lockedLayers.getFirst().getSerializedName());
                 return;
             }
+            service.writeApplyChangesBackup(player.serverLevel(), existingOpt.get());
         }
         if (packet.fullRegenerate) {
             service.fullRegenerateWorkspace(player.serverLevel(), workspace)
@@ -113,7 +157,10 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
                                     "Workspace regeneration failed."));
             return;
         }
-        service.createOrUpdateWorkspace(player.serverLevel(), workspace, packet.acceptedRemaps)
+        service.createOrUpdateWorkspace(player.serverLevel(), workspace, packet.acceptedRemaps,
+                        packet.addedVariants,
+                        packet.deletedVariantPieceIds,
+                        packet.workspaceSettingsDirty)
                 .ifPresentOrElse(created -> {
                     if (packet.generateAfterCreate &&
                             service.generateWorkspace(player.serverLevel(), created.anchor()).isEmpty()) {
@@ -121,7 +168,17 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
                         return;
                     }
                     service.openWorkspaceScreen(player, created.anchor());
+                    refreshInsertOverlayAfterVariantMutation(packet, player);
                 }, () -> MKWorkspaceValidationMessages.displayFailure(player, "Workspace creation failed."));
+    }
+
+    private static void refreshInsertOverlayAfterVariantMutation(CreateWorkspacePacket packet, ServerPlayer player) {
+        if (packet.addedVariants.isEmpty() && packet.deletedVariantPieceIds.isEmpty()) {
+            return;
+        }
+        MKWorkspaceInsertOverlaySnapshot snapshot = MKWorkspaceInsertOverlayService.capture(player.serverLevel(),
+                player.blockPosition());
+        PacketDistributor.sendToPlayer(player, new WorkspaceInsertOverlayPacket(snapshot));
     }
 
     private static void writeAcceptedRemaps(FriendlyByteBuf buffer,
@@ -148,5 +205,43 @@ public class CreateWorkspacePacket implements CustomPacketPayload {
                     remapsTag.getCompound(i), "workspace template remap suggestion"));
         }
         return List.copyOf(remaps);
+    }
+
+    private static void writeAddedVariants(FriendlyByteBuf buffer, List<MKWorkspaceVariantAddition> addedVariants) {
+        buffer.writeVarInt(addedVariants.size());
+        for (MKWorkspaceVariantAddition addition : addedVariants) {
+            buffer.writeUtf(addition.basePieceName());
+            buffer.writeBoolean(addition.sourcePieceName() != null);
+            if (addition.sourcePieceName() != null) {
+                buffer.writeUtf(addition.sourcePieceName());
+            }
+        }
+    }
+
+    private static List<MKWorkspaceVariantAddition> readAddedVariants(FriendlyByteBuf buffer) {
+        int size = buffer.readVarInt();
+        java.util.ArrayList<MKWorkspaceVariantAddition> additions = new java.util.ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            String basePieceName = buffer.readUtf();
+            String sourcePieceName = buffer.readBoolean() ? buffer.readUtf() : null;
+            additions.add(new MKWorkspaceVariantAddition(basePieceName, sourcePieceName));
+        }
+        return List.copyOf(additions);
+    }
+
+    private static void writeDeletedVariantPieceIds(FriendlyByteBuf buffer, List<UUID> pieceIds) {
+        buffer.writeVarInt(pieceIds.size());
+        for (UUID pieceId : pieceIds) {
+            buffer.writeUUID(pieceId);
+        }
+    }
+
+    private static List<UUID> readDeletedVariantPieceIds(FriendlyByteBuf buffer) {
+        int size = buffer.readVarInt();
+        java.util.ArrayList<UUID> pieceIds = new java.util.ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            pieceIds.add(buffer.readUUID());
+        }
+        return List.copyOf(pieceIds);
     }
 }

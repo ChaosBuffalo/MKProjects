@@ -202,6 +202,7 @@ public class MKTowerWorkspacePlanner implements MKWorkspacePlanner {
                 workspace.familyDefinitions()));
         pieces.addAll(createLinearRunPieces(workspace));
         pieces.addAll(floorTopologyPlanner.createFloorTopologyPieces(workspace, workspace.familyDefinitions()));
+        pieces.addAll(createInsertFamilyTemplatePieces(workspace));
         return List.copyOf(pieces);
     }
 

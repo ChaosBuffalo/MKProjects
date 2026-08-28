@@ -3,6 +3,7 @@ package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceVerticalStackSlot;
@@ -126,6 +127,19 @@ public interface WorkspacePlannerDraftAdapter {
     default Optional<MKWorkspaceRoomFamilyDefinition> sharedFamilySource(WorkspaceDraftSession session,
                                                                           String topologySlotId) {
         return Optional.empty();
+    }
+
+    default Optional<Integer> addFamilyDefinition(WorkspaceDraftSession session, MKWorkspaceSlotSchema slot) {
+        return Optional.empty();
+    }
+
+    default Optional<Integer> addFamilyDefinitionFromPiece(WorkspaceDraftSession session, MKWorkspaceSlotSchema slot,
+                                                           MKWorkspacePieceDefinition sourcePiece) {
+        return Optional.empty();
+    }
+
+    default boolean removeFamilyDefinition(WorkspaceDraftSession session, int index) {
+        return false;
     }
 
     default List<MKWorkspaceVerticalStackSizingReport.HorizontalExitInfo> previewFallbackEntryExits(

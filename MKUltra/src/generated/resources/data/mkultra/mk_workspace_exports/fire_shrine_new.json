@@ -41,22 +41,22 @@
       "placement": {
         "export_bounds": {
           "max": {
-            "x": 128,
+            "x": 154,
             "y": 10,
             "z": 16
           },
           "max_offset": {
-            "x": 128,
+            "x": 154,
             "y": 10,
             "z": 16
           },
           "min": {
-            "x": 120,
+            "x": 146,
             "y": 0,
             "z": 8
           },
           "min_offset": {
-            "x": 120,
+            "x": 146,
             "y": 0,
             "z": 8
           },
@@ -66,22 +66,22 @@
         },
         "preview_bounds": {
           "max": {
-            "x": 128,
+            "x": 154,
             "y": 10,
             "z": 16
           },
           "max_offset": {
-            "x": 128,
+            "x": 154,
             "y": 10,
             "z": 16
           },
           "min": {
-            "x": 120,
+            "x": 146,
             "y": 0,
             "z": 8
           },
           "min_offset": {
-            "x": 120,
+            "x": 146,
             "y": 0,
             "z": 8
           },
@@ -90,32 +90,32 @@
           "size_z": 9
         },
         "sign_offset": {
-          "x": 117,
+          "x": 143,
           "y": 1,
           "z": 12
         },
         "sign_pos": {
-          "x": 117,
+          "x": 143,
           "y": 1,
           "z": 12
         },
         "structure_block_offset": {
-          "x": 118,
+          "x": 144,
           "y": 1,
           "z": 12
         },
         "structure_block_pos": {
-          "x": 118,
+          "x": 144,
           "y": 1,
           "z": 12
         },
         "world_origin": {
-          "x": 120,
+          "x": 146,
           "y": 0,
           "z": 8
         },
         "world_origin_offset": {
-          "x": 120,
+          "x": 146,
           "y": 0,
           "z": 8
         }
@@ -141,7 +141,7 @@
         "workspace_ceiling_block": "minecraft:smooth_stone",
         "workspace_floor_block": "minecraft:smooth_stone",
         "workspace_insert_family_id": "fire_shrine_platform_contents",
-        "workspace_insert_family_kind": "courtyard_socket",
+        "workspace_insert_family_kind": "insert_socket",
         "workspace_piece_kind": "instance",
         "workspace_planner_id": "hub_spoke.insert.fire_shrine_gazebo",
         "workspace_topology_role_id": "hub_spoke.insert",
@@ -190,22 +190,22 @@
       "placement": {
         "export_bounds": {
           "max": {
-            "x": 143,
+            "x": 169,
             "y": 10,
             "z": 16
           },
           "max_offset": {
-            "x": 143,
+            "x": 169,
             "y": 10,
             "z": 16
           },
           "min": {
-            "x": 135,
+            "x": 161,
             "y": 0,
             "z": 8
           },
           "min_offset": {
-            "x": 135,
+            "x": 161,
             "y": 0,
             "z": 8
           },
@@ -215,22 +215,22 @@
         },
         "preview_bounds": {
           "max": {
-            "x": 143,
+            "x": 169,
             "y": 10,
             "z": 16
           },
           "max_offset": {
-            "x": 143,
+            "x": 169,
             "y": 10,
             "z": 16
           },
           "min": {
-            "x": 135,
+            "x": 161,
             "y": 0,
             "z": 8
           },
           "min_offset": {
-            "x": 135,
+            "x": 161,
             "y": 0,
             "z": 8
           },
@@ -239,32 +239,32 @@
           "size_z": 9
         },
         "sign_offset": {
-          "x": 132,
+          "x": 158,
           "y": 1,
           "z": 12
         },
         "sign_pos": {
-          "x": 132,
+          "x": 158,
           "y": 1,
           "z": 12
         },
         "structure_block_offset": {
-          "x": 133,
+          "x": 159,
           "y": 1,
           "z": 12
         },
         "structure_block_pos": {
-          "x": 133,
+          "x": 159,
           "y": 1,
           "z": 12
         },
         "world_origin": {
-          "x": 135,
+          "x": 161,
           "y": 0,
           "z": 8
         },
         "world_origin_offset": {
-          "x": 135,
+          "x": 161,
           "y": 0,
           "z": 8
         }
@@ -290,7 +290,7 @@
         "workspace_ceiling_block": "minecraft:smooth_stone",
         "workspace_floor_block": "minecraft:smooth_stone",
         "workspace_insert_family_id": "fire_shrine_platform_contents",
-        "workspace_insert_family_kind": "courtyard_socket",
+        "workspace_insert_family_kind": "insert_socket",
         "workspace_piece_kind": "instance",
         "workspace_planner_id": "hub_spoke.insert.fire_shrine_lava_fountain",
         "workspace_topology_role_id": "hub_spoke.insert",
@@ -339,22 +339,22 @@
       "placement": {
         "export_bounds": {
           "max": {
-            "x": 165,
+            "x": 191,
             "y": 19,
             "z": 12
           },
           "max_offset": {
-            "x": 165,
+            "x": 191,
             "y": 19,
             "z": 12
           },
           "min": {
-            "x": 161,
+            "x": 187,
             "y": 0,
             "z": 8
           },
           "min_offset": {
-            "x": 161,
+            "x": 187,
             "y": 0,
             "z": 8
           },
@@ -364,22 +364,22 @@
         },
         "preview_bounds": {
           "max": {
-            "x": 165,
+            "x": 191,
             "y": 19,
             "z": 12
           },
           "max_offset": {
-            "x": 165,
+            "x": 191,
             "y": 19,
             "z": 12
           },
           "min": {
-            "x": 161,
+            "x": 187,
             "y": 0,
             "z": 8
           },
           "min_offset": {
-            "x": 161,
+            "x": 187,
             "y": 0,
             "z": 8
           },
@@ -388,32 +388,32 @@
           "size_z": 5
         },
         "sign_offset": {
-          "x": 158,
+          "x": 184,
           "y": 1,
           "z": 10
         },
         "sign_pos": {
-          "x": 158,
+          "x": 184,
           "y": 1,
           "z": 10
         },
         "structure_block_offset": {
-          "x": 159,
+          "x": 185,
           "y": 1,
           "z": 10
         },
         "structure_block_pos": {
-          "x": 159,
+          "x": 185,
           "y": 1,
           "z": 10
         },
         "world_origin": {
-          "x": 161,
+          "x": 187,
           "y": 0,
           "z": 8
         },
         "world_origin_offset": {
-          "x": 161,
+          "x": 187,
           "y": 0,
           "z": 8
         }
@@ -439,7 +439,7 @@
         "workspace_ceiling_block": "minecraft:smooth_stone",
         "workspace_floor_block": "minecraft:smooth_stone",
         "workspace_insert_family_id": "fire_shrine_pillars",
-        "workspace_insert_family_kind": "courtyard_socket",
+        "workspace_insert_family_kind": "insert_socket",
         "workspace_piece_kind": "instance",
         "workspace_planner_id": "hub_spoke.insert.fire_shrine_pillar",
         "workspace_topology_role_id": "hub_spoke.insert",
@@ -488,22 +488,22 @@
       "placement": {
         "export_bounds": {
           "max": {
-            "x": 154,
+            "x": 124,
             "y": 19,
             "z": 12
           },
           "max_offset": {
-            "x": 154,
+            "x": 124,
             "y": 19,
             "z": 12
           },
           "min": {
-            "x": 150,
+            "x": 120,
             "y": 0,
             "z": 8
           },
           "min_offset": {
-            "x": 150,
+            "x": 120,
             "y": 0,
             "z": 8
           },
@@ -513,22 +513,22 @@
         },
         "preview_bounds": {
           "max": {
-            "x": 154,
+            "x": 124,
             "y": 19,
             "z": 12
           },
           "max_offset": {
-            "x": 154,
+            "x": 124,
             "y": 19,
             "z": 12
           },
           "min": {
-            "x": 150,
+            "x": 120,
             "y": 0,
             "z": 8
           },
           "min_offset": {
-            "x": 150,
+            "x": 120,
             "y": 0,
             "z": 8
           },
@@ -537,32 +537,169 @@
           "size_z": 5
         },
         "sign_offset": {
-          "x": 147,
+          "x": 117,
           "y": 1,
           "z": 10
         },
         "sign_pos": {
-          "x": 147,
+          "x": 117,
           "y": 1,
           "z": 10
         },
         "structure_block_offset": {
-          "x": 148,
+          "x": 118,
           "y": 1,
           "z": 10
         },
         "structure_block_pos": {
-          "x": 148,
+          "x": 118,
           "y": 1,
           "z": 10
         },
         "world_origin": {
-          "x": 150,
+          "x": 120,
           "y": 0,
           "z": 8
         },
         "world_origin_offset": {
-          "x": 150,
+          "x": 120,
+          "y": 0,
+          "z": 8
+        }
+      },
+      "planner_id": "workspace.insert_family.insert_socket.fire_shrine_pillars",
+      "role_id": "workspace.insert_family.insert_socket",
+      "structure_id": "mkultra:fire_shrine_new/fire_shrine_pillars",
+      "tags": {
+        "topology_role": "workspace.insert_family.insert_socket",
+        "tower_piece_kind": "insert_socket_template",
+        "workspace_insert_family_depth": "5",
+        "workspace_insert_family_height": "20",
+        "workspace_insert_family_id": "fire_shrine_pillars",
+        "workspace_insert_family_kind": "insert_socket",
+        "workspace_insert_family_width": "5",
+        "workspace_planner_id": "workspace.insert_family.insert_socket.fire_shrine_pillars",
+        "workspace_template_kind": "insert_socket_family",
+        "workspace_template_slot_id": "insert_socket.insert_family.fire_shrine_pillars",
+        "workspace_topology_role_id": "workspace.insert_family.insert_socket",
+        "workspace_topology_slot_id": "workspace.insert_family.insert_socket"
+      },
+      "variant_index": 0,
+      "workspace_piece_kind": "instance"
+    },
+    {
+      "base_name": "fire_shrine_pillars",
+      "connectors": [
+        {
+          "facing": "down",
+          "incoming_pool": "mkultra:fire_shrine_new/insert_families/fire_shrine_pillars",
+          "jigsaw_final_state": "minecraft:red_nether_bricks",
+          "jigsaw_name": "mkultra:attach",
+          "jigsaw_orientation": "down_east",
+          "jigsaw_target": "mkultra:base",
+          "opening_height": 1,
+          "opening_width": 1,
+          "relative_pos": {
+            "x": 2,
+            "y": 0,
+            "z": 2
+          },
+          "role": "link_candidate",
+          "target_pool": "minecraft:empty"
+        }
+      ],
+      "effective_dimensions": {
+        "basement_height": 20,
+        "doorway_height": 2,
+        "doorway_width": 3,
+        "entrance_height": 20,
+        "room_height": 20,
+        "room_length": 5,
+        "room_width": 5,
+        "shaft_width": 3
+      },
+      "generated_stair_positions": [],
+      "marker_positions": [],
+      "piece_id": "95fa0127-b206-399c-b91f-46c5531179e6",
+      "piece_name": "fire_shrine_pillars",
+      "placement": {
+        "export_bounds": {
+          "max": {
+            "x": 180,
+            "y": 19,
+            "z": 12
+          },
+          "max_offset": {
+            "x": 180,
+            "y": 19,
+            "z": 12
+          },
+          "min": {
+            "x": 176,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 176,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 5,
+          "size_y": 20,
+          "size_z": 5
+        },
+        "preview_bounds": {
+          "max": {
+            "x": 180,
+            "y": 19,
+            "z": 12
+          },
+          "max_offset": {
+            "x": 180,
+            "y": 19,
+            "z": 12
+          },
+          "min": {
+            "x": 176,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 176,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 5,
+          "size_y": 20,
+          "size_z": 5
+        },
+        "sign_offset": {
+          "x": 173,
+          "y": 1,
+          "z": 10
+        },
+        "sign_pos": {
+          "x": 173,
+          "y": 1,
+          "z": 10
+        },
+        "structure_block_offset": {
+          "x": 174,
+          "y": 1,
+          "z": 10
+        },
+        "structure_block_pos": {
+          "x": 174,
+          "y": 1,
+          "z": 10
+        },
+        "world_origin": {
+          "x": 176,
+          "y": 0,
+          "z": 8
+        },
+        "world_origin_offset": {
+          "x": 176,
           "y": 0,
           "z": 8
         }
@@ -588,7 +725,7 @@
         "workspace_ceiling_block": "minecraft:smooth_stone",
         "workspace_floor_block": "minecraft:smooth_stone",
         "workspace_insert_family_id": "fire_shrine_pillars",
-        "workspace_insert_family_kind": "courtyard_socket",
+        "workspace_insert_family_kind": "insert_socket",
         "workspace_piece_kind": "template",
         "workspace_planner_id": "hub_spoke.insert.fire_shrine_pillars",
         "workspace_topology_role_id": "hub_spoke.insert",
@@ -716,6 +853,143 @@
           "z": 8
         }
       },
+      "planner_id": "workspace.insert_family.insert_socket.fire_shrine_platform_contents",
+      "role_id": "workspace.insert_family.insert_socket",
+      "structure_id": "mkultra:fire_shrine_new/fire_shrine_platform_contents",
+      "tags": {
+        "topology_role": "workspace.insert_family.insert_socket",
+        "tower_piece_kind": "insert_socket_template",
+        "workspace_insert_family_depth": "9",
+        "workspace_insert_family_height": "11",
+        "workspace_insert_family_id": "fire_shrine_platform_contents",
+        "workspace_insert_family_kind": "insert_socket",
+        "workspace_insert_family_width": "9",
+        "workspace_planner_id": "workspace.insert_family.insert_socket.fire_shrine_platform_contents",
+        "workspace_template_kind": "insert_socket_family",
+        "workspace_template_slot_id": "insert_socket.insert_family.fire_shrine_platform_contents",
+        "workspace_topology_role_id": "workspace.insert_family.insert_socket",
+        "workspace_topology_slot_id": "workspace.insert_family.insert_socket"
+      },
+      "variant_index": 0,
+      "workspace_piece_kind": "instance"
+    },
+    {
+      "base_name": "fire_shrine_platform_contents",
+      "connectors": [
+        {
+          "facing": "down",
+          "incoming_pool": "mkultra:fire_shrine_new/insert_families/fire_shrine_platform_contents",
+          "jigsaw_final_state": "minecraft:red_nether_bricks",
+          "jigsaw_name": "mkultra:attach",
+          "jigsaw_orientation": "down_east",
+          "jigsaw_target": "mkultra:base",
+          "opening_height": 1,
+          "opening_width": 1,
+          "relative_pos": {
+            "x": 4,
+            "y": 0,
+            "z": 3
+          },
+          "role": "link_candidate",
+          "target_pool": "minecraft:empty"
+        }
+      ],
+      "effective_dimensions": {
+        "basement_height": 11,
+        "doorway_height": 2,
+        "doorway_width": 3,
+        "entrance_height": 11,
+        "room_height": 11,
+        "room_length": 9,
+        "room_width": 9,
+        "shaft_width": 3
+      },
+      "generated_stair_positions": [],
+      "marker_positions": [],
+      "piece_id": "8ff82191-2b6d-32c1-9751-6459f96c36b5",
+      "piece_name": "fire_shrine_platform_contents",
+      "placement": {
+        "export_bounds": {
+          "max": {
+            "x": 139,
+            "y": 10,
+            "z": 16
+          },
+          "max_offset": {
+            "x": 139,
+            "y": 10,
+            "z": 16
+          },
+          "min": {
+            "x": 131,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 131,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 9,
+          "size_y": 11,
+          "size_z": 9
+        },
+        "preview_bounds": {
+          "max": {
+            "x": 139,
+            "y": 10,
+            "z": 16
+          },
+          "max_offset": {
+            "x": 139,
+            "y": 10,
+            "z": 16
+          },
+          "min": {
+            "x": 131,
+            "y": 0,
+            "z": 8
+          },
+          "min_offset": {
+            "x": 131,
+            "y": 0,
+            "z": 8
+          },
+          "size_x": 9,
+          "size_y": 11,
+          "size_z": 9
+        },
+        "sign_offset": {
+          "x": 128,
+          "y": 1,
+          "z": 12
+        },
+        "sign_pos": {
+          "x": 128,
+          "y": 1,
+          "z": 12
+        },
+        "structure_block_offset": {
+          "x": 129,
+          "y": 1,
+          "z": 12
+        },
+        "structure_block_pos": {
+          "x": 129,
+          "y": 1,
+          "z": 12
+        },
+        "world_origin": {
+          "x": 131,
+          "y": 0,
+          "z": 8
+        },
+        "world_origin_offset": {
+          "x": 131,
+          "y": 0,
+          "z": 8
+        }
+      },
       "planner_id": "hub_spoke.insert.fire_shrine_platform_contents",
       "role_id": "hub_spoke.insert",
       "structure_id": "mkultra:fire_shrine_new/fire_shrine_platform_contents",
@@ -737,7 +1011,7 @@
         "workspace_ceiling_block": "minecraft:smooth_stone",
         "workspace_floor_block": "minecraft:smooth_stone",
         "workspace_insert_family_id": "fire_shrine_platform_contents",
-        "workspace_insert_family_kind": "courtyard_socket",
+        "workspace_insert_family_kind": "insert_socket",
         "workspace_piece_kind": "template",
         "workspace_planner_id": "hub_spoke.insert.fire_shrine_platform_contents",
         "workspace_topology_role_id": "hub_spoke.insert",
@@ -2748,17 +3022,23 @@
     ],
     "insert_families": [
       {
+        "attachment_face": "bottom",
         "depth": 9,
+        "face_u_offset": 4,
+        "face_v_offset": 4,
         "family_id": "fire_shrine_platform_contents",
         "height": 11,
-        "kind": "courtyard_socket",
+        "kind": "insert_socket",
         "width": 9
       },
       {
+        "attachment_face": "bottom",
         "depth": 5,
+        "face_u_offset": 2,
+        "face_v_offset": 2,
         "family_id": "fire_shrine_pillars",
         "height": 20,
-        "kind": "courtyard_socket",
+        "kind": "insert_socket",
         "width": 5
       }
     ],
@@ -2842,6 +3122,7 @@
       "base_name": "fire_shrine_platform_contents",
       "pieces": [
         "fire_shrine_platform_contents",
+        "fire_shrine_platform_contents",
         "fire_shrine_gazebo",
         "fire_shrine_lava_fountain"
       ],
@@ -2850,6 +3131,7 @@
     {
       "base_name": "fire_shrine_pillars",
       "pieces": [
+        "fire_shrine_pillars",
         "fire_shrine_pillars",
         "fire_shrine_pillar"
       ],
@@ -2919,6 +3201,6 @@
       "role_id": "hub_spoke.corner.shared"
     }
   ],
-  "updated_at": 1784209440985,
+  "updated_at": 1784565440737,
   "workspace_id": "86e5b1e4-53cc-346f-8d51-906a23f5b322"
 }

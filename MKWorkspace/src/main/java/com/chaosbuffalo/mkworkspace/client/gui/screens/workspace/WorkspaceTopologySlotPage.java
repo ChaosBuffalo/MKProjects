@@ -1,9 +1,9 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mkworkspace.network.packets.AddWorkspaceVariantPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.ClearWorkspaceStairsPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.GenerateWorkspaceStairsPacket;
+import com.chaosbuffalo.mkworkspace.network.packets.TeleportToWorkspacePiecePacket;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairMode;
@@ -102,14 +102,16 @@ public class WorkspaceTopologySlotPage extends WorkspacePageBase {
             MKButton addCopy = addBottomButton(screen, root,
                     Component.translatable("mknpc.workspace.button.add_copy"), 180, 2);
             addCopy.setPressedCallback((button, mouseButton) -> {
-                PacketDistributor.sendToServer(new AddWorkspaceVariantPacket(screen.anchor(), baseName));
+                screen.draftSession().stageVariantAddition(baseName);
+                screen.flagNeedSetup();
                 return true;
             });
         } else {
             MKButton addCopy = addBottomButton(screen, root,
                     Component.translatable("mknpc.workspace.button.add_copy"), 180, 1);
             addCopy.setPressedCallback((button, mouseButton) -> {
-                PacketDistributor.sendToServer(new AddWorkspaceVariantPacket(screen.anchor(), baseName));
+                screen.draftSession().stageVariantAddition(baseName);
+                screen.flagNeedSetup();
                 return true;
             });
         }
@@ -177,14 +179,37 @@ public class WorkspaceTopologySlotPage extends WorkspacePageBase {
 
         String sourcePieceName = piece.pieceName();
         String sourceBaseName = WorkspacePieceDisplay.getBaseName(piece);
+        MKButton teleport = new MKButton(Component.literal(piece.variantIndex() == 0 ?
+                "Teleport To Template" : "Teleport To Variant"), 180, screen.buttonHeight());
+        content.addWidget(teleport);
+        content.addConstraintToWidget(new CenterXConstraint(), teleport);
+        teleport.setPressedCallback((button, mouseButton) -> {
+            PacketDistributor.sendToServer(new TeleportToWorkspacePiecePacket(screen.anchor(), piece.pieceId()));
+            if (!screen.draftSession().dirty()) {
+                screen.closeScreen();
+            }
+            return true;
+        });
+
         MKButton copyVariant = new MKButton(Component.literal("Copy This Variant"), 180, screen.buttonHeight());
         content.addWidget(copyVariant);
         content.addConstraintToWidget(new CenterXConstraint(), copyVariant);
         copyVariant.setPressedCallback((button, mouseButton) -> {
-            PacketDistributor.sendToServer(new AddWorkspaceVariantPacket(screen.anchor(),
-                    sourceBaseName, sourcePieceName));
+            screen.draftSession().stageVariantAddition(sourceBaseName, sourcePieceName);
+            screen.flagNeedSetup();
             return true;
         });
+
+        if (piece.variantIndex() > 0) {
+            MKButton deleteVariant = new MKButton(Component.literal("Delete Variant"), 180, screen.buttonHeight());
+            content.addWidget(deleteVariant);
+            content.addConstraintToWidget(new CenterXConstraint(), deleteVariant);
+            deleteVariant.setPressedCallback((button, mouseButton) -> {
+                screen.draftSession().stageVariantDeletion(piece.pieceId());
+                screen.flagNeedSetup();
+                return true;
+            });
+        }
 
         if (stairCategory && WorkspacePieceDisplay.supportsStairGeneration(piece)) {
             String pieceName = piece.pieceName();

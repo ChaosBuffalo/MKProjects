@@ -43,42 +43,7 @@ public class WorkspaceFormInsertFamilyDetailPage extends WorkspacePageBase {
         MKScrollView scrollView = addScrollBelowHeader(screen, root, helpText);
         MKStackLayoutVertical content = createContentStack(screen);
 
-        MKTextFieldWidget idField = makeField(screen, "Family Id", insertFamily.familyId());
-        idField.setTextChangeCallback((field, text) -> editor.replaceInsertFamily(index,
-                copyInsertFamily(text.trim().isBlank() ? insertFamily.familyId() : text.trim(),
-                        insertFamily.kind(), insertFamily.width(), insertFamily.height(), insertFamily.depth())));
-
-        MKButton kindButton = new MKButton(Component.literal(
-                WorkspacePieceDisplay.formatTopologyLabel(insertFamily.kind().getSerializedName())),
-                180, screen.buttonHeight());
-        kindButton.setPressedCallback((button, mouseButton) -> {
-            editor.replaceInsertFamily(index, copyInsertFamily(insertFamily.familyId(),
-                    cycleKind(insertFamily.kind(), mouseButton == 1), insertFamily.width(), insertFamily.height(),
-                    insertFamily.depth()));
-            screen.flagNeedSetup();
-            return true;
-        });
-
-        MKTextFieldWidget widthField = makeField(screen, "Width", Integer.toString(insertFamily.width()));
-        widthField.setTextChangeCallback((field, text) -> editor.replaceInsertFamily(index,
-                copyInsertFamily(insertFamily.familyId(), insertFamily.kind(),
-                        parseInt(text, insertFamily.width()), insertFamily.height(), insertFamily.depth())));
-
-        MKTextFieldWidget heightField = makeField(screen, "Height", Integer.toString(insertFamily.height()));
-        heightField.setTextChangeCallback((field, text) -> editor.replaceInsertFamily(index,
-                copyInsertFamily(insertFamily.familyId(), insertFamily.kind(),
-                        insertFamily.width(), parseInt(text, insertFamily.height()), insertFamily.depth())));
-
-        MKTextFieldWidget depthField = makeField(screen, "Depth", Integer.toString(insertFamily.depth()));
-        depthField.setTextChangeCallback((field, text) -> editor.replaceInsertFamily(index,
-                copyInsertFamily(insertFamily.familyId(), insertFamily.kind(),
-                        insertFamily.width(), insertFamily.height(), parseInt(text, insertFamily.depth()))));
-
-        addRow(screen, content, "Family Id", idField);
-        addRow(screen, content, "Kind", kindButton);
-        addRow(screen, content, "Width", widthField);
-        addRow(screen, content, "Height", heightField);
-        addRow(screen, content, "Depth", depthField);
+        addInsertFamilyControls(screen, content, index, insertFamily);
 
         finishScrollContent(screen, scrollView, content);
 
@@ -94,7 +59,77 @@ public class WorkspaceFormInsertFamilyDetailPage extends WorkspacePageBase {
         return root;
     }
 
-    private MKWorkspaceInsertFamilyDefinition copyInsertFamily(String familyId,
+    void addInlineInsertFamilyDetailControls(MKWorkspaceScreen screen, MKStackLayoutVertical content, int index,
+                                             Runnable onClose) {
+        WorkspaceDraftSession editor = screen.draftSession();
+        List<MKWorkspaceInsertFamilyDefinition> insertFamilies = editor.insertFamilies();
+        if (index < 0 || index >= insertFamilies.size()) {
+            addInlineText(screen, content, "The selected insert family is no longer available.");
+            return;
+        }
+
+        MKWorkspaceInsertFamilyDefinition insertFamily = insertFamilies.get(index);
+        addInlineText(screen, content, "Insert: " + insertFamily.familyId());
+        addInlineText(screen, content,
+                "Edit one insert family at a time. Width and height include the hallway shell; depth is the authored template length along the generated route.");
+
+        addInsertFamilyControls(screen, content, index, insertFamily);
+
+        MKButton remove = new MKButton(Component.literal("Remove Insert"), 180, screen.buttonHeight());
+        remove.setPressedCallback((button, mouseButton) -> {
+            editor.removeInsertFamily(index);
+            editor.selectedInsertFamilyIndex(-1);
+            onClose.run();
+            return true;
+        });
+        content.addWidget(remove);
+        content.addConstraintToWidget(new CenterXConstraint(), remove);
+
+    }
+
+    private void addInsertFamilyControls(MKWorkspaceScreen screen, MKStackLayoutVertical content, int index,
+                                         MKWorkspaceInsertFamilyDefinition insertFamily) {
+        WorkspaceDraftSession editor = screen.draftSession();
+        MKTextFieldWidget idField = makeField(screen, "Family Id", insertFamily.familyId());
+        idField.setTextChangeCallback((field, text) -> editor.replaceInsertFamily(index,
+                copyInsertFamily(insertFamily, text.trim().isBlank() ? insertFamily.familyId() : text.trim(),
+                        insertFamily.kind(), insertFamily.width(), insertFamily.height(), insertFamily.depth())));
+
+        MKButton kindButton = new MKButton(Component.literal(
+                WorkspacePieceDisplay.formatTopologyLabel(insertFamily.kind().getSerializedName())),
+                180, screen.buttonHeight());
+        kindButton.setPressedCallback((button, mouseButton) -> {
+            editor.replaceInsertFamily(index, copyInsertFamily(insertFamily, insertFamily.familyId(),
+                    cycleKind(insertFamily.kind(), mouseButton == 1), insertFamily.width(), insertFamily.height(),
+                    insertFamily.depth()));
+            screen.flagNeedSetup();
+            return true;
+        });
+
+        MKTextFieldWidget widthField = makeField(screen, "Width", Integer.toString(insertFamily.width()));
+        widthField.setTextChangeCallback((field, text) -> editor.replaceInsertFamily(index,
+                copyInsertFamily(insertFamily, insertFamily.familyId(), insertFamily.kind(),
+                        parseInt(text, insertFamily.width()), insertFamily.height(), insertFamily.depth())));
+
+        MKTextFieldWidget heightField = makeField(screen, "Height", Integer.toString(insertFamily.height()));
+        heightField.setTextChangeCallback((field, text) -> editor.replaceInsertFamily(index,
+                copyInsertFamily(insertFamily, insertFamily.familyId(), insertFamily.kind(),
+                        insertFamily.width(), parseInt(text, insertFamily.height()), insertFamily.depth())));
+
+        MKTextFieldWidget depthField = makeField(screen, "Depth", Integer.toString(insertFamily.depth()));
+        depthField.setTextChangeCallback((field, text) -> editor.replaceInsertFamily(index,
+                copyInsertFamily(insertFamily, insertFamily.familyId(), insertFamily.kind(),
+                        insertFamily.width(), insertFamily.height(), parseInt(text, insertFamily.depth()))));
+
+        addRow(screen, content, "Family Id", idField);
+        addRow(screen, content, "Kind", kindButton);
+        addRow(screen, content, "Width", widthField);
+        addRow(screen, content, "Height", heightField);
+        addRow(screen, content, "Depth", depthField);
+    }
+
+    private MKWorkspaceInsertFamilyDefinition copyInsertFamily(MKWorkspaceInsertFamilyDefinition source,
+                                                               String familyId,
                                                                MKWorkspaceInsertFamilyKind kind,
                                                                int width,
                                                                int height,
@@ -104,12 +139,20 @@ public class WorkspaceFormInsertFamilyDetailPage extends WorkspacePageBase {
                 kind,
                 Math.max(1, width),
                 Math.max(1, height),
-                Math.max(1, depth)
+                Math.max(1, depth),
+                source.attachmentFace(),
+                source.faceUOffset(),
+                source.faceVOffset(),
+                source.templateJigsawFinalState(),
+                source.templateCloneSourcePieceName()
         );
     }
 
     private MKWorkspaceInsertFamilyKind cycleKind(MKWorkspaceInsertFamilyKind current, boolean reverse) {
-        List<MKWorkspaceInsertFamilyKind> values = List.of(MKWorkspaceInsertFamilyKind.values());
+        List<MKWorkspaceInsertFamilyKind> values = List.of(MKWorkspaceInsertFamilyKind.values()).stream()
+                .filter(kind -> !kind.isDeprecatedAlias())
+                .toList();
+        current = current.canonical();
         int index = values.indexOf(current);
         if (index < 0) {
             return values.getFirst();
@@ -127,7 +170,7 @@ public class WorkspaceFormInsertFamilyDetailPage extends WorkspacePageBase {
     private void addRow(MKWorkspaceScreen screen, MKStackLayoutVertical root, String label,
                         MKTextFieldWidget field) {
         MKText labelText = screen.makeWhiteText(Component.literal(label));
-        labelText.setWidth(screen.contentWidth());
+        labelText.setWidth(contentTextWidth(root));
         root.addWidget(labelText);
         root.addConstraintToWidget(MarginConstraint.LEFT, labelText);
         root.addWidget(field);
@@ -136,11 +179,23 @@ public class WorkspaceFormInsertFamilyDetailPage extends WorkspacePageBase {
 
     private void addRow(MKWorkspaceScreen screen, MKStackLayoutVertical root, String label, MKButton button) {
         MKText labelText = screen.makeWhiteText(Component.literal(label));
-        labelText.setWidth(screen.contentWidth());
+        labelText.setWidth(contentTextWidth(root));
         root.addWidget(labelText);
         root.addConstraintToWidget(MarginConstraint.LEFT, labelText);
         root.addWidget(button);
         root.addConstraintToWidget(new CenterXConstraint(), button);
+    }
+
+    private void addInlineText(MKWorkspaceScreen screen, MKStackLayoutVertical content, String label) {
+        MKText text = screen.makeWhiteText(Component.literal(label));
+        text.setWidth(contentTextWidth(content));
+        text.setMultiline(true);
+        content.addWidget(text);
+        content.addConstraintToWidget(MarginConstraint.LEFT, text);
+    }
+
+    private int contentTextWidth(MKStackLayoutVertical content) {
+        return Math.max(120, content.getWidth() - 16);
     }
 
     private int parseInt(String value, int fallback) {

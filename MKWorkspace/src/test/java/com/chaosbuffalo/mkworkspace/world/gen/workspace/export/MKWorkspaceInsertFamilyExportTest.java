@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MKWorkspaceInsertFamilyExportTest {
@@ -66,7 +67,8 @@ class MKWorkspaceInsertFamilyExportTest {
         MKStructureWorkspace workspace = workspaceWithInsertFamily(
                 draft,
                 insertFamily,
-                List.of(runtimeStartPiece(draft), insertVariantPiece(draft, insertFamily))
+                List.of(runtimeStartPiece(draft), insertAuthoringTemplatePiece(draft, insertFamily),
+                        insertVariantPiece(draft, insertFamily))
         );
 
         MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, 5, "test");
@@ -79,6 +81,10 @@ class MKWorkspaceInsertFamilyExportTest {
                 .orElseThrow();
         assertEquals("insert_families/crypt_link_supports", pool.baseName());
         assertEquals(List.of("crypt_link_supports"), pool.childBaseNames());
+        assertTrue(manifest.runtimeHints().templateGroups().stream()
+                .anyMatch(group -> group.baseName().equals(insertFamily.familyId()) &&
+                        group.pieceMetadata().terminal() &&
+                        group.pieceMetadata().branchCap()));
         assertEquals(1, manifest.settings().insertFamilies().size());
         assertTrue(manifest.templateGroups().stream()
                 .anyMatch(group -> group.baseName().equals("crypt_link_supports")));
@@ -86,6 +92,51 @@ class MKWorkspaceInsertFamilyExportTest {
         MKStructureWorkspace imported = new MKStructureWorkspaceImportService()
                 .workspaceFromManifest(UUID.randomUUID(), BlockPos.ZERO, 123L, manifest);
         assertEquals(List.of(insertFamily), imported.insertFamilies());
+    }
+
+    @Test
+    void insertFamilyAuthoringTemplatesAreNotRuntimePoolChildren() {
+        MKStructureWorkspace draft = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        MKWorkspaceInsertFamilyDefinition insertFamily =
+                MKWorkspaceInsertFamilyDefinition.floorLinkHallway("crypt_link_supports", 5, 4, 3);
+        MKStructureWorkspace workspace = workspaceWithInsertFamily(
+                draft,
+                insertFamily,
+                List.of(runtimeStartPiece(draft), insertAuthoringTemplatePiece(draft, insertFamily))
+        );
+
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, 5, "test");
+
+        ResourceLocation expectedPool = MKWorkspaceInsertFamilyDefinition.poolId(
+                workspace.namespace(), workspace.structureName(), insertFamily.familyId());
+        assertFalse(manifest.runtimeHints().pools().stream()
+                .anyMatch(candidate -> candidate.poolId().equals(expectedPool)));
+    }
+
+    @Test
+    void insertFamilyRuntimePoolHonorsTaggedVariantIndexForImportedWorkspaces() {
+        MKStructureWorkspace draft = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        MKWorkspaceInsertFamilyDefinition insertFamily =
+                MKWorkspaceInsertFamilyDefinition.floorLinkHallway("crypt_link_supports", 5, 4, 3);
+        MKStructureWorkspace workspace = workspaceWithInsertFamily(
+                draft,
+                insertFamily,
+                List.of(runtimeStartPiece(draft), taggedInsertVariantPieceWithLegacyIdentity(draft, insertFamily))
+        );
+
+        MKWorkspaceExportManifest manifest = MKWorkspaceExportManifest.fromWorkspace(workspace, 5, "test");
+
+        ResourceLocation expectedPool = MKWorkspaceInsertFamilyDefinition.poolId(
+                workspace.namespace(), workspace.structureName(), insertFamily.familyId());
+        MKWorkspaceExportManifest.ExportRuntimePool pool = manifest.runtimeHints().pools().stream()
+                .filter(candidate -> candidate.poolId().equals(expectedPool))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(List.of(insertFamily.familyId()), pool.childBaseNames());
+        assertTrue(manifest.runtimeHints().templateGroups().stream()
+                .anyMatch(group -> group.baseName().equals(insertFamily.familyId()) &&
+                        group.pieceMetadata().terminal() &&
+                        group.pieceMetadata().branchCap()));
     }
 
     @Test
@@ -157,7 +208,30 @@ class MKWorkspaceInsertFamilyExportTest {
         tags.put("workspace_piece_kind", "instance");
         tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID, insertFamily.familyId());
         tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_KIND, insertFamily.kind().getSerializedName());
-        return piece(workspace, insertFamily.familyId() + "_0", insertFamily.familyId(), 0, tags);
+        tags.put(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "1");
+        return piece(workspace, insertFamily.familyId() + "_variant_1", insertFamily.familyId(), 1, tags);
+    }
+
+    private static MKWorkspacePieceDefinition insertAuthoringTemplatePiece(MKStructureWorkspace workspace,
+                                                                          MKWorkspaceInsertFamilyDefinition insertFamily) {
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>();
+        tags.put("workspace_base_name", insertFamily.familyId());
+        tags.put("workspace_piece_kind", "template");
+        tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID, insertFamily.familyId());
+        tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_KIND, insertFamily.kind().getSerializedName());
+        tags.put(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "0");
+        return piece(workspace, insertFamily.familyId() + "_template", insertFamily.familyId(), 0, tags);
+    }
+
+    private static MKWorkspacePieceDefinition taggedInsertVariantPieceWithLegacyIdentity(MKStructureWorkspace workspace,
+                                                                                        MKWorkspaceInsertFamilyDefinition insertFamily) {
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>();
+        tags.put("workspace_base_name", insertFamily.familyId());
+        tags.put("workspace_piece_kind", "instance");
+        tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID, insertFamily.familyId());
+        tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_KIND, insertFamily.kind().getSerializedName());
+        tags.put(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "1");
+        return piece(workspace, insertFamily.familyId() + "_legacy_variant_1", insertFamily.familyId(), 0, tags);
     }
 
     private static MKWorkspacePieceDefinition piece(MKStructureWorkspace workspace, String pieceName, String roleId,

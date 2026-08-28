@@ -141,6 +141,100 @@ public class WorkspaceFormFamilyDetailPage extends WorkspacePageBase {
         return root;
     }
 
+    void addInlineFamilyDetailControls(MKWorkspaceScreen screen, MKStackLayoutVertical content, int index,
+                                       Runnable onClose) {
+        WorkspaceDraftSession editor = screen.draftSession();
+        editor.ensureInitialized();
+        if (index < 0 || index >= editor.draft().familyDefinitions.size()) {
+            addInlineText(screen, content, "The selected family is no longer available.");
+            return;
+        }
+
+        MKWorkspaceRoomFamilyDefinition family = editor.draft().familyDefinitions.get(index);
+        MKWorkspaceTopologySlotMetadata slotMetadata = MKWorkspaceTopologySlotMetadata.fromFamily(family);
+
+        addInlineText(screen, content, "Family: " + family.baseName());
+        addInlineText(screen, content, "Edit one family at a time. Planner exits are configured from the planner editors.");
+
+        MKTextFieldWidget baseNameField = makeField(screen, "Base Name", family.baseName());
+        baseNameField.setTextChangeCallback((field, text) -> editor.replaceFamilyDefinition(index,
+                MKWorkspaceRoomFamilyDefinition.forTopologySlot(
+                        text.trim().isBlank() ? family.baseName() : text.trim(),
+                        family.slotMetadata(), family.verticalAccessGroupId(), family.supportsVerticalAccess(),
+                        family.roomWidth(), family.roomLength(), family.roomHeight(), family.horizontalExtrusionMode(),
+                        family.horizontalExits(), family.topVoidMargin(), family.bottomVoidMargin(),
+                        family.paletteOverride())));
+        MKTextFieldWidget topologySlotField = makeField(screen, "Topology Slot", family.topologySlotId());
+        topologySlotField.setTextChangeCallback((field, text) ->
+                editor.replaceFamilyTopologySlotId(index, text.trim().isBlank() ? family.topologySlotId() : text.trim()));
+        MKTextFieldWidget verticalGroupField = makeField(screen, "Vertical Access Group",
+                family.verticalAccessGroupId());
+        verticalGroupField.setTextChangeCallback((field, text) ->
+                editor.replaceFamilyVerticalAccessGroupId(index,
+                        text.trim().isBlank() ? family.verticalAccessGroupId() : text.trim()));
+        MKWorkspaceFoundationPolicy inheritedFoundation = editor.resolveFamilyInheritedFoundation(family);
+        MKButton foundationModeButton = new MKButton(Component.literal(formatFamilyFoundationLabel(family, inheritedFoundation)),
+                180, 20);
+        foundationModeButton.setPressedCallback((button, mouseButton) -> {
+            editor.replaceFamilyFoundationPolicyOverride(index,
+                    nextFamilyFoundationOverride(family.foundationPolicyOverrideOpt(), inheritedFoundation,
+                            isReverseClick(mouseButton)));
+            screen.flagNeedSetup();
+            return true;
+        });
+        MKButton extrusionModeButton = new MKButton(Component.literal(formatFamilyExtrusionMode(family.horizontalExtrusionMode())),
+                180, 20);
+        extrusionModeButton.setPressedCallback((button, mouseButton) -> {
+            editor.replaceFamilyDefinition(index, MKWorkspaceRoomFamilyDefinition.forTopologySlot(
+                    family.baseName(), family.slotMetadata(), family.verticalAccessGroupId(),
+                    family.supportsVerticalAccess(), family.roomWidth(), family.roomLength(), family.roomHeight(),
+                    cycleValue(List.of(MKWorkspaceHorizontalExtrusionMode.values()), family.horizontalExtrusionMode(),
+                            isReverseClick(mouseButton)),
+                    family.horizontalExits(), family.topVoidMargin(), family.bottomVoidMargin(),
+                    family.paletteOverride()));
+            screen.flagNeedSetup();
+            return true;
+        });
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Base Name")), baseNameField);
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Topology Slot")), topologySlotField);
+        if (family.supportsVerticalAccess()) {
+            addRow(screen, content, screen.makeWhiteText(Component.literal("Vertical Access Group")), verticalGroupField);
+        }
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Foundation Mode")), foundationModeButton);
+        addFoundationBlockPickerRow(screen, content, index, family);
+        addFoundationMaskRows(screen, content, index, family);
+        addFoundationOverrideResetRow(screen, content, index, family);
+        addReadOnlyRow(screen, content, "Topology Group",
+                formatTopologyLabel(slotMetadata.topologyGroupId()));
+        addReadOnlyRow(screen, content, "Topology Role",
+                formatTopologyLabel(slotMetadata.roleKind()) + " / " + formatTopologyLabel(slotMetadata.pieceKind()));
+        addRow(screen, content, screen.makeWhiteText(Component.literal("Horizontal Extrusion")), extrusionModeButton);
+        addGeometryRows(screen, content, editor, index, family);
+        screen.addPaletteOverrideRows(content, "Palette Overrides", editor.resolveFamilyInheritedPalette(family),
+                family.paletteOverrideOpt(),
+                override -> editor.replaceFamilyDefinition(index, editor.copyFamilyDefinition(family, override)));
+
+        MKButton remove = new MKButton(Component.literal("Remove Family"), 180, screen.buttonHeight());
+        remove.setPressedCallback((button, mouseButton) -> {
+            editor.removeFamilyDefinition(index);
+            editor.selectedFamilyIndex(-1);
+            editor.selectedFamilyExitIndex(-1);
+            onClose.run();
+            return true;
+        });
+        content.addWidget(remove);
+        content.addConstraintToWidget(new CenterXConstraint(), remove);
+
+    }
+
+    private void addInlineText(MKWorkspaceScreen screen, MKStackLayoutVertical content, String label) {
+        MKText text = screen.makeWhiteText(Component.literal(label));
+        text.setWidth(Math.max(120, content.getWidth() - 16));
+        text.setMultiline(true);
+        content.addWidget(text);
+        content.addConstraintToWidget(MarginConstraint.LEFT, text);
+    }
+
     private void addFoundationBlockPickerRow(MKWorkspaceScreen screen, MKStackLayoutVertical content, int familyIndex,
                                              MKWorkspaceRoomFamilyDefinition family) {
         Optional<MKWorkspaceFoundationPolicy> overrideOpt = family.foundationPolicyOverrideOpt();

@@ -446,11 +446,20 @@ public class MKJigsawPlacement {
                                 depth, dungeonState.progressionFloorIndex(), dungeonState.verticalLevelIndex(),
                                 dungeonState.piecesOnFloor(), dungeonState.branchDepth(), dungeonState.onMainPath());
                     }
+                    if (candidates.isEmpty()) {
+                        logNoPlacement("no_candidates", poolKey, connectorInfo, depth, dungeonState, 0);
+                    }
 
+                    boolean sawNonEmptyCandidate = false;
                     for (StructurePoolElement childElement : candidates) {
                         if (childElement == EmptyPoolElement.INSTANCE) {
+                            if (!sawNonEmptyCandidate) {
+                                logNoPlacement("empty_pool_element", poolKey, connectorInfo, depth, dungeonState,
+                                        candidates.size());
+                            }
                             break;
                         }
+                        sawNonEmptyCandidate = true;
 
                         Optional<ResourceLocation> childTemplateId = getTemplateId(childElement);
                         if (childTemplateId.isEmpty()) {
@@ -572,6 +581,10 @@ public class MKJigsawPlacement {
                                             sawCollision ? "collision" : "unknown_no_placement";
                             logRejection(missReason, connectorInfo, childTemplateId.get(), dungeonState);
                         }
+                    }
+                    if (sawNonEmptyCandidate) {
+                        logNoPlacement("no_candidate_placed", poolKey, connectorInfo, depth, dungeonState,
+                                candidates.size());
                     }
                 }
             }
@@ -1245,6 +1258,17 @@ public class MKJigsawPlacement {
                 MKNpc.LOGGER.debug("mk_jigsaw reject reason={} template={} connector={} floor={} vertical={} piecesOnFloor={} branchDepth={} mainPath={}",
                         reason, templateId, connectorInfo.role().getSerializedName(), state.progressionFloorIndex(),
                         state.verticalLevelIndex(), state.piecesOnFloor(), state.branchDepth(), state.onMainPath());
+            }
+        }
+
+        private void logNoPlacement(String reason, ResourceKey<StructureTemplatePool> poolKey,
+                                    MKConnectorInfo connectorInfo, int depth, MKDungeonPieceState state,
+                                    int candidateCount) {
+            if (MKNpc.DEV_LOGGING) {
+                MKNpc.LOGGER.debug("mk_jigsaw no_place reason={} pool={} connector={} count={} depth={} floor={} vertical={} piecesOnFloor={} branchDepth={} mainPath={}",
+                        reason, poolKey.location(), connectorInfo.role().getSerializedName(), candidateCount, depth,
+                        state.progressionFloorIndex(), state.verticalLevelIndex(), state.piecesOnFloor(),
+                        state.branchDepth(), state.onMainPath());
             }
         }
 

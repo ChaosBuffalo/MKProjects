@@ -161,14 +161,17 @@ public record HubSpokePlannerSettings(
     }
 
     public HubSpokePlannerSettings withAddedSpokeTemplate() {
+        return withAddedSpokeTemplate(spokeTemplates.getLast());
+    }
+
+    public HubSpokePlannerSettings withAddedSpokeTemplate(SpokeTemplate sourceTemplate) {
         if (spokeTemplates.size() >= MAX_SPOKE_TEMPLATES) {
             return this;
         }
-        SpokeTemplate source = spokeTemplates.getLast();
-        int nextIndex = spokeTemplates.size();
+        SpokeTemplate source = sourceTemplate == null ? spokeTemplates.getLast() : sourceTemplate;
         SpokeTemplate added = new SpokeTemplate(
-                HubSpokePlanner.SPOKE_BASE_NAME + "_" + (nextIndex + 1),
-                "Spoke " + (nextIndex + 1),
+                source.baseName(),
+                source.label(),
                 source.length(),
                 source.height(),
                 source.validDirections());

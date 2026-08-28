@@ -1,5 +1,6 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace.mutation;
 
+import com.chaosbuffalo.mkworkspace.MKWorkspace;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.MKWorkspaceAnchor;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.capability.IMKStructureWorkspaceData;
@@ -7,9 +8,12 @@ import com.chaosbuffalo.mkworkspace.world.gen.workspace.export.MKWorkspaceBackup
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyKind;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceGeometry;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePlannerId;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateCloneTags;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceRelayoutImpact;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
@@ -24,9 +28,12 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignText;
@@ -45,10 +52,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 public class MKWorkspacePieceRelayoutService {
+    private static final ResourceLocation EMPTY_POOL = ResourceLocation.parse("minecraft:empty");
+    private static final String FLAT_PLATFORM_KIND_TAG = "workspace_flat_platform_kind";
     private final MKWorkspaceBackupManifestWriter backupWriter = new MKWorkspaceBackupManifestWriter();
     private final MKWorkspaceGridLayout gridLayout = new MKWorkspaceGridLayout();
     private final MKWorkspaceScaffoldBuilder scaffoldBuilder = new MKWorkspaceScaffoldBuilder();
@@ -75,9 +84,7 @@ public class MKWorkspacePieceRelayoutService {
             int openingWidth,
             int openingHeight,
             int lateralOffset,
-            int verticalOffset,
-            String targetPool,
-            String incomingPool
+            int verticalOffset
     ) {
     }
 
@@ -131,7 +138,17 @@ public class MKWorkspacePieceRelayoutService {
                 warnings.add(expandedCount + " templates will expand while keeping existing authored blocks.");
             }
             if (newCount > 0) {
-                warnings.add(newCount + " new physical template slots will be scaffolded.");
+                long clonedNewCount = impacts.stream()
+                        .filter(impact -> "new".equals(impact.outcome()))
+                        .filter(impact -> impact.reason().contains("will be cloned from "))
+                        .count();
+                long scaffoldedNewCount = newCount - clonedNewCount;
+                if (scaffoldedNewCount > 0) {
+                    warnings.add(scaffoldedNewCount + " new physical template slots will be scaffolded.");
+                }
+                if (clonedNewCount > 0) {
+                    warnings.add(clonedNewCount + " new physical template slots will be cloned from selected source templates.");
+                }
             }
             if (removedCount > 0) {
                 warnings.add(removedCount + " removed physical template slots will be cleared.");
@@ -261,8 +278,12 @@ public class MKWorkspacePieceRelayoutService {
         }
 
         CatalogPlan plan = planOpt.get();
+        logCatalogRelayoutPlan(targetWorkspace, plan);
         MKWorkspaceBackupManifestWriter.WrittenBackup backup =
                 backupWriter.writeBeforeMutation(level, existing, "catalog-preserving-relayout");
+
+        Map<MKPlannedPiece, MKWorkspacePieceDefinition> clonedNewByPlan =
+                cloneNewPiecesFromSources(level, existing, targetWorkspace, plan.newPieces(), plan.layoutPieces());
 
         Map<BlockPos, BlockSnapshot> moveSnapshots = snapshotSources(level, plan.moves());
         Map<BlockPos, BlockSnapshot> destinationSnapshots = mapDestinations(plan.moves(), moveSnapshots);
@@ -276,8 +297,10 @@ public class MKWorkspacePieceRelayoutService {
                 .map(PieceExpansion::targetPiece)
                 .toList());
         piecesToBuild.addAll(plan.buildPieces());
+        piecesToBuild.removeAll(clonedNewByPlan.keySet());
         Map<MKPlannedPiece, MKWorkspacePieceDefinition> generatedByPlan = scaffoldBuilder.buildSelected(
                 level, targetWorkspace, piecesToBuild, plan.layoutPieces());
+        physicalByPlan.putAll(clonedNewByPlan);
         placeDestinations(level, destinationSnapshots);
         for (PieceMove move : plan.moves()) {
             MKPlannedPiece targetPiece = matchingLayoutPiece(move.moved(), plan.layoutPieces());
@@ -297,6 +320,9 @@ public class MKWorkspacePieceRelayoutService {
             physicalByPlan.put(expansion.targetPiece(), withPreservedIdentity(generated, expansion.original()));
         }
         for (MKPlannedPiece buildPiece : plan.buildPieces()) {
+            if (physicalByPlan.containsKey(buildPiece)) {
+                continue;
+            }
             MKWorkspacePieceDefinition generated = generatedByPlan.get(buildPiece);
             if (generated == null) {
                 throw new IllegalStateException("missing generated workspace piece for " + buildPiece.pieceName());
@@ -347,6 +373,34 @@ public class MKWorkspacePieceRelayoutService {
         int movedBlocks = moveSnapshots.size() + expansionSnapshots.values().stream().mapToInt(Map::size).sum();
         return Optional.of(new RelayoutResult(updated, backup.path(),
                 plan.moves().size() + plan.expansions().size(), movedBlocks));
+    }
+
+    private void logCatalogRelayoutPlan(MKStructureWorkspace targetWorkspace, CatalogPlan plan) {
+        CatalogRelayoutSummary summary = summarize(plan);
+        MKWorkspace.LOGGER.info("Workspace catalog relayout executing anchor={} workspace={}:{} targetPieces={} " +
+                        "layoutPieces={} preserved={} moved={} expanded={} new={} removed={} rebuilds={}",
+                targetWorkspace.anchor().toShortString(),
+                targetWorkspace.namespace(),
+                targetWorkspace.structureName(),
+                plan.targetPieces().size(),
+                plan.layoutPieces().size(),
+                summary.preservedCount(),
+                summary.movedCount(),
+                summary.expandedCount(),
+                summary.newCount(),
+                summary.removedCount(),
+                summary.rebuildRequiredCount());
+        for (MKWorkspaceRelayoutImpact impact : summary.impacts()) {
+            MKWorkspace.LOGGER.info("Workspace catalog relayout impact detail: outcome={} base={} piece={} variant={} " +
+                            "plannerId={} slot={} reason={}",
+                    impact.outcome(),
+                    impact.baseName(),
+                    impact.pieceName(),
+                    impact.variantIndex(),
+                    impact.plannerId(),
+                    impact.stableSlotKey().isBlank() ? impact.plannerId() : impact.stableSlotKey(),
+                    impact.reason());
+        }
     }
 
     private Optional<CatalogPlan> planCatalogRelayout(MKStructureWorkspace existing,
@@ -517,7 +571,10 @@ public class MKWorkspacePieceRelayoutService {
                     "scaffold will expand while existing authored blocks are preserved"));
         }
         for (MKPlannedPiece newPiece : plan.newPieces()) {
-            impacts.add(impact(newPiece, "new", "new physical authored template slot will be scaffolded"));
+            String sourcePieceName = templateCloneSourcePieceName(newPiece.tags());
+            impacts.add(impact(newPiece, "new", sourcePieceName.isBlank() ?
+                    "new physical authored template slot will be scaffolded" :
+                    "new physical authored template slot will be cloned from " + sourcePieceName));
         }
         for (PieceRebuild rebuild : plan.rebuilds()) {
             String reason = rebuild.remapped() ?
@@ -558,6 +615,43 @@ public class MKWorkspacePieceRelayoutService {
         );
     }
 
+    private Map<MKPlannedPiece, MKWorkspacePieceDefinition> cloneNewPiecesFromSources(
+            ServerLevel level,
+            MKStructureWorkspace existing,
+            MKStructureWorkspace targetWorkspace,
+            List<MKPlannedPiece> newPieces,
+            List<MKPlannedPiece> layoutPieces) {
+        LinkedHashMap<MKPlannedPiece, MKWorkspacePieceDefinition> cloned = new LinkedHashMap<>();
+        if (newPieces.isEmpty()) {
+            return Map.of();
+        }
+        Map<String, MKWorkspacePieceDefinition> existingByPieceName = existing.pieces().stream()
+                .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
+                .collect(java.util.stream.Collectors.toMap(
+                        MKWorkspacePieceDefinition::pieceName,
+                        piece -> piece,
+                        (first, ignored) -> first,
+                        LinkedHashMap::new));
+        for (MKPlannedPiece newPiece : newPieces) {
+            String sourcePieceName = templateCloneSourcePieceName(newPiece.tags());
+            if (sourcePieceName.isBlank()) {
+                continue;
+            }
+            MKWorkspacePieceDefinition sourcePiece = existingByPieceName.get(sourcePieceName);
+            if (sourcePiece == null) {
+                throw new IllegalStateException("new workspace template " + newPiece.pieceName() +
+                        " requested clone source " + sourcePieceName + " but no physical authored source exists");
+            }
+            cloned.put(newPiece, scaffoldBuilder.cloneFromTemplate(level, targetWorkspace, sourcePiece, newPiece,
+                    layoutPieces));
+        }
+        return Map.copyOf(cloned);
+    }
+
+    private String templateCloneSourcePieceName(Map<String, String> tags) {
+        return tags.getOrDefault(MKWorkspaceTemplateCloneTags.SOURCE_PIECE_NAME_TAG, "");
+    }
+
     private PieceMove createCatalogMove(MKStructureWorkspace workspace, MKWorkspacePieceDefinition original,
                                         MKPlannedPiece targetPiece, MKWorkspaceGridLayout.Placement placement) {
         BlockPos newOrigin = placement.previewOrigin().offset(workspace.previewMargin(), 0, workspace.previewMargin());
@@ -585,7 +679,7 @@ public class MKWorkspacePieceRelayoutService {
                 targetPiece.plannerId(),
                 original.variantIndex(),
                 targetDimensions(targetPiece, original.effectiveDimensions()),
-                original.connectors(),
+                retargetConnectors(workspace, original, targetPiece),
                 original.worldOrigin().offset(delta),
                 shift(original.exportBounds(), delta),
                 previewBounds,
@@ -597,6 +691,67 @@ public class MKWorkspacePieceRelayoutService {
         );
     }
 
+    private List<MKWorkspaceConnectorDefinition> retargetConnectors(MKStructureWorkspace workspace,
+                                                                    MKWorkspacePieceDefinition original,
+                                                                    MKPlannedPiece targetPiece) {
+        ArrayList<MKPlannedConnector> targetConnectors = new ArrayList<>(targetPiece.connectors().stream()
+                .filter(MKPlannedConnector::placesJigsaw)
+                .toList());
+        ArrayList<MKWorkspaceConnectorDefinition> retargeted = new ArrayList<>();
+        for (MKWorkspaceConnectorDefinition originalConnector : original.connectors()) {
+            ConnectorSignature signature = connectorSignature(originalConnector);
+            int targetIndex = firstMatchingConnectorIndex(targetConnectors, signature);
+            if (targetIndex < 0) {
+                retargeted.add(originalConnector);
+                continue;
+            }
+            MKPlannedConnector targetConnector = targetConnectors.remove(targetIndex);
+            retargeted.add(retargetConnector(workspace, targetPiece, originalConnector, targetConnector));
+        }
+        return List.copyOf(retargeted);
+    }
+
+    private int firstMatchingConnectorIndex(List<MKPlannedConnector> connectors, ConnectorSignature signature) {
+        for (int i = 0; i < connectors.size(); i++) {
+            if (signature.equals(connectorSignature(connectors.get(i)))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private MKWorkspaceConnectorDefinition retargetConnector(MKStructureWorkspace workspace,
+                                                             MKPlannedPiece targetPiece,
+                                                             MKWorkspaceConnectorDefinition original,
+                                                             MKPlannedConnector targetConnector) {
+        ResourceLocation targetPool = ResourceLocation.parse(resolveTargetPool(workspace, targetPiece,
+                targetConnector.targetPoolName()));
+        ResourceLocation incomingPool = ResourceLocation.parse(resolveIncomingPool(workspace,
+                targetConnector.incomingPoolName()));
+        ResourceLocation jigsawName = isEmptyPool(incomingPool) ?
+                ResourceLocation.fromNamespaceAndPath(workspace.namespace(), targetConnector.role().getSerializedName()) :
+                incomingPool;
+        ResourceLocation jigsawTarget = isEmptyPool(targetPool) ?
+                ResourceLocation.fromNamespaceAndPath(workspace.namespace(), targetName(targetConnector.role())) :
+                targetPool;
+        return new MKWorkspaceConnectorDefinition(
+                original.role(),
+                original.facing(),
+                original.relativePos(),
+                original.openingWidth(),
+                original.openingHeight(),
+                original.lateralOffset(),
+                original.verticalOffset(),
+                jigsawName,
+                jigsawTarget,
+                targetPool,
+                incomingPool,
+                original.jigsawOrientation(),
+                original.jigsawFinalState(),
+                original.jigsawJoint()
+        );
+    }
+
     private boolean canPreserveAuthoredBlocks(MKWorkspacePieceDefinition existingPiece, MKPlannedPiece targetPiece,
                                               MKStructureWorkspace targetWorkspace) {
         return targetExportWidth(targetWorkspace, targetPiece) == existingPiece.exportBounds().getXSpan() &&
@@ -605,8 +760,7 @@ public class MKWorkspacePieceRelayoutService {
                 existingPiece.effectiveDimensions().roomWidth() == targetPiece.interiorWidth() &&
                 existingPiece.effectiveDimensions().roomLength() == targetPiece.interiorLength() &&
                 existingPiece.effectiveDimensions().roomHeight() == targetPiece.interiorHeight() &&
-                Objects.equals(connectorSignatures(existingPiece),
-                        connectorSignatures(targetWorkspace, targetPiece));
+                connectorSignaturesCompatible(targetWorkspace, existingPiece, targetPiece);
     }
 
     private boolean canExpandPreservingAuthoredBlocks(MKWorkspacePieceDefinition existingPiece,
@@ -627,8 +781,7 @@ public class MKWorkspacePieceRelayoutService {
                         targetPiece.interiorWidth() > existingPiece.effectiveDimensions().roomWidth() ||
                         targetPiece.interiorLength() > existingPiece.effectiveDimensions().roomLength() ||
                         targetPiece.interiorHeight() > existingPiece.effectiveDimensions().roomHeight()) &&
-                Objects.equals(connectorSignatures(existingPiece),
-                        connectorSignatures(targetWorkspace, targetPiece));
+                connectorSignaturesCompatible(targetWorkspace, existingPiece, targetPiece);
     }
 
     private int targetExportWidth(MKStructureWorkspace workspace, MKPlannedPiece piece) {
@@ -649,20 +802,13 @@ public class MKWorkspacePieceRelayoutService {
     }
 
     private boolean isExactBoundsScaffold(MKPlannedPiece piece) {
-        return MKWorkspacePieceGeometry.isExactBoundsScaffold(piece.tags());
+        return MKWorkspacePieceGeometry.isExactBoundsScaffold(piece.tags()) ||
+                !piece.tags().getOrDefault(FLAT_PLATFORM_KIND_TAG, "").isBlank();
     }
 
     private List<ConnectorSignature> connectorSignatures(MKWorkspacePieceDefinition piece) {
         return piece.connectors().stream()
-                .map(connector -> new ConnectorSignature(
-                        connector.role(),
-                        connector.facing(),
-                        connector.openingWidth(),
-                        connector.openingHeight(),
-                        connector.lateralOffset(),
-                        connector.verticalOffset(),
-                        connector.targetPool().toString(),
-                        connector.incomingPool().toString()))
+                .map(this::connectorSignature)
                 .sorted(CONNECTOR_SIGNATURE_ORDER)
                 .toList();
     }
@@ -670,17 +816,60 @@ public class MKWorkspacePieceRelayoutService {
     private List<ConnectorSignature> connectorSignatures(MKStructureWorkspace workspace, MKPlannedPiece piece) {
         return piece.connectors().stream()
                 .filter(MKPlannedConnector::placesJigsaw)
-                .map(connector -> new ConnectorSignature(
-                        connector.role(),
-                        connector.facing(),
-                        connector.openingWidth(),
-                        connector.openingHeight(),
-                        connector.lateralOffset(),
-                        connector.verticalOffset(),
-                        resolveTargetPool(workspace, piece, connector.targetPoolName()),
-                        resolveIncomingPool(workspace, connector.incomingPoolName())))
+                .map(this::connectorSignature)
                 .sorted(CONNECTOR_SIGNATURE_ORDER)
                 .toList();
+    }
+
+    private boolean connectorSignaturesCompatible(MKStructureWorkspace workspace,
+                                                  MKWorkspacePieceDefinition existingPiece,
+                                                  MKPlannedPiece targetPiece) {
+        ArrayList<ConnectorSignature> remainingExisting = existingPiece.connectors().stream()
+                .map(this::connectorSignature)
+                .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
+        for (ConnectorSignature targetSignature : connectorSignatures(workspace, targetPiece)) {
+            if (!remainingExisting.remove(targetSignature)) {
+                return false;
+            }
+        }
+        if (remainingExisting.isEmpty()) {
+            return true;
+        }
+        return existingPiece.connectors().stream()
+                .filter(connector -> remainingExisting.contains(connectorSignature(connector)))
+                .allMatch(connector -> isPreservableAuthoredInsertConnector(workspace, connector));
+    }
+
+    private boolean isPreservableAuthoredInsertConnector(MKStructureWorkspace workspace,
+                                                        MKWorkspaceConnectorDefinition connector) {
+        if (connector.role() != MKConnectorRole.LINK_CANDIDATE) {
+            return false;
+        }
+        Set<ResourceLocation> insertFamilyPools = workspace.insertFamilies().stream()
+                .map(family -> MKWorkspaceInsertFamilyDefinition.poolId(workspace.namespace(),
+                        workspace.structureName(), family.familyId()))
+                .collect(java.util.stream.Collectors.toSet());
+        return insertFamilyPools.contains(connector.targetPool()) || insertFamilyPools.contains(connector.incomingPool());
+    }
+
+    private ConnectorSignature connectorSignature(MKWorkspaceConnectorDefinition connector) {
+        return new ConnectorSignature(
+                connector.role(),
+                connector.facing(),
+                connector.openingWidth(),
+                connector.openingHeight(),
+                connector.lateralOffset(),
+                connector.verticalOffset());
+    }
+
+    private ConnectorSignature connectorSignature(MKPlannedConnector connector) {
+        return new ConnectorSignature(
+                connector.role(),
+                connector.facing(),
+                connector.openingWidth(),
+                connector.openingHeight(),
+                connector.lateralOffset(),
+                connector.verticalOffset());
     }
 
     private static final Comparator<ConnectorSignature> CONNECTOR_SIGNATURE_ORDER = Comparator
@@ -689,9 +878,7 @@ public class MKWorkspacePieceRelayoutService {
             .thenComparingInt(ConnectorSignature::openingWidth)
             .thenComparingInt(ConnectorSignature::openingHeight)
             .thenComparingInt(ConnectorSignature::lateralOffset)
-            .thenComparingInt(ConnectorSignature::verticalOffset)
-            .thenComparing(ConnectorSignature::targetPool)
-            .thenComparing(ConnectorSignature::incomingPool);
+            .thenComparingInt(ConnectorSignature::verticalOffset);
 
     private String resolveTargetPool(MKStructureWorkspace workspace, MKPlannedPiece piece, String poolName) {
         String resolvedPoolName = poolName == null ? baseName(piece) : poolName;
@@ -703,6 +890,24 @@ public class MKWorkspacePieceRelayoutService {
             return "minecraft:empty";
         }
         return parseConnectorPool(workspace, poolName).toString();
+    }
+
+    private boolean isEmptyPool(ResourceLocation pool) {
+        return EMPTY_POOL.equals(pool);
+    }
+
+    private String targetName(MKConnectorRole role) {
+        return switch (role) {
+            case MAIN_FORWARD -> MKConnectorRole.MAIN_BACK.getSerializedName();
+            case MAIN_BACK -> MKConnectorRole.MAIN_FORWARD.getSerializedName();
+            case CONNECT_UP -> MKConnectorRole.CONNECT_DOWN.getSerializedName();
+            case CONNECT_DOWN -> MKConnectorRole.CONNECT_UP.getSerializedName();
+            case TOP_CAP_FORWARD -> MKConnectorRole.TOP_CAP_BACK.getSerializedName();
+            case TOP_CAP_BACK -> MKConnectorRole.TOP_CAP_FORWARD.getSerializedName();
+            case BRANCH -> MKConnectorRole.BRANCH.getSerializedName();
+            case LINK_CANDIDATE -> MKConnectorRole.LINK_CANDIDATE.getSerializedName();
+            default -> throw new IllegalStateException("Unsupported workspace connector role " + role);
+        };
     }
 
     private ResourceLocation parseConnectorPool(MKStructureWorkspace workspace, String poolName) {
@@ -833,8 +1038,9 @@ public class MKWorkspacePieceRelayoutService {
                     tags.getOrDefault("workspace_linear_run_path_kind", "") + ":" +
                     variantIndex;
         }
-        if (tags.containsKey("workspace_insert_family_id")) {
-            return "insert-family:" + tags.get("workspace_insert_family_id") + ":" + variantIndex;
+        if (tags.containsKey(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID)) {
+            return "insert-family:" + tags.get(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID) + ":" +
+                    variantIndex;
         }
         String baseName = tags.getOrDefault(MKWorkspaceGridLayout.TAG_BASE_NAME, pieceName);
         return plannerId + ":" + baseName + ":" + variantIndex;
@@ -858,8 +1064,15 @@ public class MKWorkspacePieceRelayoutService {
                     tags.getOrDefault("workspace_floor_room_kind", "") + "." +
                     profileId;
         }
-        if (tags.containsKey("workspace_insert_family_id")) {
-            return "floor_insert_family:floor.insert_family." + tags.get("workspace_insert_family_id");
+        if (tags.containsKey(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID)) {
+            String familyId = tags.get(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID);
+            String kind = tags.getOrDefault(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_KIND,
+                    MKWorkspaceInsertFamilyKind.FLOOR_LINK_HALLWAY.getSerializedName());
+            if (MKWorkspaceInsertFamilyKind.INSERT_SOCKET.getSerializedName().equals(kind) ||
+                    "courtyard_socket".equals(kind)) {
+                return "insert_socket_family:insert_socket.insert_family." + familyId;
+            }
+            return "floor_insert_family:floor.insert_family." + familyId;
         }
         if (tags.containsKey("workspace_perimeter_source_slot_id") &&
                 tags.containsKey("workspace_linear_run_family_id")) {
@@ -957,6 +1170,24 @@ public class MKWorkspacePieceRelayoutService {
             sign.setText(text, false);
             sign.setChanged();
             level.sendBlockUpdated(piece.signPos(), signState, signState, Block.UPDATE_ALL);
+        }
+        refreshConnectorMetadata(level, piece);
+    }
+
+    private void refreshConnectorMetadata(ServerLevel level, MKWorkspacePieceDefinition piece) {
+        for (MKWorkspaceConnectorDefinition connector : piece.connectors()) {
+            BlockPos connectorPos = piece.worldOrigin().offset(connector.relativePos());
+            BlockEntity entity = level.getBlockEntity(connectorPos);
+            if (!(entity instanceof JigsawBlockEntity jigsaw)) {
+                continue;
+            }
+            BlockState state = level.getBlockState(connectorPos);
+            jigsaw.setName(connector.jigsawName());
+            jigsaw.setTarget(connector.jigsawTarget());
+            jigsaw.setPool(ResourceKey.create(Registries.TEMPLATE_POOL, connector.targetPool()));
+            jigsaw.setFinalState(connector.jigsawFinalState());
+            jigsaw.setChanged();
+            level.sendBlockUpdated(connectorPos, state, state, Block.UPDATE_ALL);
         }
     }
 

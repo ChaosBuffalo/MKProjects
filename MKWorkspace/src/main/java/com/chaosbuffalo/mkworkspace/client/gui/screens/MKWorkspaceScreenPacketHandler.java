@@ -1,9 +1,12 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
+import com.chaosbuffalo.mkworkspace.client.render.MKWorkspaceInsertOverlayRenderer;
 import com.chaosbuffalo.mkworkspace.network.packets.MKWorkspaceClientPackets;
+import com.chaosbuffalo.mkworkspace.network.packets.OpenWorkspaceInsertSocketScreenPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.RequestWorkspacePieceChunkPacket;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.insert.MKWorkspaceInsertOverlaySnapshot;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceMutationPreflight;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceSamplePreviewState;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
@@ -40,6 +43,12 @@ public final class MKWorkspaceScreenPacketHandler implements MKWorkspaceClientPa
     }
 
     @Override
+    public void openWorkspaceInsertSocketScreen(
+            OpenWorkspaceInsertSocketScreenPacket.InsertSocketContext socketContext) {
+        Minecraft.getInstance().setScreen(new MKWorkspaceInsertSocketScreen(socketContext));
+    }
+
+    @Override
     public void applyPieceChunk(BlockPos anchor, List<MKWorkspacePieceDefinition> pieces,
                                 int totalPieces, int nextPieceOffset, long pieceRevision) {
         if (Minecraft.getInstance().screen instanceof MKWorkspaceScreen current &&
@@ -57,6 +66,11 @@ public final class MKWorkspaceScreenPacketHandler implements MKWorkspaceClientPa
                 current.anchor().equals(anchor)) {
             Minecraft.getInstance().setScreen(current.copyWithPreflight(preflight));
         }
+    }
+
+    @Override
+    public void applyInsertOverlay(List<MKWorkspaceInsertOverlaySnapshot.Entry> entries) {
+        MKWorkspaceInsertOverlayRenderer.update(entries);
     }
 
     private void requestNextPieceChunk(BlockPos anchor, @Nullable MKStructureWorkspace workspace,

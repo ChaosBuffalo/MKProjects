@@ -18,6 +18,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePaletteTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRuntimePieceInfo;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateCloneTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
@@ -238,27 +239,30 @@ public class HubSpokePlanner implements MKWorkspacePlanner {
         MKWorkspaceRoomFamilyDefinition centerFamily = familyOrDefault(workspace, CENTER_SLOT);
         MKWorkspaceRoomFamilyDefinition spokeFamily = familyOrDefault(workspace, SPOKE_SLOT);
         MKWorkspaceRoomFamilyDefinition sharedCornerFamily = familyOrDefault(workspace, CORNER_SLOT);
-        Map<String, MKWorkspaceRoomFamilyDefinition> cornerFamilies = cornerFamilies(workspace, settings,
+        Map<String, List<MKWorkspaceRoomFamilyDefinition>> cornerFamilies = cornerFamilies(workspace, settings,
                 sharedCornerFamily);
         CornerAttachmentMode cornerAttachmentMode = cornerAttachmentMode(centerFamily.roomWidth(),
                 spokeFamily.roomWidth(), maxCornerWidth(cornerFamilies));
-        Map<Direction, HubSpokePlannerSettings.SpokeTemplate> templateAssignments = settings.templateAssignments();
-        Map<String, Direction> cornerAnchors = cornerAnchorDirections(templateAssignments.keySet());
+        Set<Direction> generatedSpokeDirections = generatedSpokeDirections(settings);
+        Map<String, Direction> cornerAnchors = cornerAnchorDirections(generatedSpokeDirections);
         Map<String, SpokeDefinition> templateSources = sourceSpokesByTemplate(settings);
 
         ArrayList<MKPlannedPiece> pieces = new ArrayList<>();
         pieces.add(createCenterPiece(workspace, centerFamily, spokeFamily, cornerFamilies, cornerAttachmentMode,
-                templateAssignments.keySet(), cornerAnchors));
+                generatedSpokeDirections, cornerAnchors));
         for (SpokeDefinition spoke : SPOKES) {
-            HubSpokePlannerSettings.SpokeTemplate template = templateAssignments.get(spoke.outwardFacing());
-            if (template == null) {
-                continue;
+            for (HubSpokePlannerSettings.SpokeTemplate template : settings.spokeTemplates()) {
+                if (!template.validDirections().contains(spoke.outwardFacing())) {
+                    continue;
+                }
+                SpokeDefinition source = templateSources.getOrDefault(template.baseName(), spoke);
+                MKWorkspaceRoomFamilyDefinition templateFamily = spokeFamilyForTemplate(workspace, template)
+                        .orElse(spokeFamily);
+                MKPlannedPiece piece = createSpokePiece(workspace, spokeFamily, templateFamily, cornerFamilies,
+                        template, spoke, cornerAttachmentMode, cornerAnchors);
+                pieces.add(withTemplateReuse(piece, template.pieceName(source.outwardFacing()),
+                        rotationFrom(source.outwardFacing(), spoke.outwardFacing()), spoke == source));
             }
-            SpokeDefinition source = templateSources.getOrDefault(template.baseName(), SPOKES.getFirst());
-            MKPlannedPiece piece = createSpokePiece(workspace, spokeFamily, cornerFamilies, template, spoke,
-                    cornerAttachmentMode, cornerAnchors);
-            pieces.add(withTemplateReuse(piece, template.pieceName(source.outwardFacing()),
-                    rotationFrom(source.outwardFacing(), spoke.outwardFacing()), spoke == source));
         }
         Map<String, CornerDefinition> cornerSources = cornerSourcesByTemplateSlot(settings, cornerAnchors);
         for (CornerDefinition corner : CORNERS) {
@@ -267,14 +271,19 @@ public class HubSpokePlanner implements MKWorkspacePlanner {
                 continue;
             }
             String templateSlotId = settings.stableCornerTemplateSlot(corner.slotId());
-            MKWorkspaceRoomFamilyDefinition cornerFamily = cornerFamilies.getOrDefault(corner.suffix(),
-                    sharedCornerFamily);
-            MKPlannedPiece piece = createCornerPiece(workspace, cornerFamily, corner, cornerAttachmentMode,
-                    anchorDirection, templateSlotId);
             CornerDefinition source = cornerSources.getOrDefault(templateSlotId, corner);
-            pieces.add(withTemplateReuse(withExportCrop(piece), source.pieceName(),
-                    rotationFromCorner(source, corner), corner == source));
+            for (MKWorkspaceRoomFamilyDefinition cornerFamily : cornerFamilies.getOrDefault(corner.suffix(),
+                    List.of(sharedCornerFamily))) {
+                String sourcePieceName = cornerSourcePieceName(cornerFamily, source);
+                String pieceName = cornerPieceName(cornerFamily, corner, source);
+                String stableIdentity = cornerStableIdentity(cornerFamily, source, templateSlotId);
+                MKPlannedPiece piece = createCornerPiece(workspace, cornerFamily, corner, cornerAttachmentMode,
+                        anchorDirection, stableIdentity, pieceName);
+                pieces.add(withTemplateReuse(withExportCrop(piece), sourcePieceName,
+                        rotationFromCorner(source, corner), corner == source));
+            }
         }
+        pieces.addAll(createInsertFamilyTemplatePieces(workspace));
         return List.copyOf(pieces);
     }
 
@@ -341,15 +350,19 @@ public class HubSpokePlanner implements MKWorkspacePlanner {
     }
 
     public static List<String> sourceSpokeSlots(HubSpokePlannerSettings settings) {
-        LinkedHashMap<String, String> sourceSlotsByBaseName = new LinkedHashMap<>();
-        Map<Direction, HubSpokePlannerSettings.SpokeTemplate> assignments = settings.templateAssignments();
-        for (SpokeDefinition spoke : SPOKES) {
-            HubSpokePlannerSettings.SpokeTemplate template = assignments.get(spoke.outwardFacing());
-            if (template != null) {
-                sourceSlotsByBaseName.putIfAbsent(template.baseName(), spoke.slotId());
-            }
-        }
-        return List.copyOf(sourceSlotsByBaseName.values());
+        return settings.spokeTemplates().stream()
+                .map(HubSpokePlanner::sourceSpokeSlot)
+                .flatMap(Optional::stream)
+                .distinct()
+                .toList();
+    }
+
+    public static Optional<String> sourceSpokeSlot(HubSpokePlannerSettings.SpokeTemplate template) {
+        return sourceSpoke(template).map(SpokeDefinition::slotId);
+    }
+
+    public static Optional<Direction> sourceSpokeDirection(HubSpokePlannerSettings.SpokeTemplate template) {
+        return sourceSpoke(template).map(SpokeDefinition::outwardFacing);
     }
 
     public static boolean usesSharedSpokeSlot(HubSpokePlannerSettings settings) {
@@ -372,7 +385,7 @@ public class HubSpokePlanner implements MKWorkspacePlanner {
 
     private MKPlannedPiece createCenterPiece(MKStructureWorkspace workspace, MKWorkspaceRoomFamilyDefinition family,
                                              MKWorkspaceRoomFamilyDefinition spokeFamily,
-                                             Map<String, MKWorkspaceRoomFamilyDefinition> cornerFamilies,
+                                             Map<String, List<MKWorkspaceRoomFamilyDefinition>> cornerFamilies,
                                              CornerAttachmentMode cornerAttachmentMode,
                                              Set<Direction> generatedSpokeDirections,
                                              Map<String, Direction> cornerAnchors) {
@@ -390,7 +403,7 @@ public class HubSpokePlanner implements MKWorkspacePlanner {
                 if (anchorDirection == null) {
                     continue;
                 }
-                MKWorkspaceRoomFamilyDefinition cornerFamily = cornerFamilies.get(corner.suffix());
+                MKWorkspaceRoomFamilyDefinition cornerFamily = largestFamily(cornerFamilies.get(corner.suffix()));
                 int signedOffset = centerCornerLateralSign(corner.suffix(), anchorDirection) *
                         centerCornerLateralOffset(family.roomWidth(), spokeFamily.roomWidth(),
                                 cornerFamily.roomWidth());
@@ -398,6 +411,10 @@ public class HubSpokePlanner implements MKWorkspacePlanner {
                         slotPool(corner.slotId()), null));
             }
         }
+        Map<String, String> tags = baseTags(workspace, CENTER_SLOT, CENTER_SLOT, CENTER_SLOT,
+                "center", "center", "", true, false);
+        family.templateCloneSourcePieceNameOpt()
+                .ifPresent(source -> tags.put(MKWorkspaceTemplateCloneTags.SOURCE_PIECE_NAME_TAG, source));
         return new MKPlannedPiece(
                 CENTER_SLOT,
                 CENTER_BASE_NAME,
@@ -405,12 +422,13 @@ public class HubSpokePlanner implements MKWorkspacePlanner {
                 family.roomLength(),
                 family.roomHeight(),
                 connectors,
-                baseTags(workspace, CENTER_SLOT, CENTER_SLOT, CENTER_SLOT, "center", "center", "", true, false)
+                tags
         );
     }
 
     private MKPlannedPiece createSpokePiece(MKStructureWorkspace workspace, MKWorkspaceRoomFamilyDefinition family,
-                                            Map<String, MKWorkspaceRoomFamilyDefinition> cornerFamilies,
+                                            MKWorkspaceRoomFamilyDefinition templateFamily,
+                                            Map<String, List<MKWorkspaceRoomFamilyDefinition>> cornerFamilies,
                                             HubSpokePlannerSettings.SpokeTemplate template, SpokeDefinition spoke,
                                             CornerAttachmentMode cornerAttachmentMode,
                                             Map<String, Direction> cornerAnchors) {
@@ -420,12 +438,16 @@ public class HubSpokePlanner implements MKWorkspacePlanner {
                 slotPool(spoke.slotId())));
         if (cornerAttachmentMode == CornerAttachmentMode.SPOKE) {
             for (SpokeCornerTarget target : cornerTargetsForSpoke(spoke, cornerAnchors)) {
-                MKWorkspaceRoomFamilyDefinition cornerFamily = cornerFamilies.get(target.corner().suffix());
+                MKWorkspaceRoomFamilyDefinition cornerFamily = largestFamily(cornerFamilies.get(target.corner().suffix()));
                 connectors.add(platformConnector(MKConnectorRole.BRANCH, target.facing(),
                             spokeCornerLateralOffset(template.length(), cornerFamily, target),
                             slotPool(target.corner().slotId()), null));
             }
         }
+        Map<String, String> tags = baseTags(workspace, SPOKE_SLOT, spoke.slotId(), template.baseName(),
+                "spoke", "spoke", spoke.suffix(), false, false);
+        templateFamily.templateCloneSourcePieceNameOpt()
+                .ifPresent(source -> tags.put(MKWorkspaceTemplateCloneTags.SOURCE_PIECE_NAME_TAG, source));
         return new MKPlannedPiece(
                 SPOKE_SLOT,
                 template.pieceName(spoke.outwardFacing()),
@@ -433,23 +455,24 @@ public class HubSpokePlanner implements MKWorkspacePlanner {
                 spoke.outwardFacing().getAxis() == Direction.Axis.X ? family.roomWidth() : template.length(),
                 template.height(),
                 connectors,
-                baseTags(workspace, SPOKE_SLOT, spoke.slotId(), template.baseName(), "spoke", "spoke",
-                        spoke.suffix(), false, false)
+                tags
         );
     }
 
     private MKPlannedPiece createCornerPiece(MKStructureWorkspace workspace, MKWorkspaceRoomFamilyDefinition family,
                                              CornerDefinition corner, CornerAttachmentMode cornerAttachmentMode,
-                                             Direction anchorDirection, String stableSlotId) {
+                                             Direction anchorDirection, String stableSlotId, String pieceName) {
         Direction incomingFacing = cornerAttachmentMode == CornerAttachmentMode.CENTER
                 ? anchorDirection.getOpposite()
                 : cornerSpokeConnectorFacing(corner.suffix(), anchorDirection).getOpposite();
         Map<String, String> tags = baseTags(workspace, CORNER_SLOT, corner.slotId(), stableSlotId,
                 "corner_chamfer", "corner", corner.suffix(), false, true);
         tags.put(FLAT_PLATFORM_CORNER_TAG, corner.suffix());
+        family.templateCloneSourcePieceNameOpt()
+                .ifPresent(source -> tags.put(MKWorkspaceTemplateCloneTags.SOURCE_PIECE_NAME_TAG, source));
         return new MKPlannedPiece(
                 CORNER_SLOT,
-                corner.pieceName(),
+                pieceName,
                 family.roomWidth(),
                 family.roomLength(),
                 family.roomHeight(),
@@ -581,14 +604,36 @@ public class HubSpokePlanner implements MKWorkspacePlanner {
 
     private Map<String, SpokeDefinition> sourceSpokesByTemplate(HubSpokePlannerSettings settings) {
         HashMap<String, SpokeDefinition> sources = new HashMap<>();
-        Map<Direction, HubSpokePlannerSettings.SpokeTemplate> assignments = settings.templateAssignments();
+        settings.spokeTemplates().forEach(template ->
+                sourceSpoke(template).ifPresent(source -> sources.putIfAbsent(template.baseName(), source)));
+        return sources;
+    }
+
+    private static Set<Direction> generatedSpokeDirections(HubSpokePlannerSettings settings) {
+        java.util.LinkedHashSet<Direction> directions = new java.util.LinkedHashSet<>();
         for (SpokeDefinition spoke : SPOKES) {
-            HubSpokePlannerSettings.SpokeTemplate template = assignments.get(spoke.outwardFacing());
-            if (template != null) {
-                sources.putIfAbsent(template.baseName(), spoke);
+            boolean anyTemplateAllowsDirection = settings.spokeTemplates().stream()
+                    .anyMatch(template -> template.validDirections().contains(spoke.outwardFacing()));
+            if (anyTemplateAllowsDirection) {
+                directions.add(spoke.outwardFacing());
             }
         }
-        return sources;
+        return Set.copyOf(directions);
+    }
+
+    private static Optional<SpokeDefinition> sourceSpoke(HubSpokePlannerSettings.SpokeTemplate template) {
+        if (template == null) {
+            return Optional.empty();
+        }
+        for (Direction direction : template.validDirections()) {
+            Optional<SpokeDefinition> source = SPOKES.stream()
+                    .filter(spoke -> spoke.outwardFacing() == direction)
+                    .findFirst();
+            if (source.isPresent()) {
+                return source;
+            }
+        }
+        return Optional.empty();
     }
 
     private String rotationFrom(Direction source, Direction target) {
@@ -674,28 +719,74 @@ public class HubSpokePlanner implements MKWorkspacePlanner {
                 .orElseThrow();
     }
 
-    private Map<String, MKWorkspaceRoomFamilyDefinition> cornerFamilies(MKStructureWorkspace workspace,
-                                                                        HubSpokePlannerSettings settings,
-                                                                        MKWorkspaceRoomFamilyDefinition sharedFamily) {
-        LinkedHashMap<String, MKWorkspaceRoomFamilyDefinition> families = new LinkedHashMap<>();
+    private Optional<MKWorkspaceRoomFamilyDefinition> spokeFamilyForTemplate(
+            MKStructureWorkspace workspace,
+            HubSpokePlannerSettings.SpokeTemplate template) {
+        String sourceBaseName = sourceSpokeDirection(template)
+                .map(template::pieceName)
+                .orElse(template.baseName());
+        return workspace.familyDefinitions().stream()
+                .filter(family -> sourceBaseName.equals(family.baseName()))
+                .findFirst();
+    }
+
+    private Map<String, List<MKWorkspaceRoomFamilyDefinition>> cornerFamilies(MKStructureWorkspace workspace,
+                                                                              HubSpokePlannerSettings settings,
+                                                                              MKWorkspaceRoomFamilyDefinition sharedFamily) {
+        LinkedHashMap<String, List<MKWorkspaceRoomFamilyDefinition>> families = new LinkedHashMap<>();
         for (CornerDefinition corner : CORNERS) {
             String templateSlotId = settings.stableCornerTemplateSlot(corner.slotId());
-            MKWorkspaceRoomFamilyDefinition family = CORNER_SLOT.equals(templateSlotId) ?
-                    sharedFamily :
-                    workspace.familyDefinitions().stream()
-                            .filter(candidate -> templateSlotId.equals(candidate.topologySlotId()))
-                            .findFirst()
-                            .orElse(sharedFamily);
-            families.put(corner.suffix(), family);
+            List<MKWorkspaceRoomFamilyDefinition> candidates = workspace.familyDefinitions().stream()
+                    .filter(candidate -> templateSlotId.equals(candidate.topologySlotId()))
+                    .toList();
+            families.put(corner.suffix(), candidates.isEmpty() ? List.of(sharedFamily) : candidates);
         }
         return Map.copyOf(families);
     }
 
-    private int maxCornerWidth(Map<String, MKWorkspaceRoomFamilyDefinition> cornerFamilies) {
+    private int maxCornerWidth(Map<String, List<MKWorkspaceRoomFamilyDefinition>> cornerFamilies) {
         return cornerFamilies.values().stream()
+                .flatMap(List::stream)
                 .mapToInt(MKWorkspaceRoomFamilyDefinition::roomWidth)
                 .max()
                 .orElse(OPENING_WIDTH);
+    }
+
+    private MKWorkspaceRoomFamilyDefinition largestFamily(List<MKWorkspaceRoomFamilyDefinition> families) {
+        if (families == null || families.isEmpty()) {
+            throw new IllegalStateException("HubSpoke corner family alternatives must not be empty");
+        }
+        return families.stream()
+                .max(java.util.Comparator.comparingInt(MKWorkspaceRoomFamilyDefinition::roomWidth))
+                .orElseThrow();
+    }
+
+    private String cornerSourcePieceName(MKWorkspaceRoomFamilyDefinition family, CornerDefinition source) {
+        if (isBuiltInCornerFamily(family, source)) {
+            return source.pieceName();
+        }
+        return family.baseName();
+    }
+
+    private String cornerPieceName(MKWorkspaceRoomFamilyDefinition family, CornerDefinition corner,
+                                   CornerDefinition source) {
+        if (isBuiltInCornerFamily(family, source)) {
+            return corner.pieceName();
+        }
+        String sourcePieceName = cornerSourcePieceName(family, source);
+        return corner == source ? sourcePieceName : sourcePieceName + "_" + corner.suffix();
+    }
+
+    private String cornerStableIdentity(MKWorkspaceRoomFamilyDefinition family, CornerDefinition source,
+                                        String templateSlotId) {
+        if (isBuiltInCornerFamily(family, source)) {
+            return templateSlotId;
+        }
+        return templateSlotId + "." + cornerSourcePieceName(family, source);
+    }
+
+    private boolean isBuiltInCornerFamily(MKWorkspaceRoomFamilyDefinition family, CornerDefinition source) {
+        return CORNER_BASE_NAME.equals(family.baseName()) || source.pieceName().equals(family.baseName());
     }
 
     private MKPlannedPiece withTemplateReuse(MKPlannedPiece piece, String sourceId, String rotation,

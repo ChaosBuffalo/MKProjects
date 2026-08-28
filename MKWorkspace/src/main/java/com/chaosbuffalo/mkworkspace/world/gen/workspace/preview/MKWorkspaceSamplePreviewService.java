@@ -8,6 +8,8 @@ import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawPlacement;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKJigsawStructure;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKSinglePoolElement;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKVerticalProgressionMode;
+import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mkworkspace.MKWorkspace;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.export.MKWorkspaceExportArchiveWriter;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceSamplePreviewState;
@@ -18,6 +20,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MK
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFloorTopologySettings;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHallwayLeadInMode;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKHorizontalExitPathKind;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKInsertFamilyPools;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKFloorMaskVariantExporter;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
@@ -594,17 +597,28 @@ public class MKWorkspaceSamplePreviewService {
                     continue;
                 }
                 List<MKWorkspacePieceDefinition> variants = entry.getValue().stream()
-                        .filter(piece -> piece.variantIndex() > 0)
-                        .sorted(Comparator.comparingInt(MKWorkspacePieceDefinition::variantIndex))
+                        .filter(piece -> effectiveVariantIndex(piece) > 0)
+                        .sorted(Comparator.comparingInt(RuntimePreviewContextBuilder::effectiveVariantIndex))
                         .toList();
-                List<MKWorkspacePieceDefinition> selected = variants.isEmpty() ?
-                        entry.getValue().stream()
-                                .filter(piece -> piece.variantIndex() == 0)
-                                .findFirst()
-                                .stream()
-                                .toList() :
-                        variants;
+                List<MKWorkspacePieceDefinition> selected;
                 boolean templateFallback = variants.isEmpty();
+                if (templateFallback) {
+                    Optional<MKWorkspacePieceDefinition> fallbackTemplate = entry.getValue().stream()
+                            .filter(piece -> effectiveVariantIndex(piece) == 0)
+                            .filter(piece -> !isInsertFamilyAuthoringTemplate(piece))
+                            .findFirst();
+                    fallbackTemplate.ifPresent(piece -> logPreviewTemplateFallback(entry.getKey(), piece));
+                    if (fallbackTemplate.isEmpty()) {
+                        entry.getValue().stream()
+                                .filter(piece -> effectiveVariantIndex(piece) == 0)
+                                .filter(RuntimePreviewContextBuilder::isInsertFamilyAuthoringTemplate)
+                                .findFirst()
+                                .ifPresent(piece -> logPreviewNoRuntimeVariants(entry.getKey(), piece));
+                    }
+                    selected = fallbackTemplate.stream().toList();
+                } else {
+                    selected = variants;
+                }
                 for (MKWorkspacePieceDefinition piece : selected) {
                     PreviewCandidate candidate = new PreviewCandidate(piece, templateFallback,
                             templateId(workspace, piece),
@@ -626,11 +640,72 @@ public class MKWorkspaceSamplePreviewService {
             for (MKWorkspaceExportManifest.ExportRuntimePool pool : previewHints.pools()) {
                 ArrayList<PreviewCandidate> poolCandidates = new ArrayList<>();
                 for (String childBaseName : pool.childBaseNames()) {
-                    poolCandidates.addAll(candidatesByBaseName.getOrDefault(childBaseName, List.of()));
+                    List<PreviewCandidate> childCandidates = candidatesByBaseName.getOrDefault(childBaseName,
+                            List.of());
+                    if (childCandidates.isEmpty()) {
+                        logPreviewUnresolvedPoolChild(pool.poolId(), childBaseName, piecesByBase);
+                    }
+                    poolCandidates.addAll(childCandidates);
+                }
+                if (poolCandidates.isEmpty()) {
+                    logPreviewEmptyRuntimePool(pool);
                 }
                 candidatesByPool.put(pool.poolId(), List.copyOf(poolCandidates));
             }
             return Optional.of(new PreviewPool(List.copyOf(candidates), immutableListMap(candidatesByPool)));
+        }
+
+        private static boolean isInsertFamilyAuthoringTemplate(MKWorkspacePieceDefinition piece) {
+            return piece.tags().containsKey(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID);
+        }
+
+        private static int effectiveVariantIndex(MKWorkspacePieceDefinition piece) {
+            String value = piece.tags().get(MKWorkspaceGridLayout.TAG_VARIANT_INDEX);
+            if (value == null || value.isBlank()) {
+                return piece.variantIndex();
+            }
+            try {
+                return Math.max(0, Integer.parseInt(value));
+            } catch (NumberFormatException ignored) {
+                return piece.variantIndex();
+            }
+        }
+
+        private static void logPreviewTemplateFallback(String baseName, MKWorkspacePieceDefinition piece) {
+            if (MKNpc.DEV_LOGGING) {
+                MKWorkspace.LOGGER.debug("mk_workspace_preview template_fallback base={} piece={} variant={} tagVariant={} reason=no_variants_available",
+                        baseName, piece.pieceName(), piece.variantIndex(),
+                        piece.tags().getOrDefault(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, ""));
+            }
+        }
+
+        private static void logPreviewNoRuntimeVariants(String baseName, MKWorkspacePieceDefinition piece) {
+            if (MKNpc.DEV_LOGGING) {
+                MKWorkspace.LOGGER.debug("mk_workspace_preview no_runtime_variants base={} piece={} variant={} tagVariant={} insertFamily={} reason=insert_authoring_template_not_runtime_candidate",
+                        baseName, piece.pieceName(), piece.variantIndex(),
+                        piece.tags().getOrDefault(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, ""),
+                        piece.tags().getOrDefault(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID, ""));
+            }
+        }
+
+        private static void logPreviewUnresolvedPoolChild(ResourceLocation poolId, String childBaseName,
+                                                          Map<String, List<MKWorkspacePieceDefinition>> piecesByBase) {
+            if (MKNpc.DEV_LOGGING) {
+                List<String> basePieces = piecesByBase.getOrDefault(childBaseName, List.of()).stream()
+                        .map(piece -> piece.pieceName() + "#field=" + piece.variantIndex() + "#tag=" +
+                                piece.tags().getOrDefault(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "") + "#kind=" +
+                                piece.tags().getOrDefault("workspace_piece_kind", "instance"))
+                        .toList();
+                MKWorkspace.LOGGER.debug("mk_workspace_preview unresolved_pool_child pool={} childBase={} basePieces={} reason=no_preview_candidates_for_child_base",
+                        poolId, childBaseName, basePieces);
+            }
+        }
+
+        private static void logPreviewEmptyRuntimePool(MKWorkspaceExportManifest.ExportRuntimePool pool) {
+            if (MKNpc.DEV_LOGGING) {
+                MKWorkspace.LOGGER.debug("mk_workspace_preview empty_runtime_pool pool={} children={} reason=no_resolved_preview_candidates",
+                        pool.poolId(), pool.childBaseNames());
+            }
         }
 
         private static ResourceLocation templateId(MKStructureWorkspace workspace, MKWorkspacePieceDefinition piece) {
