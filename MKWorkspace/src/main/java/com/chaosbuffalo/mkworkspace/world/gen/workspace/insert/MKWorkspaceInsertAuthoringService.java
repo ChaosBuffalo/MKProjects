@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkworkspace.world.gen.workspace.insert;
 
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.MKStructureWorkspaceService;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.capability.IMKStructureWorkspaceData;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.export.MKWorkspaceBackupManifestWriter;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKInsertFamilyPools;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertAttachmentFace;
@@ -67,7 +68,115 @@ public class MKWorkspaceInsertAuthoringService {
         }
     }
 
+    public List<String> validateCreateSocketFamily(ServerLevel level, CreateSocketFamilyRequest request) {
+        Optional<MKStructureWorkspace> workspaceOpt = IMKStructureWorkspaceData.get(level)
+                .getWorkspaceByAnchor(request.anchor());
+        if (workspaceOpt.isEmpty()) {
+            return List.of("no workspace exists at anchor " + request.anchor().toShortString());
+        }
+        MKStructureWorkspace workspace = workspaceOpt.get();
+        Optional<MKWorkspacePieceDefinition> hostPieceOpt = workspace.pieces().stream()
+                .filter(piece -> piece.pieceId().equals(request.hostPieceId())).findFirst();
+        if (hostPieceOpt.isEmpty()) {
+            return List.of("host template piece no longer exists");
+        }
+        MKWorkspacePieceDefinition hostPiece = hostPieceOpt.get();
+        ArrayList<String> errors = new ArrayList<>();
+        if (!hostPiece.exportBounds().isInside(request.socketWorldPos())) {
+            errors.add("socket position is outside the host authorial template");
+        }
+        if (workspace.insertFamilies().stream().anyMatch(family -> family.familyId().equals(request.familyId()))) {
+            errors.add("insert family " + request.familyId() + " already exists");
+        }
+        MKWorkspaceInsertAttachmentFace attachmentFace =
+                MKWorkspaceInsertAttachmentFace.fromDirection(request.socketFacing().getOpposite());
+        MKWorkspaceInsertFamilyDefinition insertFamily = new MKWorkspaceInsertFamilyDefinition(
+                request.familyId(), MKWorkspaceInsertFamilyKind.INSERT_SOCKET,
+                request.width(), request.height(), request.depth(), Optional.of(attachmentFace),
+                request.faceUOffset(), request.faceVOffset(), request.templateJigsawFinalState());
+        errors.addAll(insertFamily.validate());
+        BlockPos socketLocalPos = request.socketWorldPos().subtract(hostPiece.worldOrigin());
+        BoundingBox hostLocalBounds = new BoundingBox(0, 0, 0,
+                hostPiece.exportBounds().getXSpan() - 1,
+                hostPiece.exportBounds().getYSpan() - 1,
+                hostPiece.exportBounds().getZSpan() - 1);
+        errors.addAll(MKWorkspaceInsertSocketPlacement.validateFits(hostLocalBounds, socketLocalPos,
+                insertFamily.width(), insertFamily.height(), insertFamily.depth(), attachmentFace,
+                request.faceUOffset(), request.faceVOffset()));
+        if (errors.isEmpty()) {
+            BoundingBox candidateBounds = MKWorkspaceInsertSocketPlacement.projectedInsertBounds(hostLocalBounds,
+                    socketLocalPos, insertFamily.width(), insertFamily.height(), insertFamily.depth(),
+                    attachmentFace, request.faceUOffset(), request.faceVOffset());
+            errors.addAll(validateNoCollision(level, workspace, hostPiece, request.socketWorldPos(), candidateBounds));
+        }
+        if (errors.isEmpty()) {
+            errors.addAll(new MKStructureWorkspaceService().validateWorkspace(withInsertFamily(workspace, insertFamily)));
+        }
+        return List.copyOf(errors);
+    }
+
+    public List<String> validatePlaceExistingSocketFamily(ServerLevel level, PlaceExistingSocketRequest request) {
+        Optional<MKStructureWorkspace> workspaceOpt = IMKStructureWorkspaceData.get(level)
+                .getWorkspaceByAnchor(request.anchor());
+        if (workspaceOpt.isEmpty()) {
+            return List.of("no workspace exists at anchor " + request.anchor().toShortString());
+        }
+        MKStructureWorkspace workspace = workspaceOpt.get();
+        Optional<MKWorkspacePieceDefinition> hostPieceOpt = workspace.pieces().stream()
+                .filter(piece -> piece.pieceId().equals(request.hostPieceId())).findFirst();
+        if (hostPieceOpt.isEmpty()) {
+            return List.of("host template piece no longer exists");
+        }
+        MKWorkspacePieceDefinition hostPiece = hostPieceOpt.get();
+        ArrayList<String> errors = new ArrayList<>();
+        if (!hostPiece.exportBounds().isInside(request.socketWorldPos())) {
+            errors.add("socket position is outside the host authorial template");
+        }
+        Optional<MKWorkspaceInsertFamilyDefinition> familyOpt = workspace.insertFamilies().stream()
+                .filter(family -> family.familyId().equals(request.familyId()))
+                .filter(family -> family.kind() == MKWorkspaceInsertFamilyKind.INSERT_SOCKET).findFirst();
+        if (familyOpt.isEmpty()) {
+            errors.add("insert family " + request.familyId() + " does not exist");
+            return List.copyOf(errors);
+        }
+        MKWorkspaceInsertFamilyDefinition family = familyOpt.get();
+        MKWorkspaceInsertAttachmentFace templateFace =
+                MKWorkspaceInsertAttachmentFace.fromDirection(request.socketFacing().getOpposite());
+        if (!MKWorkspaceInsertTemplateCompatibility.hasAttachableTemplateJigsaw(level, workspace, family,
+                request.socketFacing())) {
+            errors.add("insert family " + request.familyId() +
+                    " has no template variant that can attach to a " +
+                    request.socketFacing().getSerializedName() + "-facing socket");
+        }
+        MKWorkspaceInsertAttachmentFace authoredFace = family.attachmentFace().orElse(templateFace);
+        int faceUOffset = family.attachmentFace().isPresent() ? family.faceUOffset() :
+                centeredUOffset(family.width(), family.depth(), templateFace);
+        int faceVOffset = family.attachmentFace().isPresent() ? family.faceVOffset() :
+                centeredVOffset(family.height(), family.depth(), templateFace);
+        BoundingBox hostLocalBounds = new BoundingBox(0, 0, 0,
+                hostPiece.exportBounds().getXSpan() - 1,
+                hostPiece.exportBounds().getYSpan() - 1,
+                hostPiece.exportBounds().getZSpan() - 1);
+        errors.addAll(MKWorkspaceInsertSocketPlacement.validateOrientedFits(hostLocalBounds,
+                request.socketWorldPos().subtract(hostPiece.worldOrigin()), family.width(), family.height(),
+                family.depth(), authoredFace, faceUOffset, faceVOffset, templateFace,
+                MKWorkspaceInsertTemplateCompatibility.jigsawOrientation(request.socketFacing()).top()));
+        if (errors.isEmpty()) {
+            BoundingBox candidateBounds = MKWorkspaceInsertSocketPlacement.projectedOrientedInsertBounds(
+                    request.socketWorldPos().subtract(hostPiece.worldOrigin()), family.width(), family.height(),
+                    family.depth(), authoredFace, faceUOffset, faceVOffset, templateFace,
+                    MKWorkspaceInsertTemplateCompatibility.jigsawOrientation(request.socketFacing()).top());
+            errors.addAll(validateNoCollision(level, workspace, hostPiece, request.socketWorldPos(), candidateBounds));
+        }
+        return List.copyOf(errors);
+    }
+
     public Result createSocketFamily(ServerLevel level, CreateSocketFamilyRequest request) {
+        MKWorkspaceBackupManifestWriter.requireTransaction("create-insert-socket-family");
+        List<String> preparedErrors = validateCreateSocketFamily(level, request);
+        if (!preparedErrors.isEmpty()) {
+            return Result.failure(preparedErrors);
+        }
         Optional<MKStructureWorkspace> workspaceOpt = IMKStructureWorkspaceData.get(level)
                 .getWorkspaceByAnchor(request.anchor());
         if (workspaceOpt.isEmpty()) {
@@ -170,6 +279,11 @@ public class MKWorkspaceInsertAuthoringService {
     }
 
     public Result placeExistingSocketFamily(ServerLevel level, PlaceExistingSocketRequest request) {
+        MKWorkspaceBackupManifestWriter.requireTransaction("place-insert-socket");
+        List<String> preparedErrors = validatePlaceExistingSocketFamily(level, request);
+        if (!preparedErrors.isEmpty()) {
+            return Result.failure(preparedErrors);
+        }
         Optional<MKStructureWorkspace> workspaceOpt = IMKStructureWorkspaceData.get(level)
                 .getWorkspaceByAnchor(request.anchor());
         if (workspaceOpt.isEmpty()) {

@@ -113,8 +113,147 @@ public class MKStructureWorkspaceService {
     private record CatalogRelayoutTargets(List<MKPlannedPiece> targetPieces, List<MKPlannedPiece> layoutPieces) {
     }
 
+    public enum PreparedUpdateStrategy {
+        CREATE,
+        VARIANT_MUTATION,
+        PREVIEW_MARGIN_RELAYOUT,
+        PALETTE_SWAP,
+        IDENTITY_RENAME,
+        MARGIN_EXPANSION,
+        HALLWAY_ROUTING_REGENERATION,
+        LINK_RENDERING_REFRESH,
+        RAMPART_ACCESS_PATCH,
+        CATALOG_PRESERVING_RELAYOUT,
+        METADATA_UPDATE,
+        FULL_REGENERATE
+    }
+
     public List<String> validateWorkspace(MKStructureWorkspace workspace) {
         return plannerRegistry.validate(workspace);
+    }
+
+    public PreparedUpdateStrategy classifyPreparedUpdate(MKStructureWorkspace existing,
+                                                          MKStructureWorkspace requested,
+                                                          List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps,
+                                                          List<MKWorkspaceVariantAddition> addedVariants,
+                                                          List<UUID> deletedVariantPieceIds,
+                                                          MKWorkspaceMutationPreflight preflight) {
+        if (!addedVariants.isEmpty() || !deletedVariantPieceIds.isEmpty()) {
+            return PreparedUpdateStrategy.VARIANT_MUTATION;
+        }
+        if (canRelayoutPreviewMarginOnly(existing, requested)) {
+            return PreparedUpdateStrategy.PREVIEW_MARGIN_RELAYOUT;
+        }
+        if (canSwapPaletteOnly(existing, requested)) {
+            return PreparedUpdateStrategy.PALETTE_SWAP;
+        }
+        if (canRenameIdentityOnly(existing, requested)) {
+            return PreparedUpdateStrategy.IDENTITY_RENAME;
+        }
+        if (canExpandMarginsOnly(existing, requested)) {
+            return PreparedUpdateStrategy.MARGIN_EXPANSION;
+        }
+        if (canRegenerateHallwayRoutingOnly(existing, requested)) {
+            return PreparedUpdateStrategy.HALLWAY_ROUTING_REGENERATION;
+        }
+        if (canRefreshLinkRenderingOnly(existing, requested)) {
+            return PreparedUpdateStrategy.LINK_RENDERING_REFRESH;
+        }
+        if (canApplyRampartAccessPatch(existing, requested)) {
+            return PreparedUpdateStrategy.RAMPART_ACCESS_PATCH;
+        }
+        if (hasCatalogAffectingSettingsChange(existing, requested) &&
+                canApplyCatalogRelayout(existing, requested, acceptedRemaps)) {
+            return PreparedUpdateStrategy.CATALOG_PRESERVING_RELAYOUT;
+        }
+        boolean settingsEqual = settingsComparisonTag(existing, existing.id(), existing.previewMargin())
+                .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin()));
+        if (settingsEqual && preflight.report().recommendedOperation().equals("none")) {
+            return PreparedUpdateStrategy.METADATA_UPDATE;
+        }
+        // A new planner setting that has not explicitly claimed its mutation is destructive by default.
+        return switch (preflight.report().recommendedOperation()) {
+            case "preserve_catalog_relayout" -> PreparedUpdateStrategy.CATALOG_PRESERVING_RELAYOUT;
+            case "regenerate_hallway_routing" -> PreparedUpdateStrategy.HALLWAY_ROUTING_REGENERATION;
+            case "refresh_link_rendering" -> PreparedUpdateStrategy.LINK_RENDERING_REFRESH;
+            case "patch_rampart_access_openings" -> PreparedUpdateStrategy.RAMPART_ACCESS_PATCH;
+            default -> PreparedUpdateStrategy.FULL_REGENERATE;
+        };
+    }
+
+    public Optional<MKStructureWorkspace> applyPreparedUpdate(ServerLevel level,
+                                                               MKStructureWorkspace requested,
+                                                               List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps,
+                                                               List<MKWorkspaceVariantAddition> addedVariants,
+                                                               List<UUID> deletedVariantPieceIds,
+                                                               boolean includeRequestedSettingsChanges,
+                                                               MKWorkspaceMutationPreflight preflight,
+                                                               PreparedUpdateStrategy strategy) {
+        MKWorkspaceBackupManifestWriter.requireTransaction("apply-prepared-update");
+        IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
+        if (strategy == PreparedUpdateStrategy.CREATE) {
+            data.createWorkspace(requested);
+            syncBlockEntity(level, requested.anchor(), requested.id());
+            return Optional.of(requested);
+        }
+        MKStructureWorkspace existing = data.getWorkspaceByAnchor(requested.anchor()).orElse(null);
+        if (existing == null) {
+            return Optional.empty();
+        }
+        return switch (strategy) {
+            case CREATE -> throw new IllegalStateException("CREATE strategy cannot replace an existing workspace");
+            case VARIANT_MUTATION -> {
+                Optional<MKStructureWorkspace> mutated = applyWorkspaceVariantMutations(level, existing,
+                        addedVariants, deletedVariantPieceIds);
+                if (mutated.isEmpty() || isTerminalVariantMutationReport(preflight.report())) {
+                    yield mutated;
+                }
+                MKStructureWorkspace continuation = workspaceForUpdate(mutated.get(), requested,
+                        mutated.get().pieces(), System.currentTimeMillis(), mutated.get().layerStates());
+                yield applyWorkspaceUpdateByPreflightOperation(level, mutated.get(), continuation, acceptedRemaps,
+                        preflight.report());
+            }
+            case PREVIEW_MARGIN_RELAYOUT -> {
+                try {
+                    yield relayoutService.relayoutPreviewMargin(level, existing, requested.previewMargin())
+                            .map(MKWorkspacePieceRelayoutService.RelayoutResult::workspace);
+                } catch (IOException exception) {
+                    throw new IllegalStateException("Preview margin relayout failed", exception);
+                }
+            }
+            case PALETTE_SWAP -> {
+                try {
+                    mutationService.swapMaterialPalettes(level, existing, requested);
+                    yield data.getWorkspace(existing.id());
+                } catch (IOException exception) {
+                    throw new IllegalStateException("Palette swap failed", exception);
+                }
+            }
+            case IDENTITY_RENAME -> {
+                try {
+                    yield Optional.of(identityRenameService.rename(level, existing,
+                            requested.namespace(), requested.structureName()).workspace());
+                } catch (IOException exception) {
+                    throw new IllegalStateException("Workspace rename failed", exception);
+                }
+            }
+            case MARGIN_EXPANSION -> {
+                try {
+                    yield marginExpansionService.expandMargins(level, existing,
+                                    requested.shellMargin(), requested.exteriorAirMargin())
+                            .map(MKWorkspaceMarginExpansionService.ExpansionResult::workspace);
+                } catch (IOException exception) {
+                    throw new IllegalStateException("Workspace margin expansion failed", exception);
+                }
+            }
+            case HALLWAY_ROUTING_REGENERATION -> regenerateHallwayRouting(level, existing, requested);
+            case LINK_RENDERING_REFRESH -> refreshLinkRenderingMetadata(level, existing, requested);
+            case RAMPART_ACCESS_PATCH -> patchRampartAccessOpenings(level, existing, requested);
+            case CATALOG_PRESERVING_RELAYOUT ->
+                    relayoutCatalogPreservingPieces(level, existing, requested, acceptedRemaps);
+            case METADATA_UPDATE -> applyMetadataUpdate(level, existing, requested);
+            case FULL_REGENERATE -> fullRegenerateWorkspace(level, requested);
+        };
     }
 
     public Optional<MKStructureWorkspace> createOrUpdateWorkspace(ServerLevel level, MKStructureWorkspace workspace) {
@@ -145,6 +284,7 @@ public class MKStructureWorkspaceService {
                                                                  List<MKWorkspaceVariantAddition> addedVariants,
                                                                  List<UUID> deletedVariantPieceIds,
                                                                  boolean includeRequestedSettingsChanges) {
+        MKWorkspaceBackupManifestWriter.requireTransaction("create-or-update-workspace");
         List<String> errors = validateWorkspace(workspace);
         if (!errors.isEmpty()) {
             return Optional.empty();
@@ -291,10 +431,8 @@ public class MKStructureWorkspaceService {
                 yield patchRampartAccessOpenings(level, existing, requested);
             }
             default -> {
-                logUpdateBranch("preflight_operation_fallback", existing, requested,
-                        "operation=" + report.recommendedOperation() +
-                                " safety=" + report.safety().getSerializedName());
-                yield createOrUpdateWorkspace(level, requested, acceptedRemaps);
+                throw new IllegalStateException("Unsupported prepared workspace operation: " +
+                        report.recommendedOperation());
             }
         };
     }
@@ -734,6 +872,7 @@ public class MKStructureWorkspaceService {
     }
 
     public Optional<MKStructureWorkspace> generateWorkspace(ServerLevel level, BlockPos anchor) {
+        MKWorkspaceBackupManifestWriter.requireTransaction("generate-workspace");
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
         if (workspaceOpt.isEmpty()) {
@@ -753,6 +892,7 @@ public class MKStructureWorkspaceService {
     }
 
     public Optional<MKStructureWorkspace> fullRegenerateWorkspace(ServerLevel level, MKStructureWorkspace requested) {
+        MKWorkspaceBackupManifestWriter.requireTransaction("full-regenerate-workspace");
         if (!validateWorkspace(requested).isEmpty()) {
             return Optional.empty();
         }
@@ -792,6 +932,7 @@ public class MKStructureWorkspaceService {
     }
 
     public Optional<MKStructureWorkspace> regenerateHallwayRouting(ServerLevel level, MKStructureWorkspace requested) {
+        MKWorkspaceBackupManifestWriter.requireTransaction("regenerate-hallway-routing");
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKStructureWorkspace> existingOpt = data.getWorkspaceByAnchor(requested.anchor());
         if (existingOpt.isEmpty()) {
@@ -848,6 +989,7 @@ public class MKStructureWorkspaceService {
 
     public Optional<MKStructureWorkspace> addWorkspaceVariant(ServerLevel level, BlockPos anchor,
                                                                   String basePieceName, String sourcePieceName) {
+        MKWorkspaceBackupManifestWriter.requireTransaction("add-workspace-variant");
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
         if (workspaceOpt.isEmpty()) {
@@ -905,6 +1047,7 @@ public class MKStructureWorkspaceService {
     }
 
     public Optional<MKStructureWorkspace> addWorkspaceVariantsForAll(ServerLevel level, BlockPos anchor) {
+        MKWorkspaceBackupManifestWriter.requireTransaction("add-all-workspace-variants");
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
         if (workspaceOpt.isEmpty()) {
@@ -921,6 +1064,7 @@ public class MKStructureWorkspaceService {
     }
 
     public Optional<MKStructureWorkspace> addMissingWorkspaceVariantsForAll(ServerLevel level, BlockPos anchor) {
+        MKWorkspaceBackupManifestWriter.requireTransaction("add-missing-workspace-variants");
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
         if (workspaceOpt.isEmpty()) {
@@ -988,6 +1132,7 @@ public class MKStructureWorkspaceService {
     }
 
     public Optional<MKStructureWorkspace> deleteWorkspaceVariant(ServerLevel level, BlockPos anchor, UUID pieceId) {
+        MKWorkspaceBackupManifestWriter.requireTransaction("delete-workspace-variant");
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
         if (workspaceOpt.isEmpty()) {
@@ -1353,6 +1498,7 @@ public class MKStructureWorkspaceService {
     }
 
     public boolean deleteWorkspace(ServerLevel level, BlockPos anchor) {
+        MKWorkspaceBackupManifestWriter.requireTransaction("delete-workspace");
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
         if (workspaceOpt.isEmpty()) {
@@ -1367,6 +1513,7 @@ public class MKStructureWorkspaceService {
 
     public Optional<MKStructureWorkspace> generateWorkspaceStairs(ServerLevel level, BlockPos anchor, String pieceName,
                                                                        MKWorkspaceStairAuthoringConfig stairConfigOverride) {
+        MKWorkspaceBackupManifestWriter.requireTransaction("generate-workspace-stairs");
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
         if (workspaceOpt.isEmpty()) {
@@ -1389,6 +1536,7 @@ public class MKStructureWorkspaceService {
     }
 
     public Optional<MKStructureWorkspace> generateAllWorkspaceStairs(ServerLevel level, BlockPos anchor) {
+        MKWorkspaceBackupManifestWriter.requireTransaction("generate-all-workspace-stairs");
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
         if (workspaceOpt.isEmpty()) {
@@ -1419,6 +1567,7 @@ public class MKStructureWorkspaceService {
     }
 
     public Optional<MKStructureWorkspace> clearWorkspaceStairs(ServerLevel level, BlockPos anchor, String pieceName) {
+        MKWorkspaceBackupManifestWriter.requireTransaction("clear-workspace-stairs");
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         Optional<MKStructureWorkspace> workspaceOpt = data.getWorkspaceByAnchor(anchor);
         if (workspaceOpt.isEmpty()) {
@@ -1582,14 +1731,15 @@ public class MKStructureWorkspaceService {
         MKStructureWorkspace workspace = data.getWorkspaceByAnchor(anchor).orElse(null);
         player.connection.send(new OpenWorkspaceScreenPacket(anchor, workspace,
                 workspace == null ? null : data.getSamplePreviewState(workspace.id()).orElse(null),
-                importService.discoverManifestIds(), discoverBackupFileNames(player, workspace)));
+                importService.discoverManifestIds(), discoverBackupFileNames(player, anchor, workspace)));
     }
 
-    private List<String> discoverBackupFileNames(ServerPlayer player, MKStructureWorkspace workspace) {
-        if (workspace == null) {
-            return List.of();
-        }
-        return backupDiscovery.discoverBackups(player.server, workspace).stream()
+    private List<String> discoverBackupFileNames(ServerPlayer player, BlockPos anchor,
+                                                 @Nullable MKStructureWorkspace workspace) {
+        List<MKWorkspaceBackupManifestDiscovery.BackupCandidate> candidates = workspace == null ?
+                backupDiscovery.discoverBackups(player.serverLevel(), anchor) :
+                backupDiscovery.discoverBackups(player.serverLevel(), workspace);
+        return candidates.stream()
                 .map(MKWorkspaceBackupManifestDiscovery.BackupCandidate::fileName)
                 .toList();
     }
@@ -1614,6 +1764,7 @@ public class MKStructureWorkspaceService {
 
     public MKWorkspaceImportResponse importWorkspaceFromManifestWithValidation(ServerLevel level, BlockPos anchor,
                                                                               ResourceLocation manifestId) {
+        MKWorkspaceBackupManifestWriter.requireTransaction("import-workspace");
         MKStructureWorkspaceImportService.MKWorkspaceImportOutcome outcome =
                 importService.importWorkspaceAtAnchorDetailed(level, anchor, manifestId);
         if (!outcome.validationErrors().isEmpty()) {

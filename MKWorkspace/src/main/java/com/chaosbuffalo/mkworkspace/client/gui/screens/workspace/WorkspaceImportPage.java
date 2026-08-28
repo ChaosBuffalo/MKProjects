@@ -1,15 +1,14 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mkworkspace.network.packets.LoadWorkspaceFromManifestPacket;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangeRequests;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.operations.MKWorkspaceSimpleChangeOperation;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 public class WorkspaceImportPage extends WorkspacePageBase {
     public static final String ID = "import";
@@ -34,8 +33,8 @@ public class WorkspaceImportPage extends WorkspacePageBase {
             MKButton manifestButton = new MKButton(Component.literal(manifestId), screen.contentWidth() - 8, 20);
             content.addWidget(manifestButton);
             manifestButton.setPressedCallback((button, mouseButton) -> {
-                PacketDistributor.sendToServer(new LoadWorkspaceFromManifestPacket(
-                        screen.anchor(), ResourceLocation.parse(manifestId)));
+                screen.requestWorkspaceChange(MKWorkspaceChangeRequests.target(
+                        MKWorkspaceSimpleChangeOperation.Kind.IMPORT, screen.anchor(), manifestId));
                 return true;
             });
         }

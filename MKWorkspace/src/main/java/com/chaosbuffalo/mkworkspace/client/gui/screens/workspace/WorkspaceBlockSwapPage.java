@@ -1,13 +1,12 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mkworkspace.network.packets.SwapWorkspaceBlockPacket;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangeRequests;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 public class WorkspaceBlockSwapPage extends WorkspacePageBase {
     public static final String ID = "block_swap";
@@ -47,7 +46,7 @@ public class WorkspaceBlockSwapPage extends WorkspacePageBase {
             ResourceLocation targetBlock = screen.blockSwapTargetBlock();
             if (!sourceBlock.equals(ResourceLocation.withDefaultNamespace("air")) &&
                     !sourceBlock.equals(targetBlock)) {
-                PacketDistributor.sendToServer(new SwapWorkspaceBlockPacket(
+                screen.requestWorkspaceChange(MKWorkspaceChangeRequests.swapBlocks(
                         screen.anchor(), sourceBlock, targetBlock));
             }
             return true;

@@ -61,8 +61,9 @@ public class MKWorkspaceBackupRestoreService {
     }
 
     public RestoreResult restoreLatest(ServerLevel level, MKStructureWorkspace current) throws IOException {
+        MKWorkspaceBackupManifestWriter.requireTransaction("restore-workspace-backup");
         List<MKWorkspaceBackupManifestDiscovery.BackupCandidate> candidates =
-                discovery.discoverBackups(level.getServer(), current);
+                discovery.discoverBackups(level, current);
         if (candidates.isEmpty()) {
             return RestoreResult.failed();
         }
@@ -71,10 +72,23 @@ public class MKWorkspaceBackupRestoreService {
 
     public RestoreResult restoreByFileName(ServerLevel level, MKStructureWorkspace current, String fileName)
             throws IOException {
+        MKWorkspaceBackupManifestWriter.requireTransaction("restore-workspace-backup");
         for (MKWorkspaceBackupManifestDiscovery.BackupCandidate candidate :
-                discovery.discoverBackups(level.getServer(), current)) {
+                discovery.discoverBackups(level, current)) {
             if (candidate.fileName().equals(fileName)) {
                 return restoreFromCandidate(level, current, candidate);
+            }
+        }
+        return RestoreResult.failed();
+    }
+
+    public RestoreResult restoreByFileName(ServerLevel level, net.minecraft.core.BlockPos anchor, String fileName)
+            throws IOException {
+        MKWorkspaceBackupManifestWriter.requireTransaction("restore-deleted-workspace-backup");
+        for (MKWorkspaceBackupManifestDiscovery.BackupCandidate candidate :
+                discovery.discoverBackups(level, anchor)) {
+            if (candidate.fileName().equals(fileName)) {
+                return restoreFromCandidate(level, null, anchor, candidate);
             }
         }
         return RestoreResult.failed();
@@ -83,28 +97,43 @@ public class MKWorkspaceBackupRestoreService {
     private RestoreResult restoreFromCandidate(ServerLevel level, MKStructureWorkspace current,
                                                MKWorkspaceBackupManifestDiscovery.BackupCandidate candidate)
             throws IOException {
-        Optional<MKWorkspaceExportManifest> manifestOpt = discovery.loadBackup(candidate.path(), current);
+        return restoreFromCandidate(level, current, current.anchor(), candidate);
+    }
+
+    private RestoreResult restoreFromCandidate(ServerLevel level, @Nullable MKStructureWorkspace current,
+                                               net.minecraft.core.BlockPos anchor,
+                                               MKWorkspaceBackupManifestDiscovery.BackupCandidate candidate)
+            throws IOException {
+        Optional<MKWorkspaceExportManifest> manifestOpt = current == null ?
+                discovery.loadBackup(candidate.path(), anchor) : discovery.loadBackup(candidate.path(), current);
         if (manifestOpt.isEmpty()) {
             return RestoreResult.failed();
         }
-        MKWorkspaceBackupManifestWriter.WrittenBackup beforeRestore =
+        MKWorkspaceBackupManifestWriter.WrittenBackup beforeRestore = current == null ? null :
                 backupWriter.writeBeforeMutation(level, current, "backup-restore");
         MKWorkspaceExportManifest manifest = manifestOpt.get();
         MKStructureWorkspace restoredBase = importService.workspaceFromManifest(
-                current.id(), current.anchor(), current.createdAt(), manifest);
+                current == null ? manifest.workspaceId() : current.id(), anchor,
+                current == null ? manifest.createdAt() : current.createdAt(), manifest);
         MKStructureWorkspace restored = restoredBase.withPieces(
                 importService.pieceDefinitionsFromManifest(restoredBase, manifest));
         List<String> validationErrors = plannerRegistry.validate(restored);
         if (!validationErrors.isEmpty()) {
-            return RestoreResult.validationFailed(candidate.path(), beforeRestore.path(), validationErrors);
+            return RestoreResult.validationFailed(candidate.path(), beforeRestore == null ? null : beforeRestore.path(),
+                    validationErrors);
         }
 
         Optional<MKWorkspaceBackupArchiveStore.RestoreStats> blockRestoreStats =
                 archiveStore.restorePieces(candidate.path(), level, current, restored);
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
-        data.updateWorkspace(restored);
+        if (current == null) {
+            data.createWorkspace(restored);
+        } else {
+            data.updateWorkspace(restored);
+        }
         syncBlockEntity(level, restored);
-        return RestoreResult.success(restored, candidate.path(), beforeRestore.path(), blockRestoreStats);
+        return RestoreResult.success(restored, candidate.path(), beforeRestore == null ? null : beforeRestore.path(),
+                blockRestoreStats);
     }
 
     private void syncBlockEntity(ServerLevel level, MKStructureWorkspace workspace) {

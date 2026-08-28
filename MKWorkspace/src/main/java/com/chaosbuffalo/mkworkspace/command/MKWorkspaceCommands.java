@@ -3,10 +3,13 @@ package com.chaosbuffalo.mkworkspace.command;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.MKStructureWorkspaceService;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.export.MKWorkspaceBackupManifestDiscovery;
-import com.chaosbuffalo.mkworkspace.world.gen.workspace.export.MKWorkspaceBackupRestoreService;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
-import com.chaosbuffalo.mkworkspace.world.gen.workspace.mutation.MKWorkspacePieceRelayoutService;
-import com.chaosbuffalo.mkworkspace.world.gen.workspace.mutation.MKStructureWorkspaceMutationService;
+import com.chaosbuffalo.mkworkspace.network.packets.MKWorkspaceChangePackets;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangeCoordinator;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangeRequest;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangeRequests;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.operations.MKWorkspaceSimpleChangeOperation;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.operations.MKWorkspaceSimpleChangePayload;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -22,8 +25,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
-import java.io.IOException;
-import java.util.Map;
 
 public class MKWorkspaceCommands {
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
@@ -81,10 +82,8 @@ public class MKWorkspaceCommands {
             player.sendSystemMessage(Component.literal("No structure workspaces to regenerate."));
             return Command.SINGLE_SUCCESS;
         }
-        boolean regenerated = new MKStructureWorkspaceService().generateWorkspace(player.serverLevel(), nearest.anchor()).isPresent();
-        player.sendSystemMessage(Component.literal(regenerated ?
-                "Regenerated workspace at " + nearest.anchor() :
-                "Failed to regenerate workspace at " + nearest.anchor()));
+        stageChange(player, MKWorkspaceChangeRequests.simple(
+                MKWorkspaceSimpleChangeOperation.Kind.GENERATE, nearest.anchor()));
         return Command.SINGLE_SUCCESS;
     }
 
@@ -95,7 +94,7 @@ public class MKWorkspaceCommands {
             player.sendSystemMessage(Component.literal("No structure workspaces to inspect."));
             return Command.SINGLE_SUCCESS;
         }
-        var backups = new MKWorkspaceBackupManifestDiscovery().discoverBackups(player.server, nearest);
+        var backups = new MKWorkspaceBackupManifestDiscovery().discoverBackups(player.serverLevel(), nearest);
         if (backups.isEmpty()) {
             player.sendSystemMessage(Component.literal("No backups found for " +
                     nearest.namespace() + ":" + nearest.structureName()));
@@ -140,34 +139,19 @@ public class MKWorkspaceCommands {
             player.sendSystemMessage(Component.literal("No structure workspaces to restore."));
             return Command.SINGLE_SUCCESS;
         }
-        try {
-            MKWorkspaceBackupRestoreService restoreService = new MKWorkspaceBackupRestoreService();
-            MKWorkspaceBackupRestoreService.RestoreResult result = fileName == null ?
-                    restoreService.restoreLatest(player.serverLevel(), nearest) :
-                    restoreService.restoreByFileName(player.serverLevel(), nearest, fileName);
-            if (!result.validationErrors().isEmpty()) {
-                player.sendSystemMessage(Component.literal("Backup restore failed validation: " +
-                        String.join("; ", result.validationErrors())));
-                result.beforeRestoreBackupPathOpt().ifPresent(path ->
-                        player.sendSystemMessage(Component.literal("Before-restore backup manifest: " + path)));
-                return Command.SINGLE_SUCCESS;
-            }
-            if (result.workspaceOpt().isEmpty()) {
-                player.sendSystemMessage(Component.literal(fileName == null ?
-                        "No restorable backups found for " + nearest.namespace() + ":" + nearest.structureName() :
-                        "Backup file not found for " + nearest.namespace() + ":" + nearest.structureName() + ": " + fileName));
-                return Command.SINGLE_SUCCESS;
-            }
-            player.sendSystemMessage(Component.literal("Restored live workspace metadata/layout from " +
-                    result.selectedBackupPathOpt().map(path -> path.getFileName().toString()).orElse("backup")));
-            result.beforeRestoreBackupPathOpt().ifPresent(path ->
-                    player.sendSystemMessage(Component.literal("Before-restore backup manifest: " + path)));
-            player.sendSystemMessage(Component.literal("World blocks were not rewritten; export later when the live workspace is correct."));
-            return Command.SINGLE_SUCCESS;
-        } catch (IOException e) {
-            player.sendSystemMessage(Component.literal("Backup restore failed while writing backup manifest: " + e.getMessage()));
+        String selectedFile = fileName;
+        if (selectedFile == null) {
+            selectedFile = new MKWorkspaceBackupManifestDiscovery().discoverBackups(player.serverLevel(), nearest).stream()
+                    .findFirst().map(MKWorkspaceBackupManifestDiscovery.BackupCandidate::fileName).orElse(null);
+        }
+        if (selectedFile == null) {
+            player.sendSystemMessage(Component.literal("No restorable backups found for " +
+                    nearest.namespace() + ":" + nearest.structureName()));
             return Command.SINGLE_SUCCESS;
         }
+        stageChange(player, MKWorkspaceChangeRequests.target(
+                MKWorkspaceSimpleChangeOperation.Kind.RESTORE, nearest.anchor(), selectedFile));
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int setPreviewMarginAtNearestWorkspace(CommandContext<CommandSourceStack> context)
@@ -183,27 +167,10 @@ public class MKWorkspaceCommands {
             return Command.SINGLE_SUCCESS;
         }
         int previewMargin = IntegerArgumentType.getInteger(context, "value");
-        try {
-            var resultOpt = new MKWorkspacePieceRelayoutService().relayoutPreviewMargin(
-                    player.serverLevel(), nearest, previewMargin);
-            if (resultOpt.isEmpty()) {
-                player.sendSystemMessage(Component.literal("Preview margin relayout was not applicable."));
-                return Command.SINGLE_SUCCESS;
-            }
-            MKWorkspacePieceRelayoutService.RelayoutResult result = resultOpt.get();
-            player.sendSystemMessage(Component.literal("Relayouted " + result.movedPieceCount() +
-                    " pieces for preview margin " + previewMargin + "."));
-            player.sendSystemMessage(Component.literal("Moved " + result.movedBlockCount() +
-                    " workspace positions. Backup manifest: " + result.backupPath()));
-            return Command.SINGLE_SUCCESS;
-        } catch (IOException e) {
-            player.sendSystemMessage(Component.literal("Preview margin relayout failed while writing backup manifest: " +
-                    e.getMessage()));
-            return Command.SINGLE_SUCCESS;
-        } catch (IllegalStateException e) {
-            player.sendSystemMessage(Component.literal("Preview margin relayout failed: " + e.getMessage()));
-            return Command.SINGLE_SUCCESS;
-        }
+        stageChange(player, MKWorkspaceChangeRequests.simple(
+                MKWorkspaceSimpleChangeOperation.Kind.PREVIEW_MARGIN, nearest.anchor(),
+                new MKWorkspaceSimpleChangePayload("", "", "", previewMargin)));
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int swapBlockAtNearestWorkspace(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
@@ -227,18 +194,8 @@ public class MKWorkspaceCommands {
             player.sendSystemMessage(Component.literal("No structure workspaces to mutate."));
             return Command.SINGLE_SUCCESS;
         }
-        try {
-            MKStructureWorkspaceMutationService.WorkspaceBlockSwapResult result =
-                    new MKStructureWorkspaceMutationService().swapBlocks(
-                            player.serverLevel(), nearest, Map.of(source, target));
-            player.sendSystemMessage(Component.literal("Swapped " + result.replacedCount() + " blocks across " +
-                    result.pieceCount() + " pieces in " + nearest.namespace() + ":" + nearest.structureName()));
-            player.sendSystemMessage(Component.literal("Backup manifest: " + result.backupPath()));
-            return Command.SINGLE_SUCCESS;
-        } catch (IOException e) {
-            player.sendSystemMessage(Component.literal("Block swap failed while writing backup manifest: " + e.getMessage()));
-            return Command.SINGLE_SUCCESS;
-        }
+        stageChange(player, MKWorkspaceChangeRequests.swapBlocks(nearest.anchor(), source, target));
+        return Command.SINGLE_SUCCESS;
     }
 
     private static MKStructureWorkspace getNearestWorkspace(ServerPlayer player) {
@@ -249,5 +206,18 @@ public class MKWorkspaceCommands {
                         left.anchor().distManhattan(playerPos),
                         right.anchor().distManhattan(playerPos)))
                 .orElse(null);
+    }
+
+    private static void stageChange(ServerPlayer player, MKWorkspaceChangeRequest request) {
+        try {
+            MKStructureWorkspaceService service = new MKStructureWorkspaceService();
+            service.openWorkspaceScreen(player, request.anchor());
+            MKWorkspaceChangePackets.sendPreparedPlan(player,
+                    MKWorkspaceChangeCoordinator.shared().prepare(player, request));
+            player.sendSystemMessage(Component.literal("Review and confirm the prepared workspace change."));
+        } catch (Exception exception) {
+            player.sendSystemMessage(Component.literal("Workspace preflight failed: " +
+                    (exception.getMessage() == null ? exception.getClass().getSimpleName() : exception.getMessage())));
+        }
     }
 }

@@ -33,12 +33,14 @@ public class MKStructureWorkspaceMutationService {
     public WorkspaceBlockSwapResult swapBlocks(ServerLevel level, MKStructureWorkspace workspace,
                                                Map<ResourceLocation, ResourceLocation> replacements)
             throws IOException {
+        MKWorkspaceBackupManifestWriter.requireTransaction("swap-workspace-blocks");
         return swapBlocks(level, workspace, replacements, "block-swap");
     }
 
     public WorkspaceBlockSwapResult swapPalette(ServerLevel level, MKStructureWorkspace workspace,
                                                 MKWorkspaceMaterialPalette targetPalette)
             throws IOException {
+        MKWorkspaceBackupManifestWriter.requireTransaction("swap-workspace-palette");
         MKStructureWorkspace targetWorkspace = withPalette(workspace, targetPalette);
         return swapMaterialPalettes(level, workspace, targetWorkspace);
     }
@@ -46,6 +48,7 @@ public class MKStructureWorkspaceMutationService {
     public WorkspaceBlockSwapResult swapMaterialPalettes(ServerLevel level, MKStructureWorkspace existing,
                                                          MKStructureWorkspace requested)
             throws IOException {
+        MKWorkspaceBackupManifestWriter.requireTransaction("swap-workspace-material-palettes");
         MKStructureWorkspace requestedWithPieces = withPiecesAndIdentity(requested, existing);
         MKWorkspaceBackupManifestWriter.WrittenBackup backup = backupManifestWriter.writeBeforeMutation(
                 level, existing, "palette-swap");

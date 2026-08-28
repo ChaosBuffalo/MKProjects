@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -43,6 +44,8 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -53,20 +56,37 @@ import java.util.zip.ZipOutputStream;
 
 public class MKWorkspaceBackupArchiveStore {
     private static final String MANIFEST_ENTRY = "manifest.json";
+    private static final String BACKUP_METADATA_ENTRY = "mkworkspace-backup.json";
     private static final String PIECE_DIR = "pieces/";
     private static final String BACKUP_ORIGIN_OFFSET_TAG = "mkworkspace_backup_origin_offset";
 
     public record RestoreStats(int restoredPieceCount, int clearedBlockCount) {
     }
 
+    public record BackupMetadata(String operation, String dimension, BlockPos anchor, String workspaceId,
+                                 String workspaceName, String createdAt) {
+    }
+
     public void writeArchive(Path archivePath, ServerLevel level, MKStructureWorkspace workspace,
-                             MKWorkspaceExportManifest manifest) throws IOException {
+                             MKWorkspaceExportManifest manifest, BackupMetadata metadata) throws IOException {
         Files.createDirectories(archivePath.getParent());
-        try (ZipOutputStream output = new ZipOutputStream(Files.newOutputStream(archivePath))) {
-            writeManifest(output, manifest);
-            for (MKWorkspacePieceDefinition piece : workspace.pieces()) {
-                writePiece(output, level, piece);
+        Path temporary = archivePath.resolveSibling(archivePath.getFileName() + ".tmp");
+        try {
+            try (ZipOutputStream output = new ZipOutputStream(Files.newOutputStream(temporary))) {
+                writeManifest(output, manifest);
+                writeBackupMetadata(output, metadata);
+                for (MKWorkspacePieceDefinition piece : workspace.pieces()) {
+                    writePiece(output, level, piece);
+                }
             }
+            try {
+                Files.move(temporary, archivePath, StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException ignored) {
+                Files.move(temporary, archivePath);
+            }
+        } catch (IOException exception) {
+            Files.deleteIfExists(temporary);
+            throw exception;
         }
     }
 
@@ -86,7 +106,7 @@ public class MKWorkspaceBackupArchiveStore {
     }
 
     public Optional<RestoreStats> restorePieces(Path archivePath, ServerLevel level,
-                                                MKStructureWorkspace currentWorkspace,
+                                                @javax.annotation.Nullable MKStructureWorkspace currentWorkspace,
                                                 MKStructureWorkspace restoredWorkspace) throws IOException {
         if (!Files.isRegularFile(archivePath)) {
             return Optional.empty();
@@ -114,6 +134,26 @@ public class MKWorkspaceBackupArchiveStore {
     private void writeManifest(ZipOutputStream output, MKWorkspaceExportManifest manifest) throws IOException {
         output.putNextEntry(new ZipEntry(MANIFEST_ENTRY));
         JsonElement json = MKWorkspaceExportManifest.CODEC.encodeStart(JsonOps.INSTANCE, manifest).getOrThrow();
+        Writer writer = new OutputStreamWriter(output, StandardCharsets.UTF_8);
+        writer.write(json.toString());
+        writer.flush();
+        output.closeEntry();
+    }
+
+    private void writeBackupMetadata(ZipOutputStream output, BackupMetadata metadata) throws IOException {
+        output.putNextEntry(new ZipEntry(BACKUP_METADATA_ENTRY));
+        JsonObject json = new JsonObject();
+        json.addProperty("schemaVersion", 1);
+        json.addProperty("operation", metadata.operation());
+        json.addProperty("dimension", metadata.dimension());
+        json.addProperty("workspaceId", metadata.workspaceId());
+        json.addProperty("workspaceName", metadata.workspaceName());
+        json.addProperty("createdAt", metadata.createdAt());
+        JsonObject anchor = new JsonObject();
+        anchor.addProperty("x", metadata.anchor().getX());
+        anchor.addProperty("y", metadata.anchor().getY());
+        anchor.addProperty("z", metadata.anchor().getZ());
+        json.add("anchor", anchor);
         Writer writer = new OutputStreamWriter(output, StandardCharsets.UTF_8);
         writer.write(json.toString());
         writer.flush();
@@ -195,7 +235,9 @@ public class MKWorkspaceBackupArchiveStore {
     private int clearWorkspaceBlocks(ServerLevel level, MKStructureWorkspace currentWorkspace,
                                      MKStructureWorkspace restoredWorkspace) {
         LinkedHashSet<BlockPos> positions = new LinkedHashSet<>();
-        positions.addAll(collectPieceBlockPositions(currentWorkspace));
+        if (currentWorkspace != null) {
+            positions.addAll(collectPieceBlockPositions(currentWorkspace));
+        }
         positions.addAll(collectPieceBlockPositions(restoredWorkspace));
         for (BlockPos pos : positions) {
             level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);

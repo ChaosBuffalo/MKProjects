@@ -11,11 +11,15 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateCloneTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologyProfile;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceStableSlotIdentity;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspacePlannerChangePlan;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceMutationPreflight;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface MKWorkspacePlanner extends MKWorkspacePiecePlanner {
     ResourceLocation plannerId();
@@ -96,5 +100,17 @@ public interface MKWorkspacePlanner extends MKWorkspacePiecePlanner {
 
     default boolean usesRuntimePathFilters(String runtimePoolPath) {
         return true;
+    }
+
+    /**
+     * Claims an exact persistent definition mutation that core classification does not understand.
+     * Returning empty deliberately selects the safe full-regeneration fallback.
+     */
+    default Optional<MKWorkspacePlannerChangePlan> prepareDefinitionChange(
+            ServerPlayer player,
+            MKStructureWorkspace existing,
+            MKStructureWorkspace requested,
+            MKWorkspaceMutationPreflight corePreflight) {
+        return Optional.empty();
     }
 }

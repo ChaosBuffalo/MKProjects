@@ -1,7 +1,9 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceInvalidationReport;
+import com.chaosbuffalo.mkworkspace.network.packets.CancelWorkspaceChangePacket;
+import com.chaosbuffalo.mkworkspace.network.packets.ConfirmWorkspaceChangePacket;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangeSummaryFormatter;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
@@ -9,6 +11,7 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +28,13 @@ public class WorkspaceGenerateConfirmPage extends WorkspacePageBase {
     public MKLayout build(MKWorkspaceScreen screen) {
         MKLayout root = createPanel(screen);
 
-        addTitle(screen, root, Component.literal("Confirm Workspace Update"));
+        MKWorkspaceClientChangePlan plan = screen.changePlan();
+        addTitle(screen, root, Component.literal(plan == null ? "Confirm Workspace Change" : plan.summary().title()));
         addHeaderText(screen, root, Component.literal(
-                "This will apply the draft settings using the safest available workspace update path."));
-        MKText workspaceId = addHeaderText(screen, root, Component.literal(screen.draftSession().workspaceId()));
+                "The server prepared this exact change. Confirmation writes one backup before applying it when required."));
+        String workspaceLabel = screen.workspace() == null ? "Anchor " + screen.anchor().toShortString() :
+                screen.workspace().namespace() + ":" + screen.workspace().structureName();
+        MKText workspaceId = addHeaderText(screen, root, Component.literal(workspaceLabel));
 
         int scrollTop = screen.scrollTopAfterHeader(root, workspaceId);
         int buttonRowsHeight = (screen.buttonHeight() * 3) + (screen.buttonGap() * 2) + screen.bottomPadding();
@@ -45,24 +51,46 @@ public class WorkspaceGenerateConfirmPage extends WorkspacePageBase {
         }
         finishScrollContent(screen, scrollView, content);
 
-        MKButton confirm = addBottomButton(screen, root, Component.literal("Apply Workspace Update"), 220, 1);
+        MKButton confirm = new MKButton(Component.literal("Apply Workspace Change"), 220, screen.buttonHeight()) {
+            @Override
+            public boolean isEnabled() {
+                MKWorkspaceClientChangePlan current = screen.changePlan();
+                return super.isEnabled() && current != null && current.complete() &&
+                        current.summary().canConfirm();
+            }
+        };
+        root.addWidget(confirm);
+        root.addConstraintToWidget(new com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint(), confirm);
+        confirm.setY(screen.panelY() + screen.panelHeight() - screen.bottomPadding() - screen.buttonHeight() -
+                (screen.buttonHeight() + screen.buttonGap()));
         confirm.setPressedCallback((button, mouseButton) -> {
             button.setEnabled(false);
             button.buttonText = Component.literal("Applying...");
-            screen.draftSession().send();
+            MKWorkspaceClientChangePlan current = screen.changePlan();
+            if (current != null && current.complete()) {
+                PacketDistributor.sendToServer(new ConfirmWorkspaceChangePacket(current.planId()));
+            }
             return true;
         });
 
         MKButton copy = addBottomButton(screen, root, Component.literal("Copy Summary"), 140, 2);
         copy.setPressedCallback((button, mouseButton) -> {
-            Minecraft.getInstance().keyboardHandler.setClipboard(preflightClipboardText(screen, summaryLines));
+            MKWorkspaceClientChangePlan current = screen.changePlan();
+            if (current != null && current.complete()) {
+                Minecraft.getInstance().keyboardHandler.setClipboard(
+                        MKWorkspaceChangeSummaryFormatter.clipboard(current.summary()));
+            }
             button.buttonText = Component.literal("Copied Summary");
             return true;
         });
 
         MKButton cancel = addBottomButton(screen, root, Component.literal("Cancel"), 120, 0);
         cancel.setPressedCallback((button, mouseButton) -> {
-            screen.switchToExistingState("form");
+            MKWorkspaceClientChangePlan current = screen.changePlan();
+            if (current != null) {
+                PacketDistributor.sendToServer(new CancelWorkspaceChangePacket(current.planId()));
+            }
+            screen.goBackOrSwitchTo("form");
             return true;
         });
         return root;
@@ -70,39 +98,17 @@ public class WorkspaceGenerateConfirmPage extends WorkspacePageBase {
 
     private List<String> preflightSummaryLines(MKWorkspaceScreen screen) {
         ArrayList<String> lines = new ArrayList<>();
-        if (screen.preflight() == null) {
-            lines.add("Impact report is loading. The server will preflight again before applying.");
+        MKWorkspaceClientChangePlan plan = screen.changePlan();
+        if (plan == null) {
+            lines.add(screen.workspaceChangeFailed() && !screen.workspaceChangeMessage().isBlank() ?
+                    screen.workspaceChangeMessage() : "Preparing the complete server impact report...");
             return List.copyOf(lines);
         }
-
-        MKWorkspaceInvalidationReport report = screen.preflight().report();
-        if (report.relayoutImpacts().isEmpty()) {
-            lines.add("These changes will not add, rebuild, remove, move, expand, or patch physical authored pieces.");
-        } else {
-            lines.addAll(relayoutImpactReportLines(report));
+        if (!plan.complete()) {
+            lines.add("Loading effects: " + plan.receivedEffects() + " / " + plan.totalEffects());
+            return List.copyOf(lines);
         }
-
-        for (String warning : report.warnings()) {
-            lines.add("Warning: " + warning);
-        }
-        lines.add("Summary: " + report.summary());
-        lines.add("Operation: " + report.recommendedOperation());
-        lines.add("Safety: " + report.safety().getSerializedName());
-        if (!report.invalidatedLayers().isEmpty()) {
-            lines.add("Invalidates: " + report.invalidatedLayers().stream()
-                    .map(layer -> layer.getSerializedName())
-                    .reduce((left, right) -> left + ", " + right)
-                    .orElse(""));
-        }
+        lines.addAll(MKWorkspaceChangeSummaryFormatter.lines(plan.summary()));
         return List.copyOf(lines);
-    }
-
-    private String preflightClipboardText(MKWorkspaceScreen screen, List<String> summaryLines) {
-        ArrayList<String> lines = new ArrayList<>();
-        lines.add("Confirm Workspace Update");
-        lines.add(screen.draftSession().workspaceId());
-        lines.add("");
-        lines.addAll(summaryLines);
-        return String.join("\n", lines);
     }
 }

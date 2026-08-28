@@ -6,6 +6,7 @@ import com.chaosbuffalo.mknpc.MKNpc;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifestLoader;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKConnectorRole;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.capability.IMKStructureWorkspaceData;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.export.MKWorkspaceBackupManifestWriter;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
@@ -84,6 +85,7 @@ public class MKStructureWorkspaceImportService {
 
     public MKWorkspaceImportOutcome importWorkspaceAtAnchorDetailed(ServerLevel level, BlockPos anchor,
                                                                     ResourceLocation manifestId) {
+        MKWorkspaceBackupManifestWriter.requireTransaction("import-workspace-manifest");
         IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
         if (data.getWorkspaceByAnchor(anchor).isPresent()) {
             return MKWorkspaceImportOutcome.failed();
@@ -143,7 +145,7 @@ public class MKStructureWorkspaceImportService {
                 .toList();
     }
 
-    private Optional<MKWorkspaceExportManifest> loadManifest(ResourceLocation manifestId) {
+    public Optional<MKWorkspaceExportManifest> loadManifest(ResourceLocation manifestId) {
         return discoveries.stream()
                 .filter(discovery -> discovery.namespace().equals(manifestId.getNamespace()))
                 .map(discovery -> discovery.loadManifest(manifestId))

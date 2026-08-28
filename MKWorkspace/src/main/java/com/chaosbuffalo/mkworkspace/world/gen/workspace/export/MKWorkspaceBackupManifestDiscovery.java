@@ -1,17 +1,19 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace.export;
 
 import com.chaosbuffalo.mkworkspace.MKWorkspace;
-
-import com.chaosbuffalo.mknpc.MKNpc;
-import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public class MKWorkspaceBackupManifestDiscovery {
@@ -22,41 +24,49 @@ public class MKWorkspaceBackupManifestDiscovery {
                                   String namespace, String structureName, int pieceCount, Path path) {
     }
 
+    public List<BackupCandidate> discoverBackups(ServerLevel level, MKStructureWorkspace workspace) {
+        LinkedHashSet<Path> paths = new LinkedHashSet<>();
+        collectArchives(pathResolver.getBackupManifestDirectory(level, workspace), paths, 1);
+        collectArchives(pathResolver.getBackupManifestDirectory(level.getServer(), workspace), paths, 1);
+        collectLegacyArchives(level.getServer(), paths);
+        return candidates(paths, manifest -> manifest.workspaceId().equals(workspace.id()));
+    }
+
+    /** Finds backups for a deleted workspace from an empty dev block at the original anchor. */
+    public List<BackupCandidate> discoverBackups(ServerLevel level, BlockPos anchor) {
+        LinkedHashSet<Path> paths = new LinkedHashSet<>();
+        collectArchives(pathResolver.getBackupAnchorDirectory(level, anchor), paths, 3);
+        collectLegacyArchives(level.getServer(), paths);
+        return candidates(paths, manifest -> manifestAnchor(manifest).equals(anchor));
+    }
+
+    /** Legacy compatibility for callers without a level. New code should use the ServerLevel overload. */
     public List<BackupCandidate> discoverBackups(MinecraftServer server, MKStructureWorkspace workspace) {
-        Path backupDir = pathResolver.getBackupManifestDirectory(server, workspace);
-        if (!Files.isDirectory(backupDir)) {
-            return List.of();
-        }
-        try (Stream<Path> stream = Files.list(backupDir)) {
-            return stream.filter(Files::isRegularFile)
-                    .filter(path -> path.toString().endsWith(".zip"))
-                    .map(path -> loadCandidate(path, workspace))
-                    .flatMap(Optional::stream)
-                    .sorted((left, right) -> right.lastModified().compareTo(left.lastModified()))
-                    .toList();
-        } catch (Exception e) {
-            MKWorkspace.LOGGER.warn("Failed to scan workspace backup manifests under {}", backupDir, e);
-            return List.of();
-        }
+        LinkedHashSet<Path> paths = new LinkedHashSet<>();
+        collectArchives(pathResolver.getBackupManifestDirectory(server, workspace), paths, 1);
+        collectLegacyArchives(server, paths);
+        return candidates(paths, manifest -> manifest.workspaceId().equals(workspace.id()));
     }
 
     public Optional<MKWorkspaceExportManifest> loadBackup(Path path, MKStructureWorkspace workspace) {
-        return readManifest(path).filter(manifest -> matchesWorkspace(manifest, workspace, path));
+        return readManifest(path).filter(manifest -> manifest.workspaceId().equals(workspace.id()));
     }
 
-    private Optional<BackupCandidate> loadCandidate(Path path, MKStructureWorkspace workspace) {
-        return readManifest(path)
-                .filter(manifest -> matchesWorkspace(manifest, workspace, path))
-                .map(manifest -> new BackupCandidate(
-                        path.getFileName().toString(),
-                        operationFromFileName(path.getFileName().toString()),
-                        lastModified(path),
-                        manifest.schemaVersion(),
-                        manifest.namespace(),
-                        manifest.structureName(),
-                        manifest.pieces().size(),
-                        path
-                ));
+    public Optional<MKWorkspaceExportManifest> loadBackup(Path path, BlockPos anchor) {
+        return readManifest(path).filter(manifest -> manifestAnchor(manifest).equals(anchor));
+    }
+
+    private List<BackupCandidate> candidates(LinkedHashSet<Path> paths,
+                                             Predicate<MKWorkspaceExportManifest> predicate) {
+        return paths.stream().map(path -> loadCandidate(path, predicate)).flatMap(Optional::stream)
+                .sorted((left, right) -> right.lastModified().compareTo(left.lastModified())).toList();
+    }
+
+    private Optional<BackupCandidate> loadCandidate(Path path, Predicate<MKWorkspaceExportManifest> predicate) {
+        return readManifest(path).filter(predicate).map(manifest -> new BackupCandidate(
+                path.getFileName().toString(), operationFromFileName(path.getFileName().toString()),
+                lastModified(path), manifest.schemaVersion(), manifest.namespace(), manifest.structureName(),
+                manifest.pieces().size(), path));
     }
 
     private Optional<MKWorkspaceExportManifest> readManifest(Path path) {
@@ -67,20 +77,42 @@ public class MKWorkspaceBackupManifestDiscovery {
         return manifest;
     }
 
-    private boolean matchesWorkspace(MKWorkspaceExportManifest manifest, MKStructureWorkspace workspace, Path path) {
-        boolean matches = manifest.namespace().equals(workspace.namespace()) &&
-                manifest.structureName().equals(workspace.structureName());
-        if (!matches) {
-            MKWorkspace.LOGGER.warn("Skipping workspace backup manifest {} because it describes {}:{} instead of {}:{}",
-                    path, manifest.namespace(), manifest.structureName(), workspace.namespace(), workspace.structureName());
+    private void collectArchives(Path directory, LinkedHashSet<Path> paths, int depth) {
+        if (!Files.isDirectory(directory)) {
+            return;
         }
-        return matches;
+        try (Stream<Path> stream = Files.walk(directory, depth)) {
+            stream.filter(Files::isRegularFile).filter(path -> path.toString().endsWith(".zip"))
+                    .map(path -> path.toAbsolutePath().normalize()).forEach(paths::add);
+        } catch (Exception exception) {
+            MKWorkspace.LOGGER.warn("Failed to scan workspace backups under {}", directory, exception);
+        }
+    }
+
+    private void collectLegacyArchives(MinecraftServer server, LinkedHashSet<Path> paths) {
+        Path root = pathResolver.getLegacyBackupRoot(server);
+        if (!Files.isDirectory(root)) {
+            return;
+        }
+        try (Stream<Path> namespaces = Files.list(root)) {
+            namespaces.filter(Files::isDirectory)
+                    .map(path -> path.resolve("mk_workspace_exports").resolve("backups"))
+                    .filter(Files::isDirectory)
+                    .forEach(path -> collectArchives(path, paths, 3));
+        } catch (Exception exception) {
+            MKWorkspace.LOGGER.warn("Failed to scan legacy workspace backups under {}", root, exception);
+        }
+    }
+
+    private BlockPos manifestAnchor(MKWorkspaceExportManifest manifest) {
+        MKWorkspaceExportManifest.ExportBlockPos anchor = manifest.settings().anchor();
+        return new BlockPos(anchor.x(), anchor.y(), anchor.z());
     }
 
     private Instant lastModified(Path path) {
         try {
             return Files.getLastModifiedTime(path).toInstant();
-        } catch (Exception e) {
+        } catch (Exception exception) {
             return Instant.EPOCH;
         }
     }

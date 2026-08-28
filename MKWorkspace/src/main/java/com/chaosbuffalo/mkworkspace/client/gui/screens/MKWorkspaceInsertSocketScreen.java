@@ -1,7 +1,10 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens;
 
-import com.chaosbuffalo.mkworkspace.network.packets.CreateWorkspaceInsertSocketFamilyPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.OpenWorkspaceInsertSocketScreenPacket;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangePayloads;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangeRequest;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.operations.MKWorkspaceInsertSocketChangeOperation;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.operations.MKWorkspaceInsertSocketChangePayload;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertAttachmentFace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
@@ -23,12 +26,12 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -224,20 +227,10 @@ public class MKWorkspaceInsertSocketScreen extends MKScreen {
     }
 
     private void createInsertFamily() {
-        PacketDistributor.sendToServer(new CreateWorkspaceInsertSocketFamilyPacket(
-                socketContext.anchor(),
-                socketContext.pieceId(),
-                socketContext.socketWorldPos(),
-                socketContext.socketFacing(),
-                sanitizedFamilyId(),
-                widthSlider.value(),
-                heightSlider.value(),
-                depthSlider.value(),
-                faceUOffsetSlider.value(),
-                faceVOffsetSlider.value(),
-                safeHostFinalState(),
-                safeTemplateFinalState()
-        ));
+        requestChange(new MKWorkspaceInsertSocketChangePayload(socketContext.pieceId(),
+                socketContext.socketWorldPos(), socketContext.socketFacing(), true, sanitizedFamilyId(),
+                widthSlider.value(), heightSlider.value(), depthSlider.value(), faceUOffsetSlider.value(),
+                faceVOffsetSlider.value(), safeHostFinalState(), safeTemplateFinalState()));
     }
 
     private boolean canCreate() {
@@ -479,14 +472,19 @@ public class MKWorkspaceInsertSocketScreen extends MKScreen {
     }
 
     private void placeExistingFamily(String familyId) {
-        PacketDistributor.sendToServer(CreateWorkspaceInsertSocketFamilyPacket.placeExisting(
-                socketContext.anchor(),
-                socketContext.pieceId(),
-                socketContext.socketWorldPos(),
-                socketContext.socketFacing(),
-                familyId,
-                safeHostFinalState()
-        ));
+        requestChange(new MKWorkspaceInsertSocketChangePayload(socketContext.pieceId(),
+                socketContext.socketWorldPos(), socketContext.socketFacing(), false, familyId,
+                1, 1, 1, 0, 0, safeHostFinalState(), "minecraft:air"));
+    }
+
+    private void requestChange(MKWorkspaceInsertSocketChangePayload payload) {
+        MKWorkspaceChangeRequest request = new MKWorkspaceChangeRequest(UUID.randomUUID(),
+                MKWorkspaceInsertSocketChangeOperation.ID, socketContext.anchor(),
+                MKWorkspaceChangePayloads.encode(MKWorkspaceInsertSocketChangePayload.CODEC, payload,
+                        "workspace insert socket change"));
+        MKWorkspaceScreen workspaceScreen = new MKWorkspaceScreen(socketContext.anchor(), workspace, List.of());
+        Minecraft.getInstance().setScreen(workspaceScreen);
+        workspaceScreen.requestWorkspaceChange(request);
     }
 
     private void drawInsertDiagram(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height) {

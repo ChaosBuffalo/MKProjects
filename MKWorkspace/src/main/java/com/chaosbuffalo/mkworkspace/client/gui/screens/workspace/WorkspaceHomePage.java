@@ -43,11 +43,24 @@ public class WorkspaceHomePage extends WorkspacePageBase {
             return true;
         });
 
+        if (!screen.backupManifestFiles().isEmpty()) {
+            MKButton restoreDeleted = new MKButton(Component.literal("Restore Workspace Backup (" +
+                    screen.backupManifestFiles().size() + ")"), 220, 20);
+            root.addWidget(restoreDeleted);
+            root.addConstraintToWidget(new CenterXConstraint(), restoreDeleted);
+            restoreDeleted.setY(yPos + 120 + ((screen.buttonHeight() + screen.buttonGap()) * 2));
+            restoreDeleted.setPressedCallback((button, mouseButton) -> {
+                screen.switchToExistingState(WorkspaceBackupPage.ID);
+                return true;
+            });
+        }
+
         if (screen.importManifestIds().isEmpty()) {
             MKText emptyText = screen.makeWhiteText(Component.literal("No exported workspace manifests found."));
             emptyText.setWidth(screen.contentWidth());
             emptyText.setMultiline(true);
-            emptyText.setY(yPos + 120 + ((screen.buttonHeight() + screen.buttonGap()) * 2));
+            emptyText.setY(yPos + 120 + ((screen.buttonHeight() + screen.buttonGap()) *
+                    (screen.backupManifestFiles().isEmpty() ? 2 : 3)));
             root.addWidget(emptyText);
             root.addConstraintToWidget(new CenterXConstraint(), emptyText);
         }

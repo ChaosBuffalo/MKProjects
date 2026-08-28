@@ -1,8 +1,10 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mkworkspace.network.packets.CreateWorkspacePacket;
-import com.chaosbuffalo.mkworkspace.network.packets.RequestWorkspacePreflightPacket;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangePayloads;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangeRequest;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.operations.MKWorkspaceDefinitionChangeOperation;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.operations.MKWorkspaceDefinitionChangePayload;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKHorizontalOpeningProfile;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
@@ -19,27 +21,19 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MK
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyKind;
-import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceFloorTopologyInvalidationAnalyzer;
-import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceInvalidationReport;
-import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWalledKeepPlannerSettings;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunKind;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunPieceShape;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunProjection;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceMaterialPalette;
-import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceMutationSafety;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePaletteOverride;
-import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePaletteResolver;
-import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspacePaletteSwapSafety;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
-import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePlannerId;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRoomGeometry;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceTemplateRemapSuggestion;
-import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceTopologyPaletteMerge;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVariantAddition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologyPathSettings;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologyProfile;
@@ -53,9 +47,7 @@ import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWorkspaceRoleS
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWorkspaceSlotSchema;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWorkspaceTopologySchema;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,9 +75,6 @@ public class WorkspaceDraftSession {
     private List<MKWorkspaceVariantAddition> pendingAddedVariants = List.of();
     private List<UUID> pendingDeletedVariantPieceIds = List.of();
     final WorkspaceDraftViewState viewState = new WorkspaceDraftViewState();
-    private final MKWorkspaceFloorTopologyInvalidationAnalyzer floorTopologyInvalidationAnalyzer =
-            new MKWorkspaceFloorTopologyInvalidationAnalyzer();
-
     public WorkspaceDraftSession(MKWorkspaceScreen screen, int selectedFamilyIndex, int selectedFamilyExitIndex, int selectedOpeningIndex,
                                  int selectedLinearRunIndex, int selectedInsertFamilyIndex) {
         this.screen = screen;
@@ -282,17 +271,16 @@ public class WorkspaceDraftSession {
 
     public void submit() {
         MKStructureWorkspace draft = workspaceForSubmit();
-        if (requiresRegenerateConfirmation()) {
-            requestPreflight(draft);
-            screen.pushState("generate_confirm");
-            screen.flagNeedSetup();
-            return;
-        }
-        sendFullRegenerate(draft);
+        requestPreparedChange(draft, screen.workspace() == null, false);
     }
 
     public void send() {
-        sendUpdate(workspaceForSubmit());
+        submit();
+    }
+
+    public void markServerApplied() {
+        clearDirty();
+        acceptedRemaps = List.of();
     }
 
     public void requestPreflight() {
@@ -1089,291 +1077,20 @@ public class WorkspaceDraftSession {
         return -1;
     }
 
-    private void sendFullRegenerate(MKStructureWorkspace draft) {
-        PacketDistributor.sendToServer(new CreateWorkspacePacket(draft, true, true, List.of(),
-                pendingAddedVariants, pendingDeletedVariantPieceIds, workspaceSettingsDirty));
-        clearDirty();
-        acceptedRemaps = List.of();
-    }
-
-    private void sendUpdate(MKStructureWorkspace draft) {
-        PacketDistributor.sendToServer(new CreateWorkspacePacket(draft, false, false, acceptedRemaps,
-                pendingAddedVariants, pendingDeletedVariantPieceIds, workspaceSettingsDirty));
-        clearDirty();
-        acceptedRemaps = List.of();
-    }
-
     private void requestPreflight(MKStructureWorkspace draft) {
-        PacketDistributor.sendToServer(new RequestWorkspacePreflightPacket(draft, acceptedRemaps,
-                pendingAddedVariants, pendingDeletedVariantPieceIds, workspaceSettingsDirty));
+        requestPreparedChange(draft, screen.workspace() == null, false);
     }
 
-    private boolean requiresRegenerateConfirmation() {
-        MKStructureWorkspace workspace = screen.workspace();
-        return workspace != null && !workspace.pieces().isEmpty();
-    }
-
-    private boolean canApplySafeLiveMutation(MKStructureWorkspace existing, MKStructureWorkspace requested) {
-        return canRelayoutPreviewMarginOnly(existing, requested) ||
-                canSwapPaletteOnly(existing, requested) ||
-                canRenameIdentityOnly(existing, requested) ||
-                canExpandMarginsOnly(existing, requested) ||
-                canApplyRampartAccessPatch(existing, requested) ||
-                canRefreshLinkRenderingOnly(existing, requested);
-    }
-
-    private boolean canRelayoutPreviewMarginOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
-        if (existing.previewMargin() == requested.previewMargin()) {
-            return false;
-        }
-        return settingsComparisonTag(existing, existing.id(), requested.previewMargin())
-                .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin()));
-    }
-
-    private boolean canSwapPaletteOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
-        MKStructureWorkspace existingWithRequestedMaterials = withMaterialSettings(existing, requested);
-        if (!canSwapMaterialPalettesWithoutRoleAmbiguity(existing, existingWithRequestedMaterials)) {
-            return false;
-        }
-        if (settingsComparisonTag(existing, existing.id(), existing.previewMargin())
-                .equals(settingsComparisonTag(existingWithRequestedMaterials, existing.id(), existing.previewMargin()))) {
-            return false;
-        }
-        return settingsComparisonTag(existingWithRequestedMaterials, existing.id(), existing.previewMargin())
-                .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin()));
-    }
-
-    private boolean canSwapMaterialPalettesWithoutRoleAmbiguity(MKStructureWorkspace existing,
-                                                                MKStructureWorkspace requested) {
-        MKWorkspacePaletteResolver paletteResolver = new MKWorkspacePaletteResolver();
-        for (MKWorkspacePieceDefinition piece : existing.pieces()) {
-            MKWorkspaceMaterialPalette sourcePalette = paletteResolver.resolvePiece(existing, piece)
-                    .orElse(existing.palette());
-            MKWorkspaceMaterialPalette targetPalette = paletteResolver.resolvePiece(requested, piece)
-                    .orElse(requested.palette());
-            if (!MKWorkspacePaletteSwapSafety.canRepresentAsBlockReplacement(sourcePalette, targetPalette)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean canRenameIdentityOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
-        boolean identityChanged = !existing.namespace().equals(requested.namespace()) ||
-                !existing.structureName().equals(requested.structureName());
-        if (!identityChanged) {
-            return false;
-        }
-        return settingsComparisonTag(existing, existing.id(), existing.previewMargin(), existing.palette(),
-                requested.namespace(), requested.structureName())
-                .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin(),
-                        requested.palette(), requested.namespace(), requested.structureName()));
-    }
-
-    private boolean canExpandMarginsOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
-        boolean marginChanged = existing.shellMargin() != requested.shellMargin() ||
-                existing.exteriorAirMargin() != requested.exteriorAirMargin();
-        if (!marginChanged || requested.shellMargin() < existing.shellMargin() ||
-                requested.exteriorAirMargin() < existing.exteriorAirMargin()) {
-            return false;
-        }
-        return settingsComparisonTag(existing, existing.id(), existing.previewMargin(), existing.palette(),
-                existing.namespace(), existing.structureName(), requested.shellMargin(), existing.verticalShellMargin(),
-                requested.exteriorAirMargin())
-                .equals(settingsComparisonTag(requested, existing.id(), requested.previewMargin(),
-                        requested.palette(), requested.namespace(), requested.structureName(),
-                        requested.shellMargin(), requested.verticalShellMargin(), requested.exteriorAirMargin()));
-    }
-
-    private boolean canApplyRampartAccessPatch(MKStructureWorkspace existing, MKStructureWorkspace requested) {
-        if (!MKWalledKeepPlannerSettings.PLANNER_ID.equals(existing.topologyProfile().plannerId()) ||
-                !MKWalledKeepPlannerSettings.PLANNER_ID.equals(requested.topologyProfile().plannerId())) {
-            return false;
-        }
-        MKWalledKeepPlannerSettings existingSettings = MKWalledKeepPlannerSettings.from(existing.topologyProfile());
-        MKWalledKeepPlannerSettings requestedSettings = MKWalledKeepPlannerSettings.from(requested.topologyProfile());
-        if (existingSettings.rampartAccessEnabled() || !requestedSettings.rampartAccessEnabled()) {
-            return false;
-        }
-        MKWorkspaceTopologyProfile normalizedProfile = requestedSettings.withRampartAccessEnabled(false)
-                .applyTo(requested.topologyProfile());
-        MKStructureWorkspace normalizedRequested = withTopologyProfile(requested, normalizedProfile);
-        return settingsComparisonTag(existing, existing.id(), existing.previewMargin())
-                .equals(settingsComparisonTag(normalizedRequested, existing.id(), requested.previewMargin()));
-    }
-
-    private boolean canRefreshLinkRenderingOnly(MKStructureWorkspace existing, MKStructureWorkspace requested) {
-        List<MKWorkspaceInvalidationReport> reports = floorTopologyReports(existing, requested);
-        return !reports.isEmpty() && reports.stream().allMatch(this::isRefreshLinkRenderingReport) &&
-                reports.stream()
-                        .flatMap(report -> report.invalidatedLayers().stream())
-                        .noneMatch(existing::layerLocked);
-    }
-
-    private List<MKWorkspaceInvalidationReport> floorTopologyReports(MKStructureWorkspace existing,
-                                                                     MKStructureWorkspace requested) {
-        List<MKWorkspaceInvalidationReport> reports = new ArrayList<>();
-        for (MKFloorTopologySettings requestedSettings :
-                requested.topologyProfile().floorTopologySettings()) {
-            MKFloorTopologySettings previousSettings = existing.topologyProfile()
-                    .floorTopologySettings(requestedSettings.stackId(), requestedSettings.floorRole())
-                    .orElseGet(() -> existing.topologyProfile().floorTopologySettingsOrDefault(
-                            requestedSettings.stackId(), requestedSettings.floorRole()));
-            MKWorkspaceInvalidationReport report = floorTopologyInvalidationAnalyzer.analyze(
-                    floorPlannerId(requestedSettings), previousSettings, requestedSettings);
-            if (!report.invalidatedLayers().isEmpty()) {
-                reports.add(report);
-            }
-        }
-        return List.copyOf(reports);
-    }
-
-    private boolean isRefreshLinkRenderingReport(MKWorkspaceInvalidationReport report) {
-        return "refresh_link_rendering".equals(report.recommendedOperation()) &&
-                report.safety() == MKWorkspaceMutationSafety.SAFE_METADATA_UPDATE &&
-                report.invalidatedLayers().stream().allMatch(layer ->
-                        layer == MKWorkspaceGeneratedLayer.SIDECAR_BLOCKS ||
-                                layer == MKWorkspaceGeneratedLayer.RUNTIME_METADATA);
-    }
-
-    private MKWorkspacePlannerId floorPlannerId(MKFloorTopologySettings settings) {
-        return MKWorkspacePlannerId.of(settings.stackId())
-                .child("floor")
-                .child(settings.floorRole())
-                .child("floor_plan");
-    }
-
-    private CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, UUID id, int previewMargin) {
-        return settingsComparisonTag(workspace, id, previewMargin, workspace.palette());
-    }
-
-    private CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, UUID id, int previewMargin,
-                                              MKWorkspaceMaterialPalette palette) {
-        return settingsComparisonTag(workspace, id, previewMargin, palette, workspace.namespace(),
-                workspace.structureName());
-    }
-
-    private CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, UUID id, int previewMargin,
-                                              MKWorkspaceMaterialPalette palette, String namespace,
-                                              String structureName) {
-        return settingsComparisonTag(workspace, id, previewMargin, palette, namespace, structureName,
-                workspace.shellMargin(), workspace.verticalShellMargin(), workspace.exteriorAirMargin());
-    }
-
-    private CompoundTag settingsComparisonTag(MKStructureWorkspace workspace, UUID id, int previewMargin,
-                                              MKWorkspaceMaterialPalette palette, String namespace,
-                                              String structureName, int shellMargin, int verticalShellMargin,
-                                              int exteriorAirMargin) {
-        return new MKStructureWorkspace(
-                id,
-                workspace.anchor(),
-                namespace,
-                structureName,
-                workspace.topologyProfile(),
-                workspace.dimensions(),
-                palette,
-                alignStairMaterials(workspace.stairConfig(), palette),
-                workspace.verticalAccessPlacement(),
-                shellMargin,
-                verticalShellMargin,
-                exteriorAirMargin,
-                previewMargin,
-                alignVerticalAccessMaterials(workspace.verticalAccessSpec(), palette),
-                workspace.familyDefinitions(),
-                workspace.openingProfiles(),
-                workspace.linearRunFamilies(),
-                workspace.insertFamilies(),
-                0,
-                0,
-                List.of(),
-                List.of()
-        ).toTag();
-    }
-
-    private MKStructureWorkspace withTopologyProfile(MKStructureWorkspace workspace,
-                                                     MKWorkspaceTopologyProfile topologyProfile) {
-        return new MKStructureWorkspace(
-                workspace.id(),
-                workspace.anchor(),
-                workspace.namespace(),
-                workspace.structureName(),
-                topologyProfile,
-                workspace.dimensions(),
-                workspace.palette(),
-                workspace.stairConfig(),
-                workspace.verticalAccessPlacement(),
-                workspace.shellMargin(),
-                workspace.verticalShellMargin(),
-                workspace.exteriorAirMargin(),
-                workspace.previewMargin(),
-                workspace.verticalAccessSpec(),
-                workspace.familyDefinitions(),
-                workspace.openingProfiles(),
-                workspace.linearRunFamilies(),
-                workspace.insertFamilies(),
-                workspace.createdAt(),
-                workspace.updatedAt(),
-                workspace.pieces(),
-                workspace.layerStates()
-        );
-    }
-
-    private MKStructureWorkspace withMaterialSettings(MKStructureWorkspace source, MKStructureWorkspace materialSource) {
-        return new MKStructureWorkspace(
-                source.id(),
-                source.anchor(),
-                source.namespace(),
-                source.structureName(),
-                MKWorkspaceTopologyPaletteMerge.preserveMaterialSettings(source.topologyProfile(),
-                        materialSource.topologyProfile()),
-                source.dimensions(),
-                materialSource.palette(),
-                alignStairMaterials(source.stairConfig(), materialSource.palette()),
-                source.verticalAccessPlacement(),
-                source.shellMargin(),
-                source.verticalShellMargin(),
-                source.exteriorAirMargin(),
-                source.previewMargin(),
-                alignVerticalAccessMaterials(source.verticalAccessSpec(), materialSource.palette()),
-                source.familyDefinitions().stream()
-                        .map(family -> materialSource.familyDefinitions().stream()
-                                .filter(requested -> requested.baseName().equals(family.baseName()))
-                                .findFirst()
-                                .map(requested -> copyFamilyDefinition(family, requested.paletteOverrideOpt()))
-                                .orElse(family))
-                        .toList(),
-                source.openingProfiles(),
-                source.linearRunFamilies().stream()
-                        .map(linearRun -> materialSource.linearRunFamilies().stream()
-                                .filter(requested -> requested.linearRunId().equals(linearRun.linearRunId()))
-                                .findFirst()
-                                .map(requested -> copyLinearRunFamily(linearRun, requested.paletteOverrideOpt()))
-                                .orElse(linearRun))
-                        .toList(),
-                source.insertFamilies(),
-                source.createdAt(),
-                source.updatedAt(),
-                source.pieces(),
-                source.layerStates()
-        );
-    }
-
-    private MKWorkspaceStairAuthoringConfig alignStairMaterials(MKWorkspaceStairAuthoringConfig stairConfig,
-                                                                MKWorkspaceMaterialPalette palette) {
-        return new MKWorkspaceStairAuthoringConfig(
-                stairConfig.mode(),
-                stairConfig.riseType(),
-                stairConfig.stairWidth()
-        );
-    }
-
-    private MKWorkspaceVerticalAccessSpec alignVerticalAccessMaterials(MKWorkspaceVerticalAccessSpec spec,
-                                                                       MKWorkspaceMaterialPalette palette) {
-        return new MKWorkspaceVerticalAccessSpec(
-                spec.shaftSize(),
-                spec.placement(),
-                alignStairMaterials(spec.stairConfig(), palette)
-        );
+    private void requestPreparedChange(MKStructureWorkspace draft, boolean generateAfterApply,
+                                       boolean forceFullRegenerate) {
+        MKWorkspaceDefinitionChangePayload payload = new MKWorkspaceDefinitionChangePayload(draft,
+                generateAfterApply, forceFullRegenerate, acceptedRemaps, pendingAddedVariants,
+                pendingDeletedVariantPieceIds, workspaceSettingsDirty);
+        UUID requestId = UUID.randomUUID();
+        screen.requestWorkspaceChange(new MKWorkspaceChangeRequest(requestId,
+                MKWorkspaceDefinitionChangeOperation.ID, draft.anchor(),
+                MKWorkspaceChangePayloads.encode(MKWorkspaceDefinitionChangePayload.CODEC, payload,
+                        "workspace definition change")));
     }
 
     private MKWorkspaceStairAuthoringConfig makeStairConfig() {

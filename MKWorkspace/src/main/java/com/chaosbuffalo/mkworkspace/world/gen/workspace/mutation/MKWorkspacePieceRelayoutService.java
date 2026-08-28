@@ -177,6 +177,7 @@ public class MKWorkspacePieceRelayoutService {
 
     public Optional<RelayoutResult> relayoutPreviewMargin(ServerLevel level, MKStructureWorkspace workspace,
                                                           int previewMargin) throws IOException {
+        MKWorkspaceBackupManifestWriter.requireTransaction("relayout-preview-margin");
         if (previewMargin < 2 || workspace.pieces().isEmpty()) {
             return Optional.empty();
         }
@@ -271,6 +272,7 @@ public class MKWorkspacePieceRelayoutService {
                                                     List<MKPlannedPiece> targetPieces,
                                                     List<MKPlannedPiece> layoutPieces,
                                                     List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) throws IOException {
+        MKWorkspaceBackupManifestWriter.requireTransaction("relayout-workspace-catalog");
         Optional<CatalogPlan> planOpt = planCatalogRelayout(existing, targetWorkspace, targetPieces, layoutPieces,
                 acceptedRemaps);
         if (planOpt.isEmpty() || !planOpt.get().hasWork()) {

@@ -1,11 +1,11 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mkworkspace.network.packets.DeleteWorkspacePacket;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangeRequests;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.operations.MKWorkspaceSimpleChangeOperation;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 public class WorkspaceDeleteConfirmPage extends WorkspacePageBase {
     public static final String ID = "delete_confirm";
@@ -27,8 +27,8 @@ public class WorkspaceDeleteConfirmPage extends WorkspacePageBase {
 
         MKButton confirm = addBottomButton(screen, root, Component.literal("Delete Workspace"), 180, 1);
         confirm.setPressedCallback((button, mouseButton) -> {
-            PacketDistributor.sendToServer(new DeleteWorkspacePacket(screen.anchor()));
-            screen.closeScreen();
+            screen.requestWorkspaceChange(MKWorkspaceChangeRequests.simple(
+                    MKWorkspaceSimpleChangeOperation.Kind.DELETE, screen.anchor()));
             return true;
         });
 

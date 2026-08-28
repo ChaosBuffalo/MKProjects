@@ -1,8 +1,9 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mkworkspace.network.packets.GenerateAllWorkspaceStairsPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.GenerateWorkspaceSamplePreviewPacket;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangeRequests;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.operations.MKWorkspaceSimpleChangeOperation;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceSamplePreviewState;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
@@ -60,7 +61,8 @@ public class WorkspaceUtilitiesPage extends WorkspacePageBase {
             content.addWidget(generateAllStairs);
             content.addConstraintToWidget(new CenterXConstraint(), generateAllStairs);
             generateAllStairs.setPressedCallback((button, mouseButton) -> {
-                PacketDistributor.sendToServer(new GenerateAllWorkspaceStairsPacket(screen.anchor()));
+                screen.requestWorkspaceChange(MKWorkspaceChangeRequests.simple(
+                        MKWorkspaceSimpleChangeOperation.Kind.GENERATE_ALL_STAIRS, screen.anchor()));
                 return true;
             });
         }
@@ -114,8 +116,8 @@ public class WorkspaceUtilitiesPage extends WorkspacePageBase {
         content.addWidget(deleteWorkspace);
         content.addConstraintToWidget(new CenterXConstraint(), deleteWorkspace);
         deleteWorkspace.setPressedCallback((button, mouseButton) -> {
-            screen.pushState(WorkspaceDeleteConfirmPage.ID);
-            screen.flagNeedSetup();
+            screen.requestWorkspaceChange(MKWorkspaceChangeRequests.simple(
+                    MKWorkspaceSimpleChangeOperation.Kind.DELETE, screen.anchor()));
             return true;
         });
 

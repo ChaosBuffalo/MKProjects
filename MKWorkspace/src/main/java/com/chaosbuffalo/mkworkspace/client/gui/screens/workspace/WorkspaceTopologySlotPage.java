@@ -1,9 +1,9 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mkworkspace.network.packets.ClearWorkspaceStairsPacket;
-import com.chaosbuffalo.mkworkspace.network.packets.GenerateWorkspaceStairsPacket;
 import com.chaosbuffalo.mkworkspace.network.packets.TeleportToWorkspacePiecePacket;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangeRequests;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.operations.MKWorkspaceSimpleChangeOperation;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairMode;
@@ -217,7 +217,7 @@ public class WorkspaceTopologySlotPage extends WorkspacePageBase {
             content.addWidget(generateStairs);
             content.addConstraintToWidget(new CenterXConstraint(), generateStairs);
             generateStairs.setPressedCallback((button, mouseButton) -> {
-                PacketDistributor.sendToServer(new GenerateWorkspaceStairsPacket(screen.anchor(), pieceName,
+                screen.requestWorkspaceChange(MKWorkspaceChangeRequests.stairs(screen.anchor(), pieceName,
                         editor.stairMode(), editor.stairRiseType(), editor.stairWidth()));
                 return true;
             });
@@ -226,7 +226,8 @@ public class WorkspaceTopologySlotPage extends WorkspacePageBase {
             content.addWidget(clearStairs);
             content.addConstraintToWidget(new CenterXConstraint(), clearStairs);
             clearStairs.setPressedCallback((button, mouseButton) -> {
-                PacketDistributor.sendToServer(new ClearWorkspaceStairsPacket(screen.anchor(), pieceName));
+                screen.requestWorkspaceChange(MKWorkspaceChangeRequests.target(
+                        MKWorkspaceSimpleChangeOperation.Kind.CLEAR_STAIRS, screen.anchor(), pieceName));
                 return true;
             });
         }

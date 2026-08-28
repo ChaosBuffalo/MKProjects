@@ -1,7 +1,8 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mkworkspace.network.packets.RestoreWorkspaceBackupPacket;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangeRequests;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.operations.MKWorkspaceSimpleChangeOperation;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
@@ -10,7 +11,6 @@ import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 public class WorkspaceBackupPage extends WorkspacePageBase {
     public static final String ID = "backups";
@@ -50,7 +50,8 @@ public class WorkspaceBackupPage extends WorkspacePageBase {
                 content.addWidget(restore);
                 content.addConstraintToWidget(new CenterXConstraint(), restore);
                 restore.setPressedCallback((button, mouseButton) -> {
-                    PacketDistributor.sendToServer(new RestoreWorkspaceBackupPacket(screen.anchor(), fileName));
+                    screen.requestWorkspaceChange(MKWorkspaceChangeRequests.target(
+                            MKWorkspaceSimpleChangeOperation.Kind.RESTORE, screen.anchor(), fileName));
                     return true;
                 });
             }
@@ -58,7 +59,7 @@ public class WorkspaceBackupPage extends WorkspacePageBase {
 
         finishScrollContent(screen, scrollView, content);
 
-        addBackButton(screen, root, WorkspaceUtilitiesPage.ID);
+        addBackButton(screen, root, screen.workspace() == null ? WorkspaceHomePage.ID : WorkspaceUtilitiesPage.ID);
         return root;
     }
 }

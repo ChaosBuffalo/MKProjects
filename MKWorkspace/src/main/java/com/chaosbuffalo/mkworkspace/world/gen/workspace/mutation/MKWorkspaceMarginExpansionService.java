@@ -64,6 +64,7 @@ public class MKWorkspaceMarginExpansionService {
 
     public Optional<ExpansionResult> expandMargins(ServerLevel level, MKStructureWorkspace workspace,
                                                    int shellMargin, int exteriorAirMargin) throws IOException {
+        MKWorkspaceBackupManifestWriter.requireTransaction("expand-workspace-margins");
         if (workspace.pieces().isEmpty() || shellMargin < workspace.shellMargin() ||
                 exteriorAirMargin < workspace.exteriorAirMargin()) {
             return Optional.empty();

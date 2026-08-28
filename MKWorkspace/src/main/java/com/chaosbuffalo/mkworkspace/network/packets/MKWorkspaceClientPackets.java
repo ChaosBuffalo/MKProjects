@@ -3,10 +3,14 @@ package com.chaosbuffalo.mkworkspace.network.packets;
 import com.chaosbuffalo.mkworkspace.MKWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.insert.MKWorkspaceInsertOverlaySnapshot;
-import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceMutationPreflight;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceSamplePreviewState;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import net.minecraft.core.BlockPos;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangeEffect;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangeSummary;
+
+import java.time.Instant;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -51,20 +55,33 @@ public final class MKWorkspaceClientPackets {
         handler.applyPieceChunk(anchor, pieces, totalPieces, nextPieceOffset, pieceRevision);
     }
 
-    public static void applyPreflight(BlockPos anchor, MKWorkspaceMutationPreflight preflight) {
-        if (handler == null) {
-            MKWorkspace.LOGGER.warn("Received workspace preflight report before a client handler was registered.");
-            return;
-        }
-        handler.applyPreflight(anchor, preflight);
-    }
-
     public static void applyInsertOverlay(List<MKWorkspaceInsertOverlaySnapshot.Entry> entries) {
         if (handler == null) {
             MKWorkspace.LOGGER.warn("Received workspace insert overlay before a client handler was registered.");
             return;
         }
         handler.applyInsertOverlay(entries);
+    }
+
+    public static void beginChangePreflight(UUID requestId, UUID planId, BlockPos anchor, Instant expiresAt,
+                                            MKWorkspaceChangeSummary summary, int totalEffects) {
+        if (handler != null) {
+            handler.beginChangePreflight(requestId, planId, anchor, expiresAt, summary, totalEffects);
+        }
+    }
+
+    public static void appendChangeEffects(UUID requestId, UUID planId, int offset, int totalEffects,
+                                           List<MKWorkspaceChangeEffect> effects) {
+        if (handler != null) {
+            handler.appendChangeEffects(requestId, planId, offset, totalEffects, effects);
+        }
+    }
+
+    public static void applyChangeResult(UUID requestId, BlockPos anchor, boolean success,
+                                         boolean stale, String message) {
+        if (handler != null) {
+            handler.applyChangeResult(requestId, anchor, success, stale, message);
+        }
     }
 
     public interface Handler {
@@ -78,8 +95,14 @@ public final class MKWorkspaceClientPackets {
         void applyPieceChunk(BlockPos anchor, List<MKWorkspacePieceDefinition> pieces,
                              int totalPieces, int nextPieceOffset, long pieceRevision);
 
-        void applyPreflight(BlockPos anchor, MKWorkspaceMutationPreflight preflight);
-
         void applyInsertOverlay(List<MKWorkspaceInsertOverlaySnapshot.Entry> entries);
+
+        void beginChangePreflight(UUID requestId, UUID planId, BlockPos anchor, Instant expiresAt,
+                                  MKWorkspaceChangeSummary summary, int totalEffects);
+
+        void appendChangeEffects(UUID requestId, UUID planId, int offset, int totalEffects,
+                                 List<MKWorkspaceChangeEffect> effects);
+
+        void applyChangeResult(UUID requestId, BlockPos anchor, boolean success, boolean stale, String message);
     }
 }

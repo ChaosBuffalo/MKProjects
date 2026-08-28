@@ -122,15 +122,7 @@ public class WorkspaceManagePage extends WorkspacePageBase {
                 .addWorkspaceOverviewLayout(screen, layout, screen.draftSession());
         addTemplateAuthoringSummary(screen, layout.previewContent(), workspace);
         addLayerStateSummary(screen, content, workspace);
-        addPreflightReport(screen, content, screen.preflight());
-
-        MKButton preflight = new MKButton(Component.literal("Preflight Draft"), 180, screen.buttonHeight());
-        content.addWidget(preflight);
-        content.addConstraintToWidget(new CenterXConstraint(), preflight);
-        preflight.setPressedCallback((button, mouseButton) -> {
-            screen.draftSession().requestPreflight();
-            return true;
-        });
+        addText(screen, content, "All persistent changes are preflighted when Apply Changes is selected.");
 
     }
 
@@ -170,59 +162,4 @@ public class WorkspaceManagePage extends WorkspacePageBase {
         });
     }
 
-    private void addPreflightReport(MKWorkspaceScreen screen, MKStackLayoutVertical content,
-                                    MKWorkspaceMutationPreflight preflight) {
-        if (preflight == null) {
-            addText(screen, content, "No impact report loaded.");
-            return;
-        }
-        MKWorkspaceInvalidationReport report = preflight.report();
-        addText(screen, content, "Impact Report");
-        addText(screen, content, report.summary());
-        addText(screen, content, "Safety " + report.safety().getSerializedName() +
-                " - operation " + report.recommendedOperation());
-        if (!report.invalidatedLayers().isEmpty()) {
-            addText(screen, content, "Invalidates: " + report.invalidatedLayers().stream()
-                    .map(layer -> layer.getSerializedName())
-                    .reduce((left, right) -> left + ", " + right)
-                    .orElse(""));
-        }
-        if (!report.affectedPlannerIds().isEmpty()) {
-            addText(screen, content, "Affected ids: " + report.affectedPlannerIds().size());
-        }
-        if (!report.preservedTemplateBindings().isEmpty()) {
-            addText(screen, content, "Preserves bindings: " + report.preservedTemplateBindings().size());
-        }
-        if (!report.orphanedTemplateBindings().isEmpty()) {
-            addText(screen, content, "Orphaned bindings: " + report.orphanedTemplateBindings().size());
-        }
-        addRelayoutImpactReport(screen, content, report);
-        if (!report.remapSuggestions().isEmpty()) {
-            addText(screen, content, "Remap suggestions: " + report.remapSuggestions().size());
-            long safeRemaps = report.remapSuggestions().stream()
-                    .filter(suggestion -> suggestion.score() >= 85)
-                    .count();
-            if (safeRemaps > 0) {
-                addText(screen, content, "Safe remaps available: " + safeRemaps +
-                        " - accepted " + screen.draftSession().acceptedRemapCount());
-                MKButton acceptAllSafe = new MKButton(Component.literal("Accept All Safe Remaps"), 180,
-                        screen.buttonHeight());
-                content.addWidget(acceptAllSafe);
-                content.addConstraintToWidget(new CenterXConstraint(), acceptAllSafe);
-                acceptAllSafe.setPressedCallback((button, mouseButton) -> {
-                    screen.draftSession().acceptAllSafeRemaps(report);
-                    screen.draftSession().requestPreflight();
-                    screen.flagNeedSetup();
-                    return true;
-                });
-            }
-            for (MKWorkspaceTemplateRemapSuggestion suggestion : report.remapSuggestions()) {
-                addText(screen, content, "Remap " + suggestion.orphanedPlannerId() + " -> " +
-                        suggestion.targetPlannerId() + " (" + suggestion.score() + ") " + suggestion.reason());
-            }
-        }
-        for (String warning : report.warnings()) {
-            addText(screen, content, "Warning: " + warning);
-        }
-    }
 }

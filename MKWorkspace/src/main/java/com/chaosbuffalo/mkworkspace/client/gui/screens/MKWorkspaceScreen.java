@@ -31,7 +31,10 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructure
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePaletteOverride;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
-import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceMutationPreflight;
+import com.chaosbuffalo.mkworkspace.client.gui.screens.workspace.MKWorkspaceClientChangePlan;
+import com.chaosbuffalo.mkworkspace.network.packets.RequestWorkspaceChangePacket;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangeRequest;
+import net.neoforged.neoforge.network.PacketDistributor;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceSamplePreviewState;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairMode;
@@ -79,7 +82,6 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private final net.minecraft.core.BlockPos anchor;
     private final MKStructureWorkspace workspace;
-    private final MKWorkspaceMutationPreflight preflight;
     private final MKWorkspaceSamplePreviewState samplePreviewState;
     private final List<String> importManifestIds;
     private final List<String> backupManifestFiles;
@@ -104,6 +106,10 @@ public class MKWorkspaceScreen extends MKScreen {
     private List<ScrollViewState> pendingScrollViewStates = List.of();
     private boolean pendingScrollViewRestore;
     private boolean pendingScrollViewReset;
+    private UUID pendingChangeRequestId;
+    private MKWorkspaceClientChangePlan changePlan;
+    private String workspaceChangeMessage = "";
+    private boolean workspaceChangeFailed;
 
     private record ScrollViewState(double offsetX, double offsetY) {
     }
@@ -153,7 +159,7 @@ public class MKWorkspaceScreen extends MKScreen {
                              MKWorkspaceSamplePreviewState samplePreviewState,
                              int totalWorkspacePieces, int nextPieceOffset, long pieceRevision) {
         this(anchor, workspace, importManifestIds, backupManifestFiles, List.of(), null, null, null, null,
-                -1, -1, -1, -1, -1, null, null, samplePreviewState, totalWorkspacePieces, nextPieceOffset,
+                -1, -1, -1, -1, -1, null, samplePreviewState, totalWorkspacePieces, nextPieceOffset,
                 pieceRevision);
     }
 
@@ -170,7 +176,6 @@ public class MKWorkspaceScreen extends MKScreen {
                               int selectedLinearRunIndex,
                               int selectedInsertFamilyIndex,
                               MKWorkspaceStairAuthoringConfig detailStairConfig,
-                              MKWorkspaceMutationPreflight preflight,
                               MKWorkspaceSamplePreviewState samplePreviewState,
                               int totalWorkspacePieces,
                               int nextPieceOffset,
@@ -178,7 +183,6 @@ public class MKWorkspaceScreen extends MKScreen {
         super(Component.literal("Tower Workspace"));
         this.anchor = anchor;
         this.workspace = workspace;
-        this.preflight = preflight;
         this.samplePreviewState = samplePreviewState;
         this.importManifestIds = List.copyOf(importManifestIds);
         this.backupManifestFiles = List.copyOf(backupManifestFiles);
@@ -226,24 +230,28 @@ public class MKWorkspaceScreen extends MKScreen {
                 draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
                 draftSession.selectedLinearRunIndex(),
                 draftSession.selectedInsertFamilyIndex(),
-                detailStairConfig, null, updatedSamplePreviewState, updatedTotalPieces, updatedNextPieceOffset,
+                detailStairConfig, updatedSamplePreviewState, updatedTotalPieces, updatedNextPieceOffset,
                 updatedPieceRevision);
         copy.copyClientViewStateFrom(this, restoresCurrentPage(refreshStates));
         return copy;
     }
 
-    public MKWorkspaceScreen copyWithPreflight(MKWorkspaceMutationPreflight updatedPreflight) {
+    public MKWorkspaceScreen copyWithChangePlan(MKWorkspaceClientChangePlan updatedPlan) {
         List<String> refreshStates = getInitialStatesForRefresh(workspace, true);
+        if (refreshStates.isEmpty() || !WorkspaceGenerateConfirmPage.ID.equals(refreshStates.getLast())) {
+            ArrayList<String> confirmationStates = new ArrayList<>(refreshStates);
+            confirmationStates.add(WorkspaceGenerateConfirmPage.ID);
+            refreshStates = List.copyOf(confirmationStates);
+        }
         MKWorkspaceScreen copy = new MKWorkspaceScreen(anchor, workspace, importManifestIds, backupManifestFiles,
-                refreshStates,
-                selectedTopologyKey, selectedPlannerStackId, selectedFloorPlanStackId, selectedFloorPlanSectionKey,
-                draftSession.selectedFamilyIndex(),
-                draftSession.selectedFamilyExitIndex(), draftSession.selectedOpeningIndex(),
-                draftSession.selectedLinearRunIndex(),
-                draftSession.selectedInsertFamilyIndex(),
-                detailStairConfig, updatedPreflight, samplePreviewState, totalWorkspacePieces, nextPieceOffset,
-                pieceRevision);
+                refreshStates, selectedTopologyKey, selectedPlannerStackId, selectedFloorPlanStackId,
+                selectedFloorPlanSectionKey, draftSession.selectedFamilyIndex(), draftSession.selectedFamilyExitIndex(),
+                draftSession.selectedOpeningIndex(), draftSession.selectedLinearRunIndex(),
+                draftSession.selectedInsertFamilyIndex(), detailStairConfig, samplePreviewState,
+                totalWorkspacePieces, nextPieceOffset, pieceRevision);
         copy.copyClientViewStateFrom(this, restoresCurrentPage(refreshStates));
+        copy.changePlan = updatedPlan;
+        copy.pendingChangeRequestId = updatedPlan.requestId();
         return copy;
     }
 
@@ -271,6 +279,10 @@ public class MKWorkspaceScreen extends MKScreen {
 
     private void copyClientViewStateFrom(MKWorkspaceScreen source, boolean restoreScrollViews) {
         draftSession.copyViewStateFrom(source.draftSession);
+        pendingChangeRequestId = source.pendingChangeRequestId;
+        changePlan = source.changePlan;
+        workspaceChangeMessage = source.workspaceChangeMessage;
+        workspaceChangeFailed = source.workspaceChangeFailed;
         if (!restoreScrollViews) {
             return;
         }
@@ -349,8 +361,43 @@ public class MKWorkspaceScreen extends MKScreen {
         return nextPieceOffset < totalWorkspacePieces;
     }
 
-    public MKWorkspaceMutationPreflight preflight() {
-        return preflight;
+    public MKWorkspaceClientChangePlan changePlan() {
+        return changePlan;
+    }
+
+    public void requestWorkspaceChange(MKWorkspaceChangeRequest request) {
+        pendingChangeRequestId = request.requestId();
+        changePlan = null;
+        workspaceChangeMessage = "";
+        workspaceChangeFailed = false;
+        PacketDistributor.sendToServer(new RequestWorkspaceChangePacket(request));
+        if (!WorkspaceGenerateConfirmPage.ID.equals(getState())) {
+            pushState(WorkspaceGenerateConfirmPage.ID);
+        }
+        flagNeedSetup();
+    }
+
+    public boolean acceptsWorkspaceChange(UUID requestId, BlockPos requestAnchor) {
+        return anchor.equals(requestAnchor) &&
+                (pendingChangeRequestId == null || requestId.equals(pendingChangeRequestId));
+    }
+
+    public void workspaceChangeMessage(String message, boolean failed) {
+        workspaceChangeMessage = message == null ? "" : message;
+        workspaceChangeFailed = failed;
+        if (failed) {
+            changePlan = null;
+            pendingChangeRequestId = null;
+        }
+        flagNeedSetup();
+    }
+
+    public String workspaceChangeMessage() {
+        return workspaceChangeMessage;
+    }
+
+    public boolean workspaceChangeFailed() {
+        return workspaceChangeFailed;
     }
 
     public int screenWidth() {
