@@ -20,7 +20,7 @@ public record MKWorkspaceChangeEffect(
     }
 
     public enum Subject {
-        WORKSPACE, SETTING, PIECE, TEMPLATE, VARIANT, STAIR, INSERT, SOCKET, AREA, BACKUP
+        WORKSPACE, SETTING, SLOT, FAMILY, PIECE, TEMPLATE, VARIANT, STAIR, INSERT, SOCKET, AREA, BACKUP
     }
 
     public MKWorkspaceChangeEffect {

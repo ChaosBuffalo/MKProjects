@@ -2,6 +2,8 @@ package com.chaosbuffalo.mkworkspace.world.gen.workspace.change;
 
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.operations.MKWorkspaceSimpleChangeOperation;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.operations.MKWorkspaceSimpleChangePayload;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.operations.MKWorkspaceContentSelectionChangeOperation;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.operations.MKWorkspaceContentSelectionChangePayload;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairRiseType;
 import net.minecraft.core.BlockPos;
@@ -40,5 +42,12 @@ public final class MKWorkspaceChangeRequests {
         return new MKWorkspaceChangeRequest(UUID.randomUUID(), kind.id(), anchor,
                 MKWorkspaceChangePayloads.encode(MKWorkspaceSimpleChangePayload.CODEC, payload,
                         kind.name().toLowerCase(java.util.Locale.ROOT) + " workspace change"));
+    }
+
+    public static MKWorkspaceChangeRequest contentSelection(BlockPos anchor,
+                                                             MKWorkspaceContentSelectionChangePayload payload) {
+        return new MKWorkspaceChangeRequest(UUID.randomUUID(), MKWorkspaceContentSelectionChangeOperation.ID, anchor,
+                MKWorkspaceChangePayloads.encode(MKWorkspaceContentSelectionChangePayload.CODEC, payload,
+                        "workspace content selection change"));
     }
 }

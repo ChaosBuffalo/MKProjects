@@ -301,6 +301,12 @@ public class MKWorkspacePieceDefinition {
                 signPos, markerPositions, newGeneratedStairPositions, newTags);
     }
 
+    public MKWorkspacePieceDefinition withTags(Map<String, String> newTags) {
+        return new MKWorkspacePieceDefinition(pieceId, workspaceId, pieceName, roleId, plannerId, variantIndex,
+                effectiveDimensions, connectors, worldOrigin, exportBounds, previewBounds, structureBlockPos,
+                signPos, markerPositions, generatedStairPositions, newTags);
+    }
+
     private static MKWorkspacePlannerId resolvePlannerId(String pieceName, String roleId, MKWorkspacePlannerId plannerId,
                                                          Map<String, String> tags) {
         if (plannerId != null) {

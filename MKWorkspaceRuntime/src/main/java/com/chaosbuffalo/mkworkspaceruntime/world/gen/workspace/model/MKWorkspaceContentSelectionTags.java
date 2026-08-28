@@ -22,6 +22,9 @@ public final class MKWorkspaceContentSelectionTags {
     private static final String LEGACY_ROOM_FAMILY_ID = "workspace_family_id";
     private static final String LEGACY_LINEAR_RUN_FAMILY_ID = "workspace_linear_run_family_id";
     private static final String LEGACY_TOPOLOGY_SLOT_ID = "workspace_topology_slot_id";
+    private static final java.util.List<String> EXPLICIT_KEYS = java.util.List.of(
+            TEMPLATE_PURPOSE, TOPOLOGY_SLOT_ID, FAMILY_ID, FAMILY_WEIGHT, FAMILY_ENABLED,
+            VARIANT_ID, VARIANT_WEIGHT, VARIANT_ENABLED);
 
     private MKWorkspaceContentSelectionTags() {
     }
@@ -122,6 +125,18 @@ public final class MKWorkspaceContentSelectionTags {
         }
         result.put(VARIANT_WEIGHT, Integer.toString(Math.max(1, variantWeight)));
         result.put(VARIANT_ENABLED, Boolean.toString(enabled));
+        return result;
+    }
+
+    /** Carries author-owned selection metadata across planner-driven relayout tag regeneration. */
+    public static Map<String, String> preserveExplicitMetadata(Map<String, String> generatedTags,
+                                                                Map<String, String> authoredTags) {
+        LinkedHashMap<String, String> result = new LinkedHashMap<>(generatedTags);
+        for (String key : EXPLICIT_KEYS) {
+            if (authoredTags.containsKey(key)) {
+                result.put(key, authoredTags.get(key));
+            }
+        }
         return result;
     }
 

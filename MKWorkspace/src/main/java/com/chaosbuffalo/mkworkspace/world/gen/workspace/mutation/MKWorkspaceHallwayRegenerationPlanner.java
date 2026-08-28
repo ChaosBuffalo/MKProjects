@@ -107,7 +107,9 @@ public class MKWorkspaceHallwayRegenerationPlanner {
                 basePiece.interiorLength(),
                 basePiece.interiorHeight(),
                 basePiece.connectors(),
-                withWorkspaceTags(basePiece, INSTANCE_PIECE_KIND, piece.variantIndex()),
+                com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceContentSelectionTags
+                        .preserveExplicitMetadata(
+                                withWorkspaceTags(basePiece, INSTANCE_PIECE_KIND, piece.variantIndex()), piece.tags()),
                 variantPlannerId(basePiece.plannerId(), piece)
         );
     }

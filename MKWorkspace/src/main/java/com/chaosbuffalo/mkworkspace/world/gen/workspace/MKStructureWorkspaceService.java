@@ -1835,7 +1835,8 @@ public class MKStructureWorkspaceService {
                 basePiece.interiorLength(),
                 basePiece.interiorHeight(),
                 basePiece.connectors(),
-                withWorkspaceTags(basePiece, "instance", piece.variantIndex()),
+                MKWorkspaceContentSelectionTags.preserveExplicitMetadata(
+                        withWorkspaceTags(basePiece, "instance", piece.variantIndex()), piece.tags()),
                 piece.plannerId()
         );
     }
@@ -1854,7 +1855,9 @@ public class MKStructureWorkspaceService {
                 basePiece.interiorLength(),
                 basePiece.interiorHeight(),
                 basePiece.connectors(),
-                withWorkspaceTags(basePiece, piece.variantIndex() == 0 ? "template" : "instance", piece.variantIndex()),
+                MKWorkspaceContentSelectionTags.preserveExplicitMetadata(
+                        withWorkspaceTags(basePiece, piece.variantIndex() == 0 ? "template" : "instance",
+                                piece.variantIndex()), piece.tags()),
                 piece.plannerId()
         );
     }

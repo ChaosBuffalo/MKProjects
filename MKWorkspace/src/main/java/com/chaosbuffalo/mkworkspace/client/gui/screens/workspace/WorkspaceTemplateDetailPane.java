@@ -4,15 +4,19 @@ import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mkworkspace.network.packets.TeleportToWorkspacePiecePacket;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangeRequests;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.operations.MKWorkspaceSimpleChangeOperation;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.operations.MKWorkspaceContentSelectionChangePayload;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceContentSelectionTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairMode;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplatePurpose;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
+import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKTextFieldWidget;
 import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -139,6 +143,13 @@ final class WorkspaceTemplateDetailPane {
         content.addWidget(pieceText);
         content.addConstraintToWidget(MarginConstraint.LEFT, pieceText);
 
+        MKWorkspaceTemplatePurpose purpose = MKWorkspaceContentSelectionTags.purpose(piece);
+        String familyId = MKWorkspaceContentSelectionTags.familyId(piece);
+        String slotId = MKWorkspaceContentSelectionTags.topologySlotId(piece);
+        addText(screen, content, "Slot: " + slotId + " | Family: " + familyId + " | Purpose: " +
+                purpose.serializedName());
+        addSelectionControls(screen, content, piece, purpose);
+
         if (WorkspacePieceDisplay.supportsStairGeneration(piece)) {
             addText(screen, content, "Stairs: " +
                     (WorkspacePieceDisplay.hasGeneratedStairs(piece) ? "Generated" : "Not Generated"));
@@ -167,21 +178,23 @@ final class WorkspaceTemplateDetailPane {
             return true;
         });
 
-        MKButton newFamily = new MKButton(Component.literal("New Family From This"), 180,
-                screen.buttonHeight());
-        content.addWidget(newFamily);
-        content.addConstraintToWidget(new CenterXConstraint(), newFamily);
-        newFamily.setPressedCallback((button, mouseButton) -> {
-            screen.draftSession().addFamilyDefinitionFromPiece(piece).ifPresent(selection -> {
-                screen.draftSession().selectedTemplateFamilyId(selection.selectedFamilyId());
-                screen.draftSession().selectedTemplateFamilyEditId(selection.editId());
-                screen.draftSession().selectedTemplateFamilyTemplateKey(null);
-                screen.draftSession().selectedFamilyExitIndex(-1);
-                screen.clearSelectedTopologyKey();
+        if (!purpose.variant()) {
+            MKButton newFamily = new MKButton(Component.literal("New Family From This"), 180,
+                    screen.buttonHeight());
+            content.addWidget(newFamily);
+            content.addConstraintToWidget(new CenterXConstraint(), newFamily);
+            newFamily.setPressedCallback((button, mouseButton) -> {
+                screen.draftSession().addFamilyDefinitionFromPiece(piece).ifPresent(selection -> {
+                    screen.draftSession().selectedTemplateFamilyId(selection.selectedFamilyId());
+                    screen.draftSession().selectedTemplateFamilyEditId(selection.editId());
+                    screen.draftSession().selectedTemplateFamilyTemplateKey(null);
+                    screen.draftSession().selectedFamilyExitIndex(-1);
+                    screen.clearSelectedTopologyKey();
+                });
+                screen.flagNeedSetup();
+                return true;
             });
-            screen.flagNeedSetup();
-            return true;
-        });
+        }
 
         if (piece.variantIndex() > 0) {
             MKButton deleteVariant = new MKButton(Component.literal("Delete Variant"), 180, screen.buttonHeight());
@@ -215,6 +228,80 @@ final class WorkspaceTemplateDetailPane {
                 return true;
             });
         }
+    }
+
+    private static void addSelectionControls(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                             MKWorkspacePieceDefinition piece,
+                                             MKWorkspaceTemplatePurpose purpose) {
+        int familyWeight = MKWorkspaceContentSelectionTags.familyWeight(piece.tags());
+        boolean familyEnabled = MKWorkspaceContentSelectionTags.familyEnabled(piece.tags());
+        MKButton familyWeightButton = new MKButton(Component.literal("Family Weight: " + familyWeight), 180,
+                screen.buttonHeight());
+        content.addWidget(familyWeightButton);
+        content.addConstraintToWidget(new CenterXConstraint(), familyWeightButton);
+        familyWeightButton.setPressedCallback((button, mouseButton) -> {
+            int next = Math.max(1, familyWeight + (isReverseClick(mouseButton) ? -1 : 1));
+            requestSelection(screen, piece, MKWorkspaceContentSelectionChangePayload.Kind.SET_FAMILY_WEIGHT,
+                    "", next, familyEnabled, purpose);
+            return true;
+        });
+
+        MKButton familyEnabledButton = new MKButton(Component.literal(familyEnabled ? "Disable Family" :
+                "Enable Family"), 180, screen.buttonHeight());
+        content.addWidget(familyEnabledButton);
+        content.addConstraintToWidget(new CenterXConstraint(), familyEnabledButton);
+        familyEnabledButton.setPressedCallback((button, mouseButton) -> {
+            requestSelection(screen, piece, MKWorkspaceContentSelectionChangePayload.Kind.SET_FAMILY_ENABLED,
+                    "", familyWeight, !familyEnabled, purpose);
+            return true;
+        });
+
+        if (purpose.variant()) {
+            int variantWeight = MKWorkspaceContentSelectionTags.variantWeight(piece.tags());
+            boolean variantEnabled = MKWorkspaceContentSelectionTags.variantEnabled(piece.tags());
+            MKButton variantWeightButton = new MKButton(Component.literal("Variant Weight: " + variantWeight), 180,
+                    screen.buttonHeight());
+            content.addWidget(variantWeightButton);
+            content.addConstraintToWidget(new CenterXConstraint(), variantWeightButton);
+            variantWeightButton.setPressedCallback((button, mouseButton) -> {
+                int next = Math.max(1, variantWeight + (isReverseClick(mouseButton) ? -1 : 1));
+                requestSelection(screen, piece, MKWorkspaceContentSelectionChangePayload.Kind.SET_VARIANT_WEIGHT,
+                        "", next, variantEnabled, purpose);
+                return true;
+            });
+            MKButton variantEnabledButton = new MKButton(Component.literal(variantEnabled ? "Disable Variant" :
+                    "Enable Variant"), 180, screen.buttonHeight());
+            content.addWidget(variantEnabledButton);
+            content.addConstraintToWidget(new CenterXConstraint(), variantEnabledButton);
+            variantEnabledButton.setPressedCallback((button, mouseButton) -> {
+                requestSelection(screen, piece, MKWorkspaceContentSelectionChangePayload.Kind.SET_VARIANT_ENABLED,
+                        "", variantWeight, !variantEnabled, purpose);
+                return true;
+            });
+
+            MKTextFieldWidget familyId = new MKTextFieldWidget(screen.font(), 0, 0, 180, 18,
+                    Component.literal("New Family ID"));
+            familyId.setText(piece.pieceName() + "_family");
+            content.addWidget(familyId);
+            content.addConstraintToWidget(new CenterXConstraint(), familyId);
+            MKButton promote = new MKButton(Component.literal("Promote To New Family"), 180,
+                    screen.buttonHeight());
+            content.addWidget(promote);
+            content.addConstraintToWidget(new CenterXConstraint(), promote);
+            promote.setPressedCallback((button, mouseButton) -> {
+                requestSelection(screen, piece, MKWorkspaceContentSelectionChangePayload.Kind.PROMOTE_VARIANT,
+                        familyId.getText().trim().toLowerCase(java.util.Locale.ROOT), 1, true, purpose);
+                return true;
+            });
+        }
+    }
+
+    private static void requestSelection(MKWorkspaceScreen screen, MKWorkspacePieceDefinition piece,
+                                         MKWorkspaceContentSelectionChangePayload.Kind kind, String targetFamilyId,
+                                         int weight, boolean enabled, MKWorkspaceTemplatePurpose purpose) {
+        screen.requestWorkspaceChange(MKWorkspaceChangeRequests.contentSelection(screen.anchor(),
+                new MKWorkspaceContentSelectionChangePayload(kind, piece.pieceId(), targetFamilyId, weight,
+                        enabled, purpose)));
     }
 
     private static void addRow(MKStackLayoutVertical root, MKText label, MKButton button) {
