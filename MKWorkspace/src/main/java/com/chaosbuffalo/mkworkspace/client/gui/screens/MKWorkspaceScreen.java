@@ -25,12 +25,12 @@ import com.chaosbuffalo.mkworkspace.client.gui.screens.workspace.WorkspacePieceD
 import com.chaosbuffalo.mkworkspace.client.gui.screens.workspace.WorkspacePlannerNodePage;
 import com.chaosbuffalo.mkworkspace.client.gui.screens.workspace.WorkspacePlannerClientRegistry;
 import com.chaosbuffalo.mkworkspace.client.gui.screens.workspace.WorkspaceTopologySlotEditor;
-import com.chaosbuffalo.mkworkspace.client.gui.screens.workspace.WorkspaceTopologySlotPage;
 import com.chaosbuffalo.mkworkspace.client.gui.screens.workspace.WorkspaceUtilitiesPage;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceMaterialPalette;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePaletteOverride;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceContentSelectionTags;
 import com.chaosbuffalo.mkworkspace.client.gui.screens.workspace.MKWorkspaceClientChangePlan;
 import com.chaosbuffalo.mkworkspace.network.packets.RequestWorkspaceChangePacket;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangeRequest;
@@ -315,7 +315,6 @@ public class MKWorkspaceScreen extends MKScreen {
         addWorkspacePage(new WorkspaceBackupPage());
         addWorkspacePage(new WorkspacePlannerNodePage());
         addWorkspacePage(new WorkspaceFloorPlanPage());
-        addWorkspacePage(new WorkspaceTopologySlotPage());
         if (NO_STATE.equals(getState())) {
             List<String> statesToPush = initialStates.isEmpty() ? getDefaultInitialStates() : initialStates;
             for (String state : statesToPush) {
@@ -580,7 +579,13 @@ public class MKWorkspaceScreen extends MKScreen {
     public void openWorkspaceTopologySlot(String topologyKey) {
         selectedTopologyKey = topologyKey;
         resetTopologySlotOverrides();
-        pushState(WorkspaceTopologySlotPage.ID);
+        List<MKWorkspacePieceDefinition> pieces = groupPiecesByTopology().getOrDefault(topologyKey, List.of());
+        if (!pieces.isEmpty()) {
+            MKWorkspacePieceDefinition piece = pieces.getFirst();
+            draftSession.selectContentFamily(MKWorkspaceContentSelectionTags.topologySlotId(piece),
+                    MKWorkspaceContentSelectionTags.familyId(piece));
+        }
+        pushState(WorkspaceFormFamiliesPage.ID);
         flagNeedSetup();
     }
 
@@ -1180,9 +1185,9 @@ public class MKWorkspaceScreen extends MKScreen {
     private List<String> getInitialStatesForRefresh(MKStructureWorkspace updatedWorkspace,
                                                     boolean preserveGenerateConfirmState) {
         String currentState = getState();
-        if (WorkspaceTopologySlotPage.ID.equals(currentState) && selectedTopologyKey != null &&
+        if (WorkspaceFormFamiliesPage.ID.equals(currentState) && selectedTopologyKey != null &&
                 updatedWorkspace != null && hasPiecesForRefresh(updatedWorkspace)) {
-            return List.of("workspace", WorkspaceTopologySlotPage.ID);
+            return List.of("workspace", WorkspaceFormFamiliesPage.ID);
         }
         if (WorkspacePlannerNodePage.ID.equals(currentState) && selectedPlannerStackId != null &&
                 updatedWorkspace != null && hasPiecesForRefresh(updatedWorkspace)) {

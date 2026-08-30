@@ -66,9 +66,8 @@ public class WorkspaceDraftSession {
     private int selectedOpeningIndex;
     private int selectedLinearRunIndex;
     private int selectedInsertFamilyIndex;
-    private String selectedTemplateFamilyId;
-    private String selectedTemplateFamilyTemplateKey;
-    private String selectedTemplateFamilyEditId;
+    private String selectedContentSlotId;
+    private String selectedContentFamilyId;
     private boolean dirty;
     private boolean workspaceSettingsDirty;
     private List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps = List.of();
@@ -164,9 +163,8 @@ public class WorkspaceDraftSession {
         cleanDraft = source.cleanDraft == null ? null : copyDraft(source.cleanDraft);
         dirty = source.dirty;
         workspaceSettingsDirty = source.workspaceSettingsDirty;
-        selectedTemplateFamilyId = source.selectedTemplateFamilyId;
-        selectedTemplateFamilyTemplateKey = source.selectedTemplateFamilyTemplateKey;
-        selectedTemplateFamilyEditId = source.selectedTemplateFamilyEditId;
+        selectedContentSlotId = source.selectedContentSlotId;
+        selectedContentFamilyId = source.selectedContentFamilyId;
         viewState.copyFrom(source.viewState);
         acceptedRemaps = List.copyOf(source.acceptedRemaps);
         pendingAddedVariants = List.copyOf(source.pendingAddedVariants);
@@ -517,28 +515,22 @@ public class WorkspaceDraftSession {
         selectedInsertFamilyIndex = index;
     }
 
-    public String selectedTemplateFamilyId() {
-        return selectedTemplateFamilyId;
+    public String selectedContentSlotId() {
+        return selectedContentSlotId;
     }
 
-    public void selectedTemplateFamilyId(String value) {
-        selectedTemplateFamilyId = value;
+    public String selectedContentFamilyId() {
+        return selectedContentFamilyId;
     }
 
-    public String selectedTemplateFamilyTemplateKey() {
-        return selectedTemplateFamilyTemplateKey;
+    public void selectContentFamily(String slotId, String familyId) {
+        selectedContentSlotId = slotId;
+        selectedContentFamilyId = familyId;
     }
 
-    public void selectedTemplateFamilyTemplateKey(String value) {
-        selectedTemplateFamilyTemplateKey = value;
-    }
-
-    public String selectedTemplateFamilyEditId() {
-        return selectedTemplateFamilyEditId;
-    }
-
-    public void selectedTemplateFamilyEditId(String value) {
-        selectedTemplateFamilyEditId = value;
+    public void clearContentFamilySelection() {
+        selectedContentSlotId = null;
+        selectedContentFamilyId = null;
     }
 
     public List<MKWorkspaceRoomFamilyDefinition> familyDefinitions() {

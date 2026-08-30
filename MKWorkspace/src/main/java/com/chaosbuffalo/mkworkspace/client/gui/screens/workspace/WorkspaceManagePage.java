@@ -148,9 +148,9 @@ public class WorkspaceManagePage extends WorkspacePageBase {
                 .filter(WorkspacePieceDisplay::hasGeneratedStairs)
                 .count();
         addText(screen, content, "Template Authoring");
-        addText(screen, content, authoredGroups.size() + " authored template groups - " + variantCount +
+        addText(screen, content, authoredGroups.size() + " authored content families - " + variantCount +
                 " variants - " + generatedStairCount + " stair-authored pieces");
-        addText(screen, content, "Open template families for variants and piece-level stair generation.");
+        addText(screen, content, "Browse topology slots and their content families for template authoring.");
 
         MKButton openGroups = new MKButton(Component.literal("Template Families"), 180, screen.buttonHeight());
         content.addWidget(openGroups);

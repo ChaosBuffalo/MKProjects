@@ -60,6 +60,7 @@ final class WorkspaceTemplateDetailPane {
         addText(screen, content, stairCategory
                 ? "Manage variants and generate stairs into the shaft for an exact template or variant."
                 : "Manage variants for this template set.");
+        addFamilyControls(screen, content, templatePiece);
 
         String baseName = WorkspacePieceDisplay.getBaseName(templatePiece);
         MKButton addCopy = new MKButton(Component.translatable("mknpc.workspace.button.add_copy"), 180,
@@ -145,11 +146,8 @@ final class WorkspaceTemplateDetailPane {
         content.addConstraintToWidget(MarginConstraint.LEFT, pieceText);
 
         MKWorkspaceTemplatePurpose purpose = MKWorkspaceContentSelectionTags.purpose(piece);
-        String familyId = MKWorkspaceContentSelectionTags.familyId(piece);
-        String slotId = MKWorkspaceContentSelectionTags.topologySlotId(piece);
-        addText(screen, content, "Slot: " + slotId + " | Family: " + familyId + " | Purpose: " +
-                purpose.serializedName());
-        addSelectionControls(screen, content, piece, purpose);
+        addText(screen, content, "Purpose: " + purpose.serializedName());
+        addVariantControls(screen, content, piece, purpose);
 
         if (WorkspacePieceDisplay.supportsStairGeneration(piece)) {
             addText(screen, content, "Stairs: " +
@@ -158,7 +156,7 @@ final class WorkspaceTemplateDetailPane {
 
         String sourcePieceName = piece.pieceName();
         String sourceBaseName = WorkspacePieceDisplay.getBaseName(piece);
-        MKButton teleport = new MKButton(Component.literal(piece.variantIndex() == 0 ?
+        MKButton teleport = new MKButton(Component.literal(purpose.canonical() ?
                 "Teleport To Template" : "Teleport To Variant"), 180, screen.buttonHeight());
         content.addWidget(teleport);
         content.addConstraintToWidget(new CenterXConstraint(), teleport);
@@ -179,24 +177,6 @@ final class WorkspaceTemplateDetailPane {
             screen.flagNeedSetup();
             return true;
         });
-
-        if (!purpose.variant()) {
-            MKButton newFamily = new MKButton(Component.literal("New Family From This"), 180,
-                    screen.buttonHeight());
-            content.addWidget(newFamily);
-            content.addConstraintToWidget(new CenterXConstraint(), newFamily);
-            newFamily.setPressedCallback((button, mouseButton) -> {
-                screen.draftSession().addFamilyDefinitionFromPiece(piece).ifPresent(selection -> {
-                    screen.draftSession().selectedTemplateFamilyId(selection.selectedFamilyId());
-                    screen.draftSession().selectedTemplateFamilyEditId(selection.editId());
-                    screen.draftSession().selectedTemplateFamilyTemplateKey(null);
-                    screen.draftSession().selectedFamilyExitIndex(-1);
-                    screen.clearSelectedTopologyKey();
-                });
-                screen.flagNeedSetup();
-                return true;
-            });
-        }
 
         if (purpose.variant()) {
             MKButton deleteVariant = new MKButton(Component.literal("Delete Variant"), 180, screen.buttonHeight());
@@ -232,11 +212,12 @@ final class WorkspaceTemplateDetailPane {
         }
     }
 
-    private static void addSelectionControls(MKWorkspaceScreen screen, MKStackLayoutVertical content,
-                                             MKWorkspacePieceDefinition piece,
-                                             MKWorkspaceTemplatePurpose purpose) {
+    private static void addFamilyControls(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                          MKWorkspacePieceDefinition piece) {
         int familyWeight = MKWorkspaceContentSelectionTags.familyWeight(piece.tags());
         boolean familyEnabled = MKWorkspaceContentSelectionTags.familyEnabled(piece.tags());
+        addText(screen, content, "Family " + MKWorkspaceContentSelectionTags.familyId(piece) +
+                " | Slot " + MKWorkspaceContentSelectionTags.topologySlotId(piece));
         MKButton familyWeightButton = new MKButton(Component.literal("Family Weight: " + familyWeight), 180,
                 screen.buttonHeight());
         content.addWidget(familyWeightButton);
@@ -244,7 +225,7 @@ final class WorkspaceTemplateDetailPane {
         familyWeightButton.setPressedCallback((button, mouseButton) -> {
             int next = Math.max(1, familyWeight + (isReverseClick(mouseButton) ? -1 : 1));
             requestSelection(screen, piece, MKWorkspaceContentSelectionChangePayload.Kind.SET_FAMILY_WEIGHT,
-                    "", next, familyEnabled, purpose);
+                    "", next, familyEnabled, MKWorkspaceContentSelectionTags.purpose(piece));
             return true;
         });
 
@@ -254,10 +235,14 @@ final class WorkspaceTemplateDetailPane {
         content.addConstraintToWidget(new CenterXConstraint(), familyEnabledButton);
         familyEnabledButton.setPressedCallback((button, mouseButton) -> {
             requestSelection(screen, piece, MKWorkspaceContentSelectionChangePayload.Kind.SET_FAMILY_ENABLED,
-                    "", familyWeight, !familyEnabled, purpose);
+                    "", familyWeight, !familyEnabled, MKWorkspaceContentSelectionTags.purpose(piece));
             return true;
         });
+    }
 
+    private static void addVariantControls(MKWorkspaceScreen screen, MKStackLayoutVertical content,
+                                           MKWorkspacePieceDefinition piece,
+                                           MKWorkspaceTemplatePurpose purpose) {
         if (purpose.variant()) {
             int variantWeight = MKWorkspaceContentSelectionTags.variantWeight(piece.tags());
             boolean variantEnabled = MKWorkspaceContentSelectionTags.variantEnabled(piece.tags());
@@ -310,6 +295,12 @@ final class WorkspaceTemplateDetailPane {
     private static void requestSelection(MKWorkspaceScreen screen, MKWorkspacePieceDefinition piece,
                                          MKWorkspaceContentSelectionChangePayload.Kind kind, String targetFamilyId,
                                          int weight, boolean enabled, MKWorkspaceTemplatePurpose purpose) {
+        if ((kind == MKWorkspaceContentSelectionChangePayload.Kind.PROMOTE_VARIANT ||
+                kind == MKWorkspaceContentSelectionChangePayload.Kind.MOVE_VARIANT) &&
+                !targetFamilyId.isBlank()) {
+            screen.draftSession().selectContentFamily(MKWorkspaceContentSelectionTags.topologySlotId(piece),
+                    targetFamilyId);
+        }
         screen.requestWorkspaceChange(MKWorkspaceChangeRequests.contentSelection(screen.anchor(),
                 new MKWorkspaceContentSelectionChangePayload(kind, piece.pieceId(), targetFamilyId, weight,
                         enabled, purpose)));

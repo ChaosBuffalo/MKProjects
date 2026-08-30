@@ -722,6 +722,11 @@ Cover at least:
 
 ## UI Requirements
 
+Implemented in `WorkspaceFormFamiliesPage` using the client-only `WorkspaceContentTree` view model. The left column
+renders declared topology slots, slot-owned scaffolds, and nested content families. Selection is stored as a stable
+slot ID plus family ID. The right column always renders only the selected family's canonical and variants; the former
+planner-specific settings/template switchboard and duplicate standalone topology-template page have been removed.
+
 The topology slot page should present the hierarchy directly:
 
 ```text
