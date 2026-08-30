@@ -104,7 +104,8 @@ public final class MKWorkspaceContentSelectionChangeOperation
                         MKWorkspaceChangeEffect.Subject.FAMILY, oldFamily, oldFamily, selected.pieceName(), 0,
                         false, false, oldValue + " -> " + newValue));
                 workspace.pieces().stream().filter(piece -> oldFamily.equals(
-                                MKWorkspaceContentSelectionTags.familyId(piece)))
+                                MKWorkspaceContentSelectionTags.familyId(piece)) && slot.equals(
+                                MKWorkspaceContentSelectionTags.topologySlotId(piece)))
                         .forEach(piece -> effects.add(pieceEffect(piece, MKWorkspaceChangeEffect.Action.UPDATE,
                                 "Persist family selection metadata " + oldValue + " -> " + newValue)));
             }

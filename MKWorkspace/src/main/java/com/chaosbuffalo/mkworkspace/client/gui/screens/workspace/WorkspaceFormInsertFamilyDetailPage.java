@@ -26,7 +26,7 @@ public class WorkspaceFormInsertFamilyDetailPage extends WorkspacePageBase {
     @Override
     public MKLayout build(MKWorkspaceScreen screen) {
         WorkspaceDraftSession editor = screen.draftSession();
-        List<MKWorkspaceInsertFamilyDefinition> insertFamilies = editor.insertFamilies();
+        List<MKWorkspaceInsertFamilyDefinition> insertFamilies = editor.insertSlots();
         int index = editor.selectedInsertFamilyIndex();
         if (index < 0 || index >= insertFamilies.size()) {
             screen.switchToExistingState(WorkspaceFormInsertFamiliesPage.ID);
@@ -36,9 +36,9 @@ public class WorkspaceFormInsertFamilyDetailPage extends WorkspacePageBase {
         MKWorkspaceInsertFamilyDefinition insertFamily = insertFamilies.get(index);
         MKLayout root = createPanel(screen);
 
-        addTitle(screen, root, Component.literal("Insert: " + insertFamily.familyId()));
+        addTitle(screen, root, Component.literal("Insert Slot: " + insertFamily.slotId()));
         MKText helpText = addHeaderText(screen, root, Component.literal(
-                "Edit one insert family at a time. Width and height include the hallway shell; depth is the authored template length along the generated route."));
+                "Edit one insert slot at a time. Bounds describe socket compatibility and its scaffold, not a content family."));
 
         MKScrollView scrollView = addScrollBelowHeader(screen, root, helpText);
         MKStackLayoutVertical content = createContentStack(screen);
@@ -62,16 +62,16 @@ public class WorkspaceFormInsertFamilyDetailPage extends WorkspacePageBase {
     void addInlineInsertFamilyDetailControls(MKWorkspaceScreen screen, MKStackLayoutVertical content, int index,
                                              Runnable onClose) {
         WorkspaceDraftSession editor = screen.draftSession();
-        List<MKWorkspaceInsertFamilyDefinition> insertFamilies = editor.insertFamilies();
+        List<MKWorkspaceInsertFamilyDefinition> insertFamilies = editor.insertSlots();
         if (index < 0 || index >= insertFamilies.size()) {
-            addInlineText(screen, content, "The selected insert family is no longer available.");
+            addInlineText(screen, content, "The selected insert slot is no longer available.");
             return;
         }
 
         MKWorkspaceInsertFamilyDefinition insertFamily = insertFamilies.get(index);
-        addInlineText(screen, content, "Insert: " + insertFamily.familyId());
+        addInlineText(screen, content, "Insert Slot: " + insertFamily.slotId());
         addInlineText(screen, content,
-                "Edit one insert family at a time. Width and height include the hallway shell; depth is the authored template length along the generated route.");
+                "Bounds describe socket compatibility and its non-placeable scaffold; content families are managed separately.");
 
         addInsertFamilyControls(screen, content, index, insertFamily);
 
@@ -90,7 +90,7 @@ public class WorkspaceFormInsertFamilyDetailPage extends WorkspacePageBase {
     private void addInsertFamilyControls(MKWorkspaceScreen screen, MKStackLayoutVertical content, int index,
                                          MKWorkspaceInsertFamilyDefinition insertFamily) {
         WorkspaceDraftSession editor = screen.draftSession();
-        MKTextFieldWidget idField = makeField(screen, "Family Id", insertFamily.familyId());
+        MKTextFieldWidget idField = makeField(screen, "Slot Id", insertFamily.slotId());
         idField.setTextChangeCallback((field, text) -> editor.replaceInsertFamily(index,
                 copyInsertFamily(insertFamily, text.trim().isBlank() ? insertFamily.familyId() : text.trim(),
                         insertFamily.kind(), insertFamily.width(), insertFamily.height(), insertFamily.depth())));

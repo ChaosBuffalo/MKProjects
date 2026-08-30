@@ -48,6 +48,11 @@ class MKWorkspaceInsertFamilyExportTest {
         assertEquals(insertFamily.depth(), plannedInsert.interiorLength());
         assertEquals(insertFamily.height(), plannedInsert.interiorHeight());
         assertEquals("floor_link_insert", plannedInsert.tags().get("tower_piece_kind"));
+        assertEquals(insertFamily.slotId(), plannedInsert.tags().get(
+                MKWorkspaceContentSelectionTags.TOPOLOGY_SLOT_ID));
+        assertEquals(insertFamily.slotId(), plannedInsert.tags().get(
+                MKWorkspaceInsertFamilyDefinition.TAG_INSERT_SLOT_ID));
+        assertEquals("workspace.insert_slot.floor_link_hallway", plannedInsert.roleId());
         assertEquals(insertFamily.familyId(),
                 plannedInsert.tags().get(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID));
         assertTrue(plannedInsert.connectors().isEmpty());

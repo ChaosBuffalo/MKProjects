@@ -63,6 +63,31 @@ class WorkspaceContentTreeTest {
         assertEquals("disabled", family.status());
     }
 
+    @Test
+    void legacyInsertPiecesAppearOnlyUnderTheirUserDeclaredSlot() {
+        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        Map<String, String> tags = new java.util.LinkedHashMap<>();
+        tags.put("workspace_base_name", "fire_shrine_platform_contents");
+        tags.put("workspace_piece_kind", "template");
+        tags.put("workspace_insert_family_id", "fire_shrine_platform_contents");
+        tags.put("workspace_topology_slot_id", "workspace.insert_family.insert_socket");
+        tags.put(MKWorkspaceContentSelectionTags.TOPOLOGY_SLOT_ID, "workspace.insert_family.insert_socket");
+        BlockPos origin = new BlockPos(0, 64, 0);
+        BoundingBox bounds = new BoundingBox(0, 64, 0, 4, 67, 4);
+        MKWorkspacePieceDefinition scaffold = new MKWorkspacePieceDefinition(UUID.randomUUID(), workspace.id(),
+                "fire_shrine_platform_contents", "workspace.insert_family.insert_socket", 0,
+                new MKWorkspaceDimensions(5, 4, 5, 4, 5, 4, 3, 3), List.of(), origin, bounds, bounds,
+                origin.above(), origin.above(2), List.of(), List.of(), tags);
+
+        WorkspaceContentTree tree = WorkspaceContentTree.build(List.of(scaffold),
+                Map.of("fire_shrine_platform_contents", "Fire Shrine Platform Contents"));
+
+        assertEquals(List.of("fire_shrine_platform_contents"), tree.slots().stream()
+                .map(WorkspaceContentTree.SlotNode::slotId).toList());
+        assertEquals(1, tree.slots().getFirst().scaffolds().size());
+        assertTrue(tree.slots().getFirst().families().isEmpty());
+    }
+
     private MKWorkspacePieceDefinition piece(MKStructureWorkspace workspace, String name, String slot,
                                                String family, MKWorkspaceTemplatePurpose purpose, int variantIndex,
                                                boolean familyEnabled) {

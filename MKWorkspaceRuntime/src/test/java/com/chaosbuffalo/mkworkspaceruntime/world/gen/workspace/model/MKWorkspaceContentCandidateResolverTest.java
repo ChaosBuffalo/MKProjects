@@ -12,6 +12,45 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MKWorkspaceContentCandidateResolverTest {
     @Test
+    void legacyInsertIdentityBeatsSyntheticPlannerRole() {
+        Map<String, String> legacyTags = Map.of(
+                MKWorkspaceContentSelectionTags.TOPOLOGY_SLOT_ID, "workspace.insert_family.insert_socket",
+                "workspace_topology_slot_id", "workspace.insert_family.insert_socket",
+                "workspace_insert_family_id", "fire_shrine_platform_contents"
+        );
+
+        assertEquals("fire_shrine_platform_contents",
+                MKWorkspaceContentSelectionTags.topologySlotId("workspace.insert_family.insert_socket", legacyTags));
+    }
+
+    @Test
+    void explicitUserSlotCanMoveLegacyInsertContent() {
+        Map<String, String> movedTags = Map.of(
+                MKWorkspaceContentSelectionTags.TOPOLOGY_SLOT_ID, "alternate_platform_slot",
+                "workspace_insert_family_id", "fire_shrine_platform_contents"
+        );
+
+        assertEquals("alternate_platform_slot",
+                MKWorkspaceContentSelectionTags.topologySlotId("workspace.insert_slot.insert_socket", movedTags));
+    }
+
+    @Test
+    void normalizationWritesNewSlotIdentityAndPreservesFamilySeparation() {
+        Map<String, String> legacyTags = Map.of(
+                MKWorkspaceContentSelectionTags.TOPOLOGY_SLOT_ID, "workspace.insert_family.insert_socket",
+                MKWorkspaceContentSelectionTags.FAMILY_ID, "gazebo_family",
+                "workspace_insert_family_id", "fire_shrine_platform_contents"
+        );
+
+        Map<String, String> normalized = MKWorkspaceContentSelectionTags.normalizeInsertSlotIdentity(legacyTags);
+
+        assertEquals("fire_shrine_platform_contents", normalized.get("workspace_insert_slot_id"));
+        assertEquals("fire_shrine_platform_contents",
+                normalized.get(MKWorkspaceContentSelectionTags.TOPOLOGY_SLOT_ID));
+        assertEquals("gazebo_family", normalized.get(MKWorkspaceContentSelectionTags.FAMILY_ID));
+    }
+
+    @Test
     void canonicalIsRuntimeFallbackWhenFamilyHasNoVariants() {
         var resolution = MKWorkspaceContentCandidateResolver.resolve(List.of(
                 piece("gazebo", "gazebo", "platform", MKWorkspaceTemplatePurpose.FAMILY_CANONICAL,
@@ -68,8 +107,8 @@ public class MKWorkspaceContentCandidateResolverTest {
                         MKWorkspaceTemplatePurpose.SLOT_SCAFFOLD, 1, 1, true, 0)
         ));
 
-        assertTrue(resolution.family("platform").candidates().isEmpty());
-        assertTrue(resolution.diagnostics().stream().anyMatch(message -> message.contains("only a slot scaffold")));
+        assertEquals(null, resolution.family("platform"));
+        assertTrue(resolution.diagnostics().isEmpty());
     }
 
     @Test

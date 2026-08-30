@@ -23,6 +23,9 @@ public final class MKWorkspaceContentCandidateResolver {
     public static Resolution resolve(List<ContentPiece> pieces) {
         LinkedHashMap<String, List<ContentPiece>> piecesByFamily = new LinkedHashMap<>();
         for (ContentPiece piece : pieces) {
+            if (!piece.purpose().placeable()) {
+                continue;
+            }
             String familyId = piece.familyId();
             if (familyId.isBlank()) {
                 continue;
@@ -90,12 +93,7 @@ public final class MKWorkspaceContentCandidateResolver {
             candidates = List.of(ResolvedCandidate.from(canonicals.getFirst(), true));
         } else {
             candidates = List.of();
-            if (pieces.stream().anyMatch(piece -> piece.purpose() == MKWorkspaceTemplatePurpose.SLOT_SCAFFOLD)) {
-                diagnostics.add("family " + familyId +
-                        " has only a slot scaffold and no placeable canonical or variants");
-            } else {
-                diagnostics.add("family " + familyId + " has no placeable canonical or variants");
-            }
+            diagnostics.add("family " + familyId + " has no placeable canonical or variants");
         }
 
         return new ResolvedFamily(familyId, topologySlotId, familyWeight, familyEnabled,

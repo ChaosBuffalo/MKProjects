@@ -3,7 +3,7 @@ package com.chaosbuffalo.mkworkspace.world.gen.workspace.insert;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.MKStructureWorkspaceService;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.export.MKWorkspaceBackupManifestWriter;
-import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKInsertFamilyPools;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKInsertSlotPools;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertAttachmentFace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
@@ -85,8 +85,8 @@ public class MKWorkspaceInsertAuthoringService {
         if (!hostPiece.exportBounds().isInside(request.socketWorldPos())) {
             errors.add("socket position is outside the host authorial template");
         }
-        if (workspace.insertFamilies().stream().anyMatch(family -> family.familyId().equals(request.familyId()))) {
-            errors.add("insert family " + request.familyId() + " already exists");
+        if (workspace.insertSlots().stream().anyMatch(slot -> slot.slotId().equals(request.familyId()))) {
+            errors.add("insert slot " + request.familyId() + " already exists");
         }
         MKWorkspaceInsertAttachmentFace attachmentFace =
                 MKWorkspaceInsertAttachmentFace.fromDirection(request.socketFacing().getOpposite());
@@ -132,11 +132,11 @@ public class MKWorkspaceInsertAuthoringService {
         if (!hostPiece.exportBounds().isInside(request.socketWorldPos())) {
             errors.add("socket position is outside the host authorial template");
         }
-        Optional<MKWorkspaceInsertFamilyDefinition> familyOpt = workspace.insertFamilies().stream()
-                .filter(family -> family.familyId().equals(request.familyId()))
+        Optional<MKWorkspaceInsertFamilyDefinition> familyOpt = workspace.insertSlots().stream()
+                .filter(family -> family.slotId().equals(request.familyId()))
                 .filter(family -> family.kind() == MKWorkspaceInsertFamilyKind.INSERT_SOCKET).findFirst();
         if (familyOpt.isEmpty()) {
-            errors.add("insert family " + request.familyId() + " does not exist");
+            errors.add("insert slot " + request.familyId() + " does not exist");
             return List.copyOf(errors);
         }
         MKWorkspaceInsertFamilyDefinition family = familyOpt.get();
@@ -144,7 +144,7 @@ public class MKWorkspaceInsertAuthoringService {
                 MKWorkspaceInsertAttachmentFace.fromDirection(request.socketFacing().getOpposite());
         if (!MKWorkspaceInsertTemplateCompatibility.hasAttachableTemplateJigsaw(level, workspace, family,
                 request.socketFacing())) {
-            errors.add("insert family " + request.familyId() +
+            errors.add("insert slot " + request.familyId() +
                     " has no template variant that can attach to a " +
                     request.socketFacing().getSerializedName() + "-facing socket");
         }
@@ -193,8 +193,8 @@ public class MKWorkspaceInsertAuthoringService {
         if (!hostPiece.exportBounds().isInside(request.socketWorldPos())) {
             return Result.failure(List.of("socket position is outside the host authorial template"));
         }
-        if (workspace.insertFamilies().stream().anyMatch(family -> family.familyId().equals(request.familyId()))) {
-            return Result.failure(List.of("insert family " + request.familyId() + " already exists"));
+        if (workspace.insertSlots().stream().anyMatch(slot -> slot.slotId().equals(request.familyId()))) {
+            return Result.failure(List.of("insert slot " + request.familyId() + " already exists"));
         }
 
         MKWorkspaceInsertAttachmentFace attachmentFace =
@@ -250,17 +250,16 @@ public class MKWorkspaceInsertAuthoringService {
                 .findFirst()
                 .orElse(hostPiece);
         Optional<MKWorkspacePieceDefinition> insertTemplatePiece = updated.pieces().stream()
-                .filter(piece -> insertFamily.familyId().equals(piece.tags()
-                        .get(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID)))
+                .filter(piece -> insertFamily.slotId().equals(MKInsertSlotPools.slotId(piece.tags())))
                 .filter(piece -> insertFamily.kind().getSerializedName().equals(piece.tags()
-                        .get(MKInsertFamilyPools.TAG_INSERT_FAMILY_KIND)))
+                        .get(MKInsertSlotPools.TAG_INSERT_SLOT_KIND)))
                 .findFirst();
         if (insertTemplatePiece.isEmpty()) {
             return Result.failure(List.of("workspace update did not create the insert authorial template"));
         }
 
-        ResourceLocation insertPool = MKInsertFamilyPools.poolId(updated.namespace(), updated.structureName(),
-                insertFamily.familyId());
+        ResourceLocation insertPool = MKInsertSlotPools.poolId(updated.namespace(), updated.structureName(),
+                insertFamily.slotId());
         placeHostSocketJigsaw(level, request.socketWorldPos(), request.socketFacing(), insertPool,
                 safeFinalState(request.hostFinalState()));
         placeInsertTemplateJigsaw(level, insertTemplatePiece.get(), insertFamily, insertPool);
@@ -300,19 +299,19 @@ public class MKWorkspaceInsertAuthoringService {
         if (!hostPiece.exportBounds().isInside(request.socketWorldPos())) {
             return Result.failure(List.of("socket position is outside the host authorial template"));
         }
-        Optional<MKWorkspaceInsertFamilyDefinition> familyOpt = workspace.insertFamilies().stream()
-                .filter(family -> family.familyId().equals(request.familyId()))
+        Optional<MKWorkspaceInsertFamilyDefinition> familyOpt = workspace.insertSlots().stream()
+                .filter(family -> family.slotId().equals(request.familyId()))
                 .filter(family -> family.kind() == MKWorkspaceInsertFamilyKind.INSERT_SOCKET)
                 .findFirst();
         if (familyOpt.isEmpty()) {
-            return Result.failure(List.of("insert family " + request.familyId() + " does not exist"));
+            return Result.failure(List.of("insert slot " + request.familyId() + " does not exist"));
         }
         MKWorkspaceInsertFamilyDefinition family = familyOpt.get();
         MKWorkspaceInsertAttachmentFace templateFace =
                 MKWorkspaceInsertAttachmentFace.fromDirection(request.socketFacing().getOpposite());
         if (!MKWorkspaceInsertTemplateCompatibility.hasAttachableTemplateJigsaw(level, workspace, family,
                 request.socketFacing())) {
-            return Result.failure(List.of("insert family " + request.familyId() +
+            return Result.failure(List.of("insert slot " + request.familyId() +
                     " has no template variant that can attach to a " +
                     request.socketFacing().getSerializedName() + "-facing socket"));
         }
@@ -340,8 +339,8 @@ public class MKWorkspaceInsertAuthoringService {
             return Result.failure(errors);
         }
 
-        ResourceLocation insertPool = MKInsertFamilyPools.poolId(workspace.namespace(), workspace.structureName(),
-                family.familyId());
+        ResourceLocation insertPool = MKInsertSlotPools.poolId(workspace.namespace(), workspace.structureName(),
+                family.slotId());
         placeHostSocketJigsaw(level, request.socketWorldPos(), request.socketFacing(), insertPool,
                 safeFinalState(request.hostFinalState()));
         return Result.success(new MKWorkspaceInsertPlacementContext(
@@ -370,7 +369,7 @@ public class MKWorkspaceInsertAuthoringService {
 
     private MKStructureWorkspace withInsertFamily(MKStructureWorkspace workspace,
                                                   MKWorkspaceInsertFamilyDefinition insertFamily) {
-        ArrayList<MKWorkspaceInsertFamilyDefinition> insertFamilies = new ArrayList<>(workspace.insertFamilies());
+        ArrayList<MKWorkspaceInsertFamilyDefinition> insertFamilies = new ArrayList<>(workspace.insertSlots());
         insertFamilies.add(insertFamily);
         return new MKStructureWorkspace(
                 workspace.id(),

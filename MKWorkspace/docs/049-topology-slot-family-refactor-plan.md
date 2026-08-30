@@ -3,9 +3,9 @@
 ## Status
 
 Implemented as a compatibility-first refactor. Existing workspace codecs and planner-specific definition names remain
-readable, while explicit piece metadata is now authoritative for content selection. The compatibility layer can be
-removed after saved workspaces have naturally been rewritten with explicit metadata or a dedicated bulk migration is
-introduced.
+readable, while explicit piece metadata is now authoritative for content selection. A preflighted
+`mkworkspace:normalize_insert_slots` utility performs the bulk metadata migration without moving or replacing any
+authored blocks.
 
 ## Implemented Shape
 
@@ -21,6 +21,7 @@ workspace_template_purpose
 workspace_content_variant_id
 workspace_variant_weight
 workspace_variant_enabled
+workspace_insert_slot_id
 ```
 
 `MKWorkspaceContentSelectionTags` is the compatibility boundary. It reads these explicit values first and supplies
@@ -41,6 +42,12 @@ The current `MKWorkspaceInsertFamilyDefinition` name is retained for save compat
 insert topology slot contract. Independently promoted content families bind to that slot through
 `workspace_content_slot_id`; runtime pools are compiled by slot rather than by content-family identity.
 
+`MKWorkspaceResolvedSlotCatalog` is the authoring-side merge point for planner-owned static slots and
+workspace-owned dynamic insert slots. A generic value such as `workspace.insert_slot.insert_socket` is a role/kind,
+never a slot ID. New insert scaffolds write the user ID to both `workspace_insert_slot_id` and
+`workspace_content_slot_id`; the old `workspace_insert_family_id` and `insert_families/...` pool path remain wire/save
+aliases during compatibility migration.
+
 ## Summary
 
 Refactor workspace content selection around three explicit levels:
@@ -49,7 +56,8 @@ Refactor workspace content selection around three explicit levels:
 topology slot -> weighted content family -> weighted content variant
 ```
 
-A topology slot is a planner-owned placement contract. A content family is an author-owned category of
+A topology slot is a placement contract. Static slots are planner-owned; dynamic insert slots are workspace-owned
+because planners cannot know user-declared inserts in advance. A content family is an author-owned category of
 content that can satisfy one topology slot. A variant is a concrete runtime realization of a family.
 
 Every slot may also have an authoring scaffold. The scaffold visualizes bounds, sockets, connectors, or

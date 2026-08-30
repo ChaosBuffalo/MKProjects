@@ -12,20 +12,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MKStructureWorkspaceInsertFamilyValidationTest {
     @Test
-    void floorTopologyReportsMissingInsertFamily() {
+    void floorTopologyReportsMissingInsertSlot() {
         MKStructureWorkspace workspace = workspaceWithFloorInsertFamily("missing_family", List.of());
 
         assertTrue(workspace.validate().stream()
-                .anyMatch(error -> error.contains("references missing insert family missing_family")));
+                .anyMatch(error -> error.contains("references missing insert slot missing_family")));
     }
 
     @Test
-    void floorTopologyAcceptsKnownInsertFamily() {
+    void floorTopologyAcceptsKnownInsertSlot() {
         MKStructureWorkspace workspace = workspaceWithFloorInsertFamily("hallway_lamps",
                 List.of(MKWorkspaceInsertFamilyDefinition.floorLinkHallway("hallway_lamps", 5, 5, 3)));
 
         assertFalse(workspace.validate().stream()
-                .anyMatch(error -> error.contains("references missing insert family hallway_lamps")));
+                .anyMatch(error -> error.contains("references missing insert slot hallway_lamps")));
     }
 
     private MKStructureWorkspace workspaceWithFloorInsertFamily(String familyId,

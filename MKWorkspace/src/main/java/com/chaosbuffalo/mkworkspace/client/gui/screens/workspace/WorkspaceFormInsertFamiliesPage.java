@@ -25,19 +25,19 @@ public class WorkspaceFormInsertFamiliesPage extends WorkspacePageBase {
     public MKLayout build(MKWorkspaceScreen screen) {
         MKLayout root = createPanel(screen);
 
-        addTitle(screen, root, Component.literal("Insert Families"));
+        addTitle(screen, root, Component.literal("Insert Slots"));
         MKText helpText = addHeaderText(screen, root, Component.literal(
-                "Choose an insert family and edit it on its own screen. Insert families define fixed template bounds used by generated link corridors and other procedural sockets."));
+                "Choose a user-declared insert slot. A slot defines socket-compatible bounds and owns a non-placeable scaffold; content families are managed separately."));
 
         MKScrollView scrollView = addScrollBelowHeader(screen, root, helpText);
         MKStackLayoutVertical content = createContentStack(screen);
         WorkspaceDraftSession editor = screen.draftSession();
-        List<MKWorkspaceInsertFamilyDefinition> insertFamilies = editor.insertFamilies();
+        List<MKWorkspaceInsertFamilyDefinition> insertFamilies = editor.insertSlots();
 
         for (int i = 0; i < insertFamilies.size(); i++) {
             int index = i;
             MKWorkspaceInsertFamilyDefinition insertFamily = insertFamilies.get(index);
-            MKText header = screen.makeWhiteText(Component.literal(insertFamily.familyId()));
+            MKText header = screen.makeWhiteText(Component.literal(insertFamily.slotId()));
             content.addWidget(header);
             content.addConstraintToWidget(MarginConstraint.LEFT, header);
 

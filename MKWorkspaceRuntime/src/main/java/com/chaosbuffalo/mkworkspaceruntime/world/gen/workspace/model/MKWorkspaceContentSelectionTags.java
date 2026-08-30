@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model;
 
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFloorMaskPools;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKInsertFamilyPools;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKInsertSlotPools;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -43,7 +44,7 @@ public final class MKWorkspaceContentSelectionTags {
         if (variantIndex > 0 || "instance".equals(tags.get(LEGACY_PIECE_KIND))) {
             return MKWorkspaceTemplatePurpose.FAMILY_VARIANT;
         }
-        if (tags.containsKey(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID) &&
+        if (!MKInsertSlotPools.slotId(tags).isBlank() &&
                 "template".equals(tags.getOrDefault(LEGACY_PIECE_KIND, "instance"))) {
             return MKWorkspaceTemplatePurpose.SLOT_SCAFFOLD;
         }
@@ -70,12 +71,17 @@ public final class MKWorkspaceContentSelectionTags {
     }
 
     public static String topologySlotId(String roleId, Map<String, String> tags) {
-        return firstNonBlank(
-                tags.get(TOPOLOGY_SLOT_ID),
-                tags.get(LEGACY_TOPOLOGY_SLOT_ID),
-                tags.get(MKInsertFamilyPools.TAG_INSERT_FAMILY_ID),
-                roleId
-        );
+        String explicit = tags.get(TOPOLOGY_SLOT_ID);
+        String insertSlot = MKInsertSlotPools.slotId(tags);
+        if (!insertSlot.isBlank() && (explicit == null || explicit.isBlank() || isGenericInsertRole(explicit))) {
+            return insertSlot;
+        }
+        String legacyTopology = tags.get(LEGACY_TOPOLOGY_SLOT_ID);
+        if (!insertSlot.isBlank() && (legacyTopology == null || legacyTopology.isBlank() ||
+                isGenericInsertRole(legacyTopology))) {
+            return firstNonBlank(explicit, insertSlot);
+        }
+        return firstNonBlank(explicit, legacyTopology, insertSlot, roleId);
     }
 
     public static String variantId(MKWorkspacePieceDefinition piece) {
@@ -105,11 +111,43 @@ public final class MKWorkspaceContentSelectionTags {
 
     public static Map<String, String> applyFamily(Map<String, String> tags, String topologySlotId,
                                                    String familyId, int familyWeight, boolean enabled) {
-        LinkedHashMap<String, String> result = new LinkedHashMap<>(tags);
+        LinkedHashMap<String, String> result = new LinkedHashMap<>(normalizeInsertSlotIdentity(tags));
         result.put(TOPOLOGY_SLOT_ID, topologySlotId);
         result.put(FAMILY_ID, familyId);
         result.put(FAMILY_WEIGHT, Integer.toString(Math.max(1, familyWeight)));
         result.put(FAMILY_ENABLED, Boolean.toString(enabled));
+        return result;
+    }
+
+    public static Map<String, String> applySlot(Map<String, String> tags, String topologySlotId) {
+        LinkedHashMap<String, String> result = new LinkedHashMap<>(normalizeInsertSlotIdentity(tags));
+        result.put(TOPOLOGY_SLOT_ID, topologySlotId);
+        return result;
+    }
+
+    /** Upgrades legacy insert-family identity tags without changing physical piece or content-family identity. */
+    public static Map<String, String> normalizeInsertSlotIdentity(Map<String, String> tags) {
+        LinkedHashMap<String, String> result = new LinkedHashMap<>(tags);
+        String slotId = MKInsertSlotPools.slotId(tags);
+        if (slotId.isBlank()) return result;
+        result.put(MKInsertSlotPools.TAG_INSERT_SLOT_ID, slotId);
+        result.put(MKInsertSlotPools.LEGACY_TAG_INSERT_FAMILY_ID, slotId);
+        String contentSlot = result.get(TOPOLOGY_SLOT_ID);
+        if (contentSlot == null || contentSlot.isBlank() || isGenericInsertRole(contentSlot)) {
+            result.put(TOPOLOGY_SLOT_ID, slotId);
+        }
+        String legacyTopology = result.get(LEGACY_TOPOLOGY_SLOT_ID);
+        if (legacyTopology == null || legacyTopology.isBlank() || isGenericInsertRole(legacyTopology)) {
+            result.put(LEGACY_TOPOLOGY_SLOT_ID, slotId);
+        }
+        return result;
+    }
+
+    public static Map<String, String> clearFamily(Map<String, String> tags) {
+        LinkedHashMap<String, String> result = new LinkedHashMap<>(tags);
+        result.remove(FAMILY_ID);
+        result.remove(FAMILY_WEIGHT);
+        result.remove(FAMILY_ENABLED);
         return result;
     }
 
@@ -134,10 +172,14 @@ public final class MKWorkspaceContentSelectionTags {
         LinkedHashMap<String, String> result = new LinkedHashMap<>(generatedTags);
         for (String key : EXPLICIT_KEYS) {
             if (authoredTags.containsKey(key)) {
+                if (TOPOLOGY_SLOT_ID.equals(key) && isGenericInsertRole(authoredTags.get(key)) &&
+                        !MKInsertSlotPools.slotId(authoredTags).isBlank()) {
+                    continue;
+                }
                 result.put(key, authoredTags.get(key));
             }
         }
-        return result;
+        return normalizeInsertSlotIdentity(result);
     }
 
     private static int positiveInt(String value, int fallback) {
@@ -162,5 +204,9 @@ public final class MKWorkspaceContentSelectionTags {
             }
         }
         return "";
+    }
+
+    private static boolean isGenericInsertRole(String value) {
+        return value.startsWith("workspace.insert_family.") || value.startsWith("workspace.insert_slot.");
     }
 }

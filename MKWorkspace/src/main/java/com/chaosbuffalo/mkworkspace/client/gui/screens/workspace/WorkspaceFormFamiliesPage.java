@@ -1,9 +1,7 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
-import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWorkspaceSlotSchema;
-import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
-import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWorkspaceResolvedSlotCatalog;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
@@ -139,19 +137,10 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
 
     private Map<String, String> declaredSlots(WorkspaceDraftSession editor) {
         LinkedHashMap<String, String> slots = new LinkedHashMap<>();
-        for (MKWorkspaceSlotSchema slot : editor.roomTopologySlots()) {
-            slots.putIfAbsent(slot.slotId(), WorkspacePieceDisplay.formatTopologyLabel(slot.slotId()));
-        }
-        for (var family : editor.familyDefinitions()) {
-            slots.putIfAbsent(family.topologySlotId(),
-                    WorkspacePieceDisplay.formatTopologyLabel(family.topologySlotId()));
-        }
-        for (MKWorkspaceLinearRunFamilyDefinition run : editor.linearRunFamilies()) {
-            slots.putIfAbsent(run.topologySlotId(), WorkspacePieceDisplay.formatTopologyLabel(run.topologySlotId()));
-        }
-        for (MKWorkspaceInsertFamilyDefinition insert : editor.insertFamilies()) {
-            slots.putIfAbsent(insert.familyId(), WorkspacePieceDisplay.formatTopologyLabel(insert.familyId()));
-        }
+        MKWorkspaceResolvedSlotCatalog.resolve(editor.roomTopologySlots(), editor.familyDefinitions(),
+                        editor.linearRunFamilies(), editor.insertSlots()).slots()
+                .forEach(slot -> slots.putIfAbsent(slot.slotId(),
+                        WorkspacePieceDisplay.formatTopologyLabel(slot.slotId())));
         return Map.copyOf(slots);
     }
 

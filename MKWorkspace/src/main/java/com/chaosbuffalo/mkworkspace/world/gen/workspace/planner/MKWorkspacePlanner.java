@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkworkspace.world.gen.workspace.planner;
 
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceContentSelectionTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyKind;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
@@ -42,7 +43,7 @@ public interface MKWorkspacePlanner extends MKWorkspacePiecePlanner {
     }
 
     static List<MKPlannedPiece> createCommonInsertFamilyTemplatePieces(MKStructureWorkspace workspace) {
-        return workspace.insertFamilies().stream()
+        return workspace.insertSlots().stream()
                 .map(MKWorkspacePlanner::createCommonInsertFamilyTemplatePiece)
                 .toList();
     }
@@ -50,22 +51,25 @@ public interface MKWorkspacePlanner extends MKWorkspacePiecePlanner {
     private static MKPlannedPiece createCommonInsertFamilyTemplatePiece(MKWorkspaceInsertFamilyDefinition insertFamily) {
         LinkedHashMap<String, String> tags = new LinkedHashMap<>();
         String kindName = insertFamily.kind().getSerializedName();
-        String slotId = "workspace.insert_family." + kindName;
+        String roleId = "workspace.insert_slot." + kindName;
+        String slotId = insertFamily.slotId();
         String identityPrefix = insertFamily.kind() == MKWorkspaceInsertFamilyKind.FLOOR_LINK_HALLWAY ?
                 "floor_insert_family" :
                 "insert_socket_family";
         String identity = insertFamily.kind() == MKWorkspaceInsertFamilyKind.FLOOR_LINK_HALLWAY ?
                 "floor.insert_family." + insertFamily.familyId() :
                 "insert_socket.insert_family." + insertFamily.familyId();
-        tags.put("topology_role", slotId);
+        tags.put("topology_role", roleId);
         tags.put("workspace_topology_slot_id", slotId);
-        tags.put("workspace_topology_role_id", slotId);
+        tags.put("workspace_topology_role_id", roleId);
+        tags.put(MKWorkspaceContentSelectionTags.TOPOLOGY_SLOT_ID, slotId);
         tags.put(MKWorkspacePieceGeometry.TAG_TOWER_PIECE_KIND,
                 insertFamily.kind() == MKWorkspaceInsertFamilyKind.FLOOR_LINK_HALLWAY ?
                         MKWorkspacePieceGeometry.TOWER_PIECE_KIND_FLOOR_LINK_INSERT :
                         "insert_socket_template");
-        tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID, insertFamily.familyId());
-        tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_KIND, kindName);
+        tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_SLOT_ID, slotId);
+        tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_SLOT_KIND, kindName);
+        tags.put(MKWorkspaceInsertFamilyDefinition.TAG_INSERT_FAMILY_ID, slotId);
         MKWorkspaceStableSlotIdentity.apply(tags, identityPrefix, identity);
         tags.put("workspace_insert_family_width", Integer.toString(insertFamily.width()));
         tags.put("workspace_insert_family_height", Integer.toString(insertFamily.height()));
@@ -75,8 +79,8 @@ public interface MKWorkspacePlanner extends MKWorkspacePiecePlanner {
                     insertFamily.templateCloneSourcePieceName());
         }
         return new MKPlannedPiece(
+                roleId,
                 slotId,
-                insertFamily.familyId(),
                 insertFamily.width(),
                 insertFamily.depth(),
                 insertFamily.height(),

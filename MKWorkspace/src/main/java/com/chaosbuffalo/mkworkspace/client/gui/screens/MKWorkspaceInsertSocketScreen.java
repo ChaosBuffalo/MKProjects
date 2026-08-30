@@ -575,7 +575,7 @@ public class MKWorkspaceInsertSocketScreen extends MKScreen {
 
             int textX = x + 12;
             int textY = y + 8;
-            graphics.drawString(mc.font, page == Page.LIST ? "Workspace Insert Socket" : "Create Insert Family",
+            graphics.drawString(mc.font, page == Page.LIST ? "Workspace Insert Socket" : "Create Insert Slot",
                     textX, textY, TEXT, false);
             textY += 24;
             graphics.drawString(mc.font, workspace.namespace() + ":" + workspace.structureName(), textX, textY,
@@ -607,7 +607,7 @@ public class MKWorkspaceInsertSocketScreen extends MKScreen {
             graphics.drawString(mc.font, fit(safeHostFinalState(), 220), textX + 26, textY + 33,
                     MUTED_TEXT, false);
             textY += 58;
-            graphics.drawString(mc.font, "Existing Insert Families", textX, textY, TEXT, false);
+            graphics.drawString(mc.font, "Existing Insert Slots", textX, textY, TEXT, false);
             textY += 13;
             List<MKWorkspaceInsertFamilyDefinition> insertFamilies = workspace.insertFamilies().stream()
                     .filter(family -> family.kind() == MKWorkspaceInsertFamilyKind.INSERT_SOCKET)

@@ -5,6 +5,7 @@ import com.chaosbuffalo.mkworkspace.network.packets.GenerateWorkspaceSamplePrevi
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.MKWorkspaceChangeRequests;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.operations.MKWorkspaceSimpleChangeOperation;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceSamplePreviewState;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.mutation.MKWorkspaceContentSelectionMutationService;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterXConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
@@ -63,6 +64,18 @@ public class WorkspaceUtilitiesPage extends WorkspacePageBase {
             generateAllStairs.setPressedCallback((button, mouseButton) -> {
                 screen.requestWorkspaceChange(MKWorkspaceChangeRequests.simple(
                         MKWorkspaceSimpleChangeOperation.Kind.GENERATE_ALL_STAIRS, screen.anchor()));
+                return true;
+            });
+        }
+
+        if (!new MKWorkspaceContentSelectionMutationService()
+                .piecesNeedingInsertSlotNormalization(screen.workspace()).isEmpty()) {
+            MKButton normalizeInsertSlots = new MKButton(Component.literal("Normalize Insert Slots"), 180, 20);
+            content.addWidget(normalizeInsertSlots);
+            content.addConstraintToWidget(new CenterXConstraint(), normalizeInsertSlots);
+            normalizeInsertSlots.setPressedCallback((button, mouseButton) -> {
+                screen.requestWorkspaceChange(MKWorkspaceChangeRequests.simple(
+                        MKWorkspaceSimpleChangeOperation.Kind.NORMALIZE_INSERT_SLOTS, screen.anchor()));
                 return true;
             });
         }

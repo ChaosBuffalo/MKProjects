@@ -445,18 +445,18 @@ public class MKStructureWorkspace {
                 }
             }
         }
-        java.util.Set<String> insertFamilyIds = new java.util.LinkedHashSet<>();
-        for (MKWorkspaceInsertFamilyDefinition insertFamily : insertFamilies) {
-            errors.addAll(insertFamily.validate());
-            if (!insertFamily.familyId().isBlank() && !insertFamilyIds.add(insertFamily.familyId())) {
-                errors.add("insert family id must be unique: " + insertFamily.familyId());
+        java.util.Set<String> insertSlotIds = new java.util.LinkedHashSet<>();
+        for (MKWorkspaceInsertFamilyDefinition insertSlot : insertFamilies) {
+            errors.addAll(insertSlot.validate());
+            if (!insertSlot.slotId().isBlank() && !insertSlotIds.add(insertSlot.slotId())) {
+                errors.add("insert slot id must be unique: " + insertSlot.slotId());
             }
         }
         for (MKFloorTopologySettings floorSettings : topologyProfile.floorTopologySettings()) {
             floorSettings.insertFamily()
-                    .filter(familyId -> !insertFamilyIds.contains(familyId))
-                    .ifPresent(familyId -> errors.add("floor topology " + floorSettings.key() +
-                            " references missing insert family " + familyId));
+                    .filter(slotId -> !insertSlotIds.contains(slotId))
+                    .ifPresent(slotId -> errors.add("floor topology " + floorSettings.key() +
+                            " references missing insert slot " + slotId));
         }
         if (namespace.isBlank()) {
             errors.add("namespace cannot be blank");
@@ -631,6 +631,11 @@ public class MKStructureWorkspace {
     }
 
     public List<MKWorkspaceInsertFamilyDefinition> insertFamilies() {
+        return insertFamilies;
+    }
+
+    /** User-declared dynamic insert topology slots; the legacy element/field name is retained for compatibility. */
+    public List<MKWorkspaceInsertFamilyDefinition> insertSlots() {
         return insertFamilies;
     }
 

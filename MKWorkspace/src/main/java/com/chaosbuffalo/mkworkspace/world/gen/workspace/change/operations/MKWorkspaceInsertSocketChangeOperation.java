@@ -47,14 +47,14 @@ public final class MKWorkspaceInsertSocketChangeOperation
         MKWorkspaceInsertAuthoringService.CreateSocketFamilyRequest createRequest =
                 new MKWorkspaceInsertAuthoringService.CreateSocketFamilyRequest(
                         anchor, payload.hostPieceId(), payload.socketWorldPos(), payload.socketFacing(),
-                        payload.familyId(), payload.width(), payload.height(), payload.depth(),
+                        payload.slotId(), payload.width(), payload.height(), payload.depth(),
                         payload.faceUOffset(), payload.faceVOffset(), payload.hostFinalState(),
                         payload.templateJigsawFinalState());
         MKWorkspaceInsertAuthoringService.PlaceExistingSocketRequest placeRequest =
                 new MKWorkspaceInsertAuthoringService.PlaceExistingSocketRequest(
                         anchor, payload.hostPieceId(), payload.socketWorldPos(), payload.socketFacing(),
-                        payload.familyId(), payload.hostFinalState());
-        ArrayList<String> blockers = new ArrayList<>(payload.createFamily() ?
+                        payload.slotId(), payload.hostFinalState());
+        ArrayList<String> blockers = new ArrayList<>(payload.createSlot() ?
                 service.validateCreateSocketFamily(player.serverLevel(), createRequest) :
                 service.validatePlaceExistingSocketFamily(player.serverLevel(), placeRequest));
         MKWorkspacePieceDefinition host = workspace.pieces().stream()
@@ -67,17 +67,17 @@ public final class MKWorkspaceInsertSocketChangeOperation
                     true, false, "Place host jigsaw at " + payload.socketWorldPos().toShortString() +
                             " facing " + payload.socketFacing().getSerializedName()));
         }
-        if (payload.createFamily()) {
+        if (payload.createSlot()) {
             effects.add(new MKWorkspaceChangeEffect(MKWorkspaceChangeEffect.Action.CREATE,
-                    MKWorkspaceChangeEffect.Subject.INSERT, payload.familyId(), payload.familyId(),
-                    payload.familyId(), 0, false, false,
-                    "Declare insert socket family " + payload.width() + "x" + payload.height() + "x" + payload.depth()));
+                    MKWorkspaceChangeEffect.Subject.SLOT, payload.slotId(), payload.slotId(),
+                    "", 0, false, false,
+                    "Declare user-owned insert slot " + payload.width() + "x" + payload.height() + "x" + payload.depth()));
             effects.add(new MKWorkspaceChangeEffect(MKWorkspaceChangeEffect.Action.CREATE,
-                    MKWorkspaceChangeEffect.Subject.TEMPLATE, payload.familyId() + "/template",
-                    payload.familyId() + " authorial template", payload.familyId(), 0, true, false,
-                    "Create and place the insert authorial template and its jigsaw"));
+                    MKWorkspaceChangeEffect.Subject.TEMPLATE, payload.slotId() + "/scaffold",
+                    payload.slotId() + " slot scaffold", payload.slotId(), 0, true, false,
+                    "Create the non-placeable bounds scaffold and its host jigsaw"));
         }
-        List<MKWorkspaceGeneratedLayer> invalidated = payload.createFamily() ?
+        List<MKWorkspaceGeneratedLayer> invalidated = payload.createSlot() ?
                 List.of(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS,
                         MKWorkspaceGeneratedLayer.PREVIEW_LAYOUT, MKWorkspaceGeneratedLayer.RUNTIME_METADATA) :
                 List.of(MKWorkspaceGeneratedLayer.SIDECAR_BLOCKS);
@@ -91,19 +91,19 @@ public final class MKWorkspaceInsertSocketChangeOperation
         }
         MKWorkspaceChangeSummary summary = new MKWorkspaceChangeSummary(ID,
                 "Confirm Insert Socket Change",
-                payload.createFamily() ? "Create insert family " + payload.familyId() + " and place its socket." :
-                        "Place a socket for existing insert family " + payload.familyId() + ".",
+                payload.createSlot() ? "Create insert slot " + payload.slotId() + " and place its socket." :
+                        "Place a socket targeting existing insert slot " + payload.slotId() + ".",
                 MKWorkspaceMutationSafety.SAFE_RELAYOUT, true, invalidated,
                 List.of(), blockers, List.of(), effects);
         return new MKWorkspacePreparedChange(request, anchor, workspace.id(),
                 MKWorkspaceChangeCoordinator.fingerprint(workspace),
                 payload.socketWorldPos().asLong() + ":" + player.serverLevel().getBlockState(payload.socketWorldPos()),
                 summary, applyPlayer -> {
-            MKWorkspaceInsertAuthoringService.Result result = payload.createFamily() ? service.createSocketFamily(
+            MKWorkspaceInsertAuthoringService.Result result = payload.createSlot() ? service.createSocketFamily(
                     applyPlayer.serverLevel(), createRequest) : service.placeExistingSocketFamily(
                     applyPlayer.serverLevel(), placeRequest);
             return result.context().isPresent() ? MKWorkspaceChangeApplyResult.success(anchor,
-                    payload.createFamily() ? "Insert socket family created." : "Insert socket placed.") :
+                    payload.createSlot() ? "Insert slot and scaffold created." : "Insert socket placed.") :
                     MKWorkspaceChangeApplyResult.failure(anchor, String.join("; ", result.errors()));
         });
     }

@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model;
 
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKInsertFamilyPools;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKInsertSlotPools;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.CompoundTag;
@@ -22,7 +23,13 @@ public record MKWorkspaceInsertFamilyDefinition(
         String templateJigsawFinalState,
         String templateCloneSourcePieceName
 ) {
+    public static final String TAG_INSERT_SLOT_ID = MKInsertSlotPools.TAG_INSERT_SLOT_ID;
+    public static final String TAG_INSERT_SLOT_KIND = MKInsertSlotPools.TAG_INSERT_SLOT_KIND;
+    /** @deprecated Compatibility alias for workspaces written before insert slots were named precisely. */
+    @Deprecated(forRemoval = false)
     public static final String TAG_INSERT_FAMILY_ID = MKInsertFamilyPools.TAG_INSERT_FAMILY_ID;
+    /** @deprecated Use {@link #TAG_INSERT_SLOT_KIND}. */
+    @Deprecated(forRemoval = false)
     public static final String TAG_INSERT_FAMILY_KIND = MKInsertFamilyPools.TAG_INSERT_FAMILY_KIND;
 
     public static final Codec<MKWorkspaceInsertFamilyDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -73,6 +80,11 @@ public record MKWorkspaceInsertFamilyDefinition(
                 templateCloneSourcePieceName.trim();
     }
 
+    /** The user-owned topology slot ID. The record component retains its old name for codec/source compatibility. */
+    public String slotId() {
+        return familyId;
+    }
+
     public static MKWorkspaceInsertFamilyDefinition floorLinkHallway(String familyId, int width, int height,
                                                                      int depth) {
         return new MKWorkspaceInsertFamilyDefinition(familyId, MKWorkspaceInsertFamilyKind.FLOOR_LINK_HALLWAY,
@@ -85,9 +97,17 @@ public record MKWorkspaceInsertFamilyDefinition(
                 width, height, depth);
     }
 
+    public static MKWorkspaceInsertFamilyDefinition insertSlot(String slotId, int width, int height, int depth) {
+        return insertSocket(slotId, width, height, depth);
+    }
+
     public MKWorkspaceInsertFamilyDefinition withFamilyId(String familyId) {
         return new MKWorkspaceInsertFamilyDefinition(familyId, kind, width, height, depth, attachmentFace,
                 faceUOffset, faceVOffset, templateJigsawFinalState, templateCloneSourcePieceName);
+    }
+
+    public MKWorkspaceInsertFamilyDefinition withSlotId(String slotId) {
+        return withFamilyId(slotId);
     }
 
     public MKWorkspaceInsertFamilyDefinition withTemplateCloneSourcePieceName(String sourcePieceName) {
@@ -96,33 +116,33 @@ public record MKWorkspaceInsertFamilyDefinition(
     }
 
     public static ResourceLocation poolId(String namespace, String structureName, String familyId) {
-        return MKInsertFamilyPools.poolId(namespace, structureName, familyId);
+        return MKInsertSlotPools.poolId(namespace, structureName, familyId);
     }
 
     public List<String> validate() {
         ArrayList<String> errors = new ArrayList<>();
         if (familyId.isBlank()) {
-            errors.add("insert family id cannot be blank");
+            errors.add("insert slot id cannot be blank");
         }
         if (width < 1) {
-            errors.add("insert family " + familyId + " width must be at least 1");
+            errors.add("insert slot " + familyId + " width must be at least 1");
         }
         if (height < 1) {
-            errors.add("insert family " + familyId + " height must be at least 1");
+            errors.add("insert slot " + familyId + " height must be at least 1");
         }
         if (depth < 1) {
-            errors.add("insert family " + familyId + " depth must be at least 1");
+            errors.add("insert slot " + familyId + " depth must be at least 1");
         }
         if (width > 0 && (width & 1) == 0) {
-            errors.add("insert family " + familyId + " width must be odd");
+            errors.add("insert slot " + familyId + " width must be odd");
         }
         if (depth > 0 && (depth & 1) == 0) {
-            errors.add("insert family " + familyId + " depth must be odd");
+            errors.add("insert slot " + familyId + " depth must be odd");
         }
         attachmentFace.ifPresent(face -> errors.addAll(
                 MKWorkspaceInsertSocketPlacement.validateExteriorFaceOffset(width, height, depth, face,
                         faceUOffset, faceVOffset).stream()
-                        .map(error -> "insert family " + familyId + " " + error)
+                        .map(error -> "insert slot " + familyId + " " + error)
                         .toList()));
         return errors;
     }

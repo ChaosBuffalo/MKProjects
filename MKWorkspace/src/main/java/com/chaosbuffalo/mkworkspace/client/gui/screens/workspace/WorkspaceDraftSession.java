@@ -637,6 +637,10 @@ public class WorkspaceDraftSession {
         return List.copyOf(draft().insertFamilies);
     }
 
+    public List<MKWorkspaceInsertFamilyDefinition> insertSlots() {
+        return List.copyOf(draft().insertFamilies);
+    }
+
     public void replaceInsertFamily(int index, MKWorkspaceInsertFamilyDefinition updatedFamily) {
         java.util.ArrayList<MKWorkspaceInsertFamilyDefinition> updated =
                 new java.util.ArrayList<>(draft().insertFamilies);

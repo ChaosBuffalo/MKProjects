@@ -14,6 +14,33 @@ import java.util.List;
 
 /** Applies metadata-only slot/family/variant changes without moving or replacing authored blocks. */
 public final class MKWorkspaceContentSelectionMutationService {
+    public List<MKWorkspacePieceDefinition> piecesNeedingInsertSlotNormalization(MKStructureWorkspace workspace) {
+        return workspace.pieces().stream()
+                .filter(piece -> !piece.tags().equals(normalizedInsertSlotTags(piece)))
+                .toList();
+    }
+
+    public MKStructureWorkspace normalizeInsertSlotIdentities(MKStructureWorkspace workspace) {
+        MKWorkspaceBackupManifestWriter.requireTransaction("normalize-insert-slot-identities");
+        List<MKWorkspacePieceDefinition> pieces = workspace.pieces().stream().map(piece -> {
+            var tags = normalizedInsertSlotTags(piece);
+            return tags.equals(piece.tags()) ? piece : piece.withTags(tags);
+        }).toList();
+        MKStructureWorkspace updated = workspace.withPieces(pieces);
+        for (MKWorkspaceGeneratedLayer layer : List.of(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS,
+                MKWorkspaceGeneratedLayer.PREVIEW_LAYOUT, MKWorkspaceGeneratedLayer.RUNTIME_METADATA)) {
+            var state = updated.layerState(layer).orElse(null);
+            if (state != null) updated = updated.withLayerState(state.markDirty());
+        }
+        return updated;
+    }
+
+    private java.util.Map<String, String> normalizedInsertSlotTags(MKWorkspacePieceDefinition piece) {
+        var tags = MKWorkspaceContentSelectionTags.normalizeInsertSlotIdentity(piece.tags());
+        return MKWorkspaceContentSelectionTags.purpose(piece) == MKWorkspaceTemplatePurpose.SLOT_SCAFFOLD ?
+                MKWorkspaceContentSelectionTags.clearFamily(tags) : tags;
+    }
+
     public List<String> validate(MKStructureWorkspace workspace, MKWorkspaceContentSelectionChangePayload change) {
         ArrayList<String> errors = new ArrayList<>();
         MKWorkspacePieceDefinition piece = find(workspace, change);
@@ -71,7 +98,8 @@ public final class MKWorkspaceContentSelectionMutationService {
         ArrayList<MKWorkspacePieceDefinition> pieces = new ArrayList<>(workspace.pieces().size());
         for (MKWorkspacePieceDefinition piece : workspace.pieces()) {
             boolean selectedPiece = piece.pieceId().equals(change.pieceId());
-            boolean selectedFamily = sourceFamily.equals(MKWorkspaceContentSelectionTags.familyId(piece));
+            boolean selectedFamily = sourceFamily.equals(MKWorkspaceContentSelectionTags.familyId(piece)) &&
+                    slot.equals(MKWorkspaceContentSelectionTags.topologySlotId(piece));
             LinkedHashMap<String, String> tags = new LinkedHashMap<>(piece.tags());
             switch (change.kind()) {
                 case PROMOTE_VARIANT -> {

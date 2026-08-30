@@ -80,6 +80,40 @@ class MKWorkspaceContentSelectionMutationServiceTest {
                 error.contains("topology slot")));
     }
 
+    @Test
+    void normalizationSeparatesLegacyInsertScaffoldFromContentFamily() {
+        MKStructureWorkspace draft = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        Map<String, String> legacyTags = new java.util.LinkedHashMap<>();
+        legacyTags.put("workspace_base_name", "platform_contents");
+        legacyTags.put("workspace_piece_kind", "template");
+        legacyTags.put("workspace_insert_family_id", "platform_contents");
+        legacyTags.put("workspace_topology_slot_id", "workspace.insert_family.insert_socket");
+        legacyTags.put(MKWorkspaceContentSelectionTags.TOPOLOGY_SLOT_ID,
+                "workspace.insert_family.insert_socket");
+        legacyTags.put(MKWorkspaceContentSelectionTags.FAMILY_ID, "platform_contents");
+        BlockPos origin = new BlockPos(10, 64, 10);
+        BoundingBox bounds = new BoundingBox(10, 64, 10, 14, 67, 14);
+        MKWorkspacePieceDefinition scaffold = new MKWorkspacePieceDefinition(UUID.randomUUID(), draft.id(),
+                "platform_contents", "workspace.insert_family.insert_socket", 0,
+                new MKWorkspaceDimensions(5, 4, 5, 4, 5, 4, 3, 3), List.of(), origin, bounds, bounds,
+                origin.above(), origin.above(2), List.of(), List.of(), legacyTags);
+        MKStructureWorkspace workspace = draft.withPieces(List.of(scaffold));
+
+        MKStructureWorkspace updated;
+        try (var ignored = MKWorkspaceBackupManifestWriter.enterTransaction(null)) {
+            updated = service.normalizeInsertSlotIdentities(workspace);
+        }
+
+        MKWorkspacePieceDefinition normalized = updated.pieces().getFirst();
+        assertEquals(scaffold.pieceId(), normalized.pieceId());
+        assertEquals(scaffold.worldOrigin(), normalized.worldOrigin());
+        assertEquals("platform_contents", MKWorkspaceContentSelectionTags.topologySlotId(normalized));
+        assertEquals("platform_contents", normalized.tags().get("workspace_insert_slot_id"));
+        assertFalse(normalized.tags().containsKey(MKWorkspaceContentSelectionTags.FAMILY_ID));
+        assertEquals(MKWorkspaceTemplatePurpose.SLOT_SCAFFOLD,
+                MKWorkspaceContentSelectionTags.purpose(normalized));
+    }
+
     private MKWorkspacePieceDefinition piece(MKStructureWorkspace workspace, String name, String slot,
                                                String family, MKWorkspaceTemplatePurpose purpose, int variantIndex) {
         Map<String, String> tags = MKWorkspaceContentSelectionTags.applyTemplate(

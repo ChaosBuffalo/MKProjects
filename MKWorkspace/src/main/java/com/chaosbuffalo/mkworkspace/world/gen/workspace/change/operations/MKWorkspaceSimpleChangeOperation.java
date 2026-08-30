@@ -16,9 +16,11 @@ import com.chaosbuffalo.mkworkspace.world.gen.workspace.export.MKWorkspaceBackup
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceVerticalAccessTags;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.mutation.MKStructureWorkspaceMutationService;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.mutation.MKWorkspacePieceRelayoutService;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.mutation.MKWorkspaceContentSelectionMutationService;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceContentSelectionTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceMutationSafety;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
@@ -49,6 +51,7 @@ public final class MKWorkspaceSimpleChangeOperation implements MKWorkspaceChange
         CLEAR_STAIRS("clear_stairs", "Clear Workspace Stairs"),
         SWAP_BLOCKS("swap_blocks", "Swap Workspace Blocks"),
         PREVIEW_MARGIN("preview_margin", "Change Workspace Preview Margin"),
+        NORMALIZE_INSERT_SLOTS("normalize_insert_slots", "Normalize Insert Slot Identities"),
         IMPORT("import", "Import Workspace"),
         RESTORE("restore", "Restore Workspace Backup"),
         DELETE("delete", "Delete Workspace");
@@ -173,6 +176,12 @@ public final class MKWorkspaceSimpleChangeOperation implements MKWorkspaceChange
             case PREVIEW_MARGIN -> workspace.pieces().forEach(piece -> effects.add(pieceEffect(
                     MKWorkspaceChangeEffect.Action.MOVE, piece,
                     "Relayout for preview margin " + workspace.previewMargin() + " -> " + payload.amount())));
+            case NORMALIZE_INSERT_SLOTS -> new MKWorkspaceContentSelectionMutationService()
+                    .piecesNeedingInsertSlotNormalization(workspace)
+                    .forEach(piece -> effects.add(pieceEffect(MKWorkspaceChangeEffect.Action.UPDATE, piece,
+                            "Replace legacy synthetic insert role with user-owned slot " +
+                                    MKWorkspaceContentSelectionTags.topologySlotId(piece) +
+                                    "; preserve blocks, UUID, catalog position, and content family")));
             case RESTORE -> {
                 MKWorkspaceBackupManifestDiscovery.BackupCandidate candidate =
                         new MKWorkspaceBackupManifestDiscovery().discoverBackups(player.serverLevel(), workspace).stream()
@@ -310,6 +319,12 @@ public final class MKWorkspaceSimpleChangeOperation implements MKWorkspaceChange
                         "Workspace preview margin changed to " + payload.amount() + ".") :
                         MKWorkspaceChangeApplyResult.failure(anchor, "Preview margin relayout was not applicable.");
             }
+            case NORMALIZE_INSERT_SLOTS -> {
+                MKStructureWorkspace updated = new MKWorkspaceContentSelectionMutationService()
+                        .normalizeInsertSlotIdentities(preparedWorkspace);
+                IMKStructureWorkspaceData.get(player.serverLevel()).updateWorkspace(updated);
+                yield MKWorkspaceChangeApplyResult.success(anchor, "Insert slot identities normalized.");
+            }
             case RESTORE -> {
                 var result = new MKWorkspaceBackupRestoreService().restoreByFileName(player.serverLevel(),
                         preparedWorkspace, payload.target());
@@ -334,6 +349,8 @@ public final class MKWorkspaceSimpleChangeOperation implements MKWorkspaceChange
             case CLEAR_STAIRS -> "Clear generated stairs for " + payload.target() + ".";
             case SWAP_BLOCKS -> "Replace " + payload.target() + " with " + payload.secondary() + " in every authored piece.";
             case PREVIEW_MARGIN -> "Relayout every authored piece for preview margin " + payload.amount() + ".";
+            case NORMALIZE_INSERT_SLOTS -> "Normalize legacy insert metadata so every scaffold and content family " +
+                    "belongs to its user-declared insert slot.";
             case RESTORE -> "Restore workspace metadata and authored blocks from " + payload.target() + ".";
             case DELETE -> "Delete the workspace and clear all of its authored blocks.";
             case IMPORT -> throw new IllegalStateException();
@@ -343,7 +360,7 @@ public final class MKWorkspaceSimpleChangeOperation implements MKWorkspaceChange
     private MKWorkspaceMutationSafety safety() {
         return switch (kind) {
             case SWAP_BLOCKS -> MKWorkspaceMutationSafety.SAFE_BLOCK_SUBSTITUTION;
-            case GENERATE_STAIRS, GENERATE_ALL_STAIRS, CLEAR_STAIRS, PREVIEW_MARGIN ->
+            case GENERATE_STAIRS, GENERATE_ALL_STAIRS, CLEAR_STAIRS, PREVIEW_MARGIN, NORMALIZE_INSERT_SLOTS ->
                     MKWorkspaceMutationSafety.SAFE_RELAYOUT;
             case DELETE, RESTORE, GENERATE -> MKWorkspaceMutationSafety.DESTRUCTIVE_REGENERATE;
             case IMPORT -> MKWorkspaceMutationSafety.SAFE_RELAYOUT;
@@ -357,6 +374,8 @@ public final class MKWorkspaceSimpleChangeOperation implements MKWorkspaceChange
             case SWAP_BLOCKS -> List.of();
             case PREVIEW_MARGIN -> List.of(MKWorkspaceGeneratedLayer.PREVIEW_LAYOUT,
                     MKWorkspaceGeneratedLayer.SCAFFOLD_BLOCKS);
+            case NORMALIZE_INSERT_SLOTS -> List.of(MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS,
+                    MKWorkspaceGeneratedLayer.PREVIEW_LAYOUT, MKWorkspaceGeneratedLayer.RUNTIME_METADATA);
             case GENERATE, RESTORE, DELETE -> List.of(MKWorkspaceGeneratedLayer.values());
             case IMPORT -> List.of();
         };

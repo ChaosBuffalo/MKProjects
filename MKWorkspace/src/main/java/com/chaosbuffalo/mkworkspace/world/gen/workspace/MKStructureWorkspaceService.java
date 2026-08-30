@@ -1902,11 +1902,16 @@ public class MKStructureWorkspaceService {
                         MKWorkspaceTemplatePurpose.SLOT_SCAFFOLD :
                         MKWorkspaceTemplatePurpose.FAMILY_CANONICAL) :
                 MKWorkspaceTemplatePurpose.FAMILY_VARIANT;
-        String familyId = MKWorkspaceContentSelectionTags.familyId(basePiece.pieceName(), tags);
         String topologySlotId = MKWorkspaceContentSelectionTags.topologySlotId(basePiece.roleId(), tags);
-        tags.putAll(MKWorkspaceContentSelectionTags.applyFamily(tags, topologySlotId, familyId,
-                MKWorkspaceContentSelectionTags.familyWeight(tags),
-                MKWorkspaceContentSelectionTags.familyEnabled(tags)));
+        if (purpose == MKWorkspaceTemplatePurpose.SLOT_SCAFFOLD) {
+            tags.putAll(MKWorkspaceContentSelectionTags.clearFamily(
+                    MKWorkspaceContentSelectionTags.applySlot(tags, topologySlotId)));
+        } else {
+            String familyId = MKWorkspaceContentSelectionTags.familyId(basePiece.pieceName(), tags);
+            tags.putAll(MKWorkspaceContentSelectionTags.applyFamily(tags, topologySlotId, familyId,
+                    MKWorkspaceContentSelectionTags.familyWeight(tags),
+                    MKWorkspaceContentSelectionTags.familyEnabled(tags)));
+        }
         tags.putAll(MKWorkspaceContentSelectionTags.applyTemplate(tags, purpose,
                 purpose.variant() ? basePiece.pieceName() + "." + variantIndex : "",
                 MKWorkspaceContentSelectionTags.variantWeight(tags),
