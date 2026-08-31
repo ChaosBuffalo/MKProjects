@@ -4,6 +4,8 @@ import com.chaosbuffalo.mkworkspace.MKWorkspace;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.capability.IMKStructureWorkspaceData;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.*;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.mutation.MKWorkspaceContentSelectionMutationService;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.mutation.MKWorkspacePieceRelayoutService;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceRelayoutImpact;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.*;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
@@ -32,7 +34,8 @@ public final class MKWorkspaceContentSelectionChangeOperation
         MKWorkspacePieceDefinition selected = workspace.pieces().stream()
                 .filter(piece -> piece.pieceId().equals(payload.pieceId())).findFirst().orElse(null);
         MKWorkspaceContentSelectionMutationService service = new MKWorkspaceContentSelectionMutationService();
-        ArrayList<String> blockers = new ArrayList<>(service.validate(workspace, payload));
+        List<String> validationErrors = service.validate(workspace, payload);
+        ArrayList<String> blockers = new ArrayList<>(validationErrors);
         List<MKWorkspaceGeneratedLayer> invalidated =
                 MKWorkspaceContentSelectionMutationService.invalidatedLayers(payload.kind());
         List<MKWorkspaceGeneratedLayer> locked = workspace.layerStates().stream()
@@ -45,6 +48,27 @@ public final class MKWorkspaceContentSelectionChangeOperation
         ArrayList<MKWorkspaceFieldChange> fields = new ArrayList<>();
         ArrayList<String> warnings = new ArrayList<>();
         if (selected != null) describe(workspace, selected, payload, effects, fields, warnings);
+        if (selected != null && validationErrors.isEmpty() && requiresCatalogRelayout(payload.kind())) {
+            MKStructureWorkspace projected = service.project(workspace, payload);
+            var catalogRelayout = new MKWorkspacePieceRelayoutService()
+                    .summarizeWorkspaceCatalogRelayout(workspace, projected);
+            if (catalogRelayout.isEmpty()) {
+                blockers.add("The physical catalog layout could not be prepared safely.");
+            } else {
+                var relayout = catalogRelayout.get();
+                warnings.addAll(relayout.warnings());
+                if (relayout.newCount() > 0 || relayout.removedCount() > 0 ||
+                        relayout.rebuildRequiredCount() > 0) {
+                    blockers.add("Family row changes must preserve every physical template, but this layout would " +
+                            "create, remove, or rebuild catalog entries.");
+                }
+                relayout.impacts().stream()
+                        .filter(impact -> !"preserved".equals(impact.outcome()))
+                        .filter(impact -> !selected.pieceName().equals(impact.pieceName()))
+                        .map(this::relayoutEffect)
+                        .forEach(effects::add);
+            }
+        }
         MKWorkspaceChangeSummary summary = new MKWorkspaceChangeSummary(ID, title(payload.kind()),
                 summary(selected, payload), MKWorkspaceMutationSafety.SAFE_RELAYOUT, true, invalidated,
                 warnings, blockers, fields, effects);
@@ -53,7 +77,13 @@ public final class MKWorkspaceContentSelectionChangeOperation
             MKStructureWorkspace current = IMKStructureWorkspaceData.get(applyPlayer.serverLevel())
                     .getWorkspaceByAnchor(anchor).orElseThrow();
             MKStructureWorkspace updated = service.apply(current, payload);
-            IMKStructureWorkspaceData.get(applyPlayer.serverLevel()).updateWorkspace(updated);
+            if (requiresCatalogRelayout(payload.kind())) {
+                new MKWorkspacePieceRelayoutService().relayoutWorkspaceCatalog(
+                        applyPlayer.serverLevel(), current, updated).orElseThrow(() ->
+                        new IllegalStateException("The confirmed physical catalog relayout produced no plan."));
+            } else {
+                IMKStructureWorkspaceData.get(applyPlayer.serverLevel()).updateWorkspace(updated);
+            }
             return MKWorkspaceChangeApplyResult.success(anchor, appliedMessage(payload.kind()));
         });
     }
@@ -77,9 +107,9 @@ public final class MKWorkspaceContentSelectionChangeOperation
                         MKWorkspaceChangeEffect.Subject.FAMILY, payload.targetFamilyId(), payload.targetFamilyId(),
                         selected.pieceName(), 0, false, false,
                         "Bind family to topology slot " + slot + " with weight " + payload.weight()));
-                effects.add(pieceEffect(selected, MKWorkspaceChangeEffect.Action.UPDATE,
-                        "Preserve authored blocks, UUID, and catalog position; promote from variant of " + oldFamily +
-                                " to canonical of " + payload.targetFamilyId()));
+                effects.add(pieceEffect(selected, MKWorkspaceChangeEffect.Action.MOVE,
+                        "Preserve authored blocks and UUID; move from variant row of " + oldFamily +
+                                " to the canonical row for " + payload.targetFamilyId()));
                 warnings.add("The promoted template becomes canonical fallback for the new family until it has " +
                         "an enabled variant.");
                 warnings.add("If the source family has no other enabled variants, it will return to its own " +
@@ -140,6 +170,26 @@ public final class MKWorkspaceContentSelectionChangeOperation
                 MKWorkspaceChangeEffect.Subject.TEMPLATE, piece.pieceId().toString(), piece.pieceName(),
                 piece.tags().getOrDefault("workspace_base_name", piece.pieceName()), piece.variantIndex(), true,
                 !purpose.placeable(), detail);
+    }
+
+    private MKWorkspaceChangeEffect relayoutEffect(MKWorkspaceRelayoutImpact impact) {
+        MKWorkspaceChangeEffect.Action action = switch (impact.outcome()) {
+            case "new" -> MKWorkspaceChangeEffect.Action.CREATE;
+            case "rebuild" -> MKWorkspaceChangeEffect.Action.REBUILD;
+            case "removed" -> MKWorkspaceChangeEffect.Action.REMOVE;
+            case "expanded" -> MKWorkspaceChangeEffect.Action.EXPAND;
+            default -> MKWorkspaceChangeEffect.Action.MOVE;
+        };
+        return new MKWorkspaceChangeEffect(action,
+                impact.variantIndex() > 0 ? MKWorkspaceChangeEffect.Subject.VARIANT :
+                        MKWorkspaceChangeEffect.Subject.TEMPLATE,
+                impact.stableSlotKey(), impact.pieceName(), impact.baseName(), impact.variantIndex(), true,
+                false, impact.reason());
+    }
+
+    private boolean requiresCatalogRelayout(MKWorkspaceContentSelectionChangePayload.Kind kind) {
+        return kind == MKWorkspaceContentSelectionChangePayload.Kind.PROMOTE_VARIANT ||
+                kind == MKWorkspaceContentSelectionChangePayload.Kind.MOVE_VARIANT;
     }
 
     private String summary(MKWorkspacePieceDefinition piece, MKWorkspaceContentSelectionChangePayload payload) {

@@ -2,6 +2,7 @@ package com.chaosbuffalo.mkworkspace.world.gen.workspace.mutation;
 
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.change.operations.MKWorkspaceContentSelectionChangePayload;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.export.MKWorkspaceBackupManifestWriter;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.scaffold.MKWorkspaceGridLayout;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceContentSelectionTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceGeneratedLayer;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-/** Applies metadata-only slot/family/variant changes without moving or replacing authored blocks. */
+/** Projects slot/family/variant changes; the owning change operation performs any required physical relayout. */
 public final class MKWorkspaceContentSelectionMutationService {
     public List<MKWorkspacePieceDefinition> piecesNeedingInsertSlotNormalization(MKStructureWorkspace workspace) {
         return workspace.pieces().stream()
@@ -92,6 +93,19 @@ public final class MKWorkspaceContentSelectionMutationService {
         List<String> errors = validate(workspace, change);
         if (!errors.isEmpty()) throw new IllegalArgumentException(String.join("; ", errors));
         MKWorkspaceBackupManifestWriter.requireTransaction("change-workspace-content-selection");
+        return projectValidated(workspace, change);
+    }
+
+    /** Builds the exact post-change definition for preflight without authorizing or applying a mutation. */
+    public MKStructureWorkspace project(MKStructureWorkspace workspace,
+                                        MKWorkspaceContentSelectionChangePayload change) {
+        List<String> errors = validate(workspace, change);
+        if (!errors.isEmpty()) throw new IllegalArgumentException(String.join("; ", errors));
+        return projectValidated(workspace, change);
+    }
+
+    private MKStructureWorkspace projectValidated(MKStructureWorkspace workspace,
+                                                  MKWorkspaceContentSelectionChangePayload change) {
         MKWorkspacePieceDefinition selected = find(workspace, change);
         String sourceFamily = MKWorkspaceContentSelectionTags.familyId(selected);
         String slot = MKWorkspaceContentSelectionTags.topologySlotId(selected);
@@ -101,6 +115,7 @@ public final class MKWorkspaceContentSelectionMutationService {
             boolean selectedFamily = sourceFamily.equals(MKWorkspaceContentSelectionTags.familyId(piece)) &&
                     slot.equals(MKWorkspaceContentSelectionTags.topologySlotId(piece));
             LinkedHashMap<String, String> tags = new LinkedHashMap<>(piece.tags());
+            int variantIndex = piece.variantIndex();
             switch (change.kind()) {
                 case PROMOTE_VARIANT -> {
                     if (selectedPiece) {
@@ -108,6 +123,11 @@ public final class MKWorkspaceContentSelectionMutationService {
                                 change.targetFamilyId(), change.weight(), change.enabled()));
                         tags = new LinkedHashMap<>(MKWorkspaceContentSelectionTags.applyTemplate(tags,
                                 MKWorkspaceTemplatePurpose.FAMILY_CANONICAL, "", 1, true));
+                        tags.put(MKWorkspaceGridLayout.TAG_BASE_NAME, change.targetFamilyId());
+                        tags.put(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "0");
+                        tags.put(MKWorkspaceContentSelectionTags.CATALOG_MEMBER_ID,
+                                change.targetFamilyId() + ":canonical");
+                        variantIndex = 0;
                     }
                 }
                 case MOVE_VARIANT -> {
@@ -120,6 +140,11 @@ public final class MKWorkspaceContentSelectionMutationService {
                                 change.targetFamilyId(), MKWorkspaceContentSelectionTags.familyWeight(
                                         targetCanonical.tags()), MKWorkspaceContentSelectionTags.familyEnabled(
                                         targetCanonical.tags())));
+                        tags.put(MKWorkspaceGridLayout.TAG_BASE_NAME, targetCanonical.tags().getOrDefault(
+                                MKWorkspaceGridLayout.TAG_BASE_NAME, change.targetFamilyId()));
+                        tags.put(MKWorkspaceContentSelectionTags.CATALOG_MEMBER_ID,
+                                change.targetFamilyId() + ":variant:" +
+                                        MKWorkspaceContentSelectionTags.variantId(piece));
                     }
                 }
                 case SET_FAMILY_WEIGHT -> {
@@ -146,7 +171,8 @@ public final class MKWorkspaceContentSelectionMutationService {
                             MKWorkspaceContentSelectionTags.variantEnabled(tags)));
                 }
             }
-            pieces.add(tags.equals(piece.tags()) ? piece : piece.withTags(tags));
+            pieces.add(tags.equals(piece.tags()) && variantIndex == piece.variantIndex() ? piece :
+                    piece.withVariantIndexAndTags(variantIndex, tags));
         }
         MKStructureWorkspace updated = workspace.withPieces(pieces);
         for (MKWorkspaceGeneratedLayer layer : invalidatedLayers(change.kind())) {
@@ -159,7 +185,10 @@ public final class MKWorkspaceContentSelectionMutationService {
     public static List<MKWorkspaceGeneratedLayer> invalidatedLayers(
             MKWorkspaceContentSelectionChangePayload.Kind kind) {
         return switch (kind) {
-            case PROMOTE_VARIANT, MOVE_VARIANT, SET_TEMPLATE_PURPOSE -> List.of(
+            case PROMOTE_VARIANT, MOVE_VARIANT -> List.of(
+                    MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS, MKWorkspaceGeneratedLayer.PREVIEW_LAYOUT,
+                    MKWorkspaceGeneratedLayer.SIDECAR_BLOCKS, MKWorkspaceGeneratedLayer.RUNTIME_METADATA);
+            case SET_TEMPLATE_PURPOSE -> List.of(
                     MKWorkspaceGeneratedLayer.TEMPLATE_BINDINGS, MKWorkspaceGeneratedLayer.PREVIEW_LAYOUT,
                     MKWorkspaceGeneratedLayer.RUNTIME_METADATA);
             case SET_FAMILY_WEIGHT, SET_FAMILY_ENABLED, SET_VARIANT_WEIGHT, SET_VARIANT_ENABLED -> List.of(

@@ -7,6 +7,7 @@ import com.chaosbuffalo.mkworkspace.world.gen.workspace.capability.IMKStructureW
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.export.MKWorkspaceBackupManifestWriter;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceContentSelectionTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyKind;
@@ -54,6 +55,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 public class MKWorkspacePieceRelayoutService {
     private static final ResourceLocation EMPTY_POOL = ResourceLocation.parse("minecraft:empty");
@@ -116,6 +118,11 @@ public class MKWorkspacePieceRelayoutService {
             pieces.addAll(newPieces);
             return List.copyOf(pieces);
         }
+    }
+
+    private record WorkspaceCatalogTarget(List<MKPlannedPiece> targetPieces,
+                                          List<MKPlannedPiece> layoutPieces,
+                                          Map<String, String> sourceCatalogKeyByTargetKey) {
     }
 
     public record CatalogRelayoutSummary(int preservedCount, int movedCount, int expandedCount, int newCount,
@@ -233,6 +240,14 @@ public class MKWorkspacePieceRelayoutService {
                 .map(this::summarize);
     }
 
+    /** Summarizes a catalog-only metadata projection while matching physical pieces by their stable UUIDs. */
+    public Optional<CatalogRelayoutSummary> summarizeWorkspaceCatalogRelayout(MKStructureWorkspace existing,
+                                                                               MKStructureWorkspace targetWorkspace) {
+        WorkspaceCatalogTarget target = workspaceCatalogTarget(existing, targetWorkspace);
+        return planCatalogRelayout(existing, targetWorkspace, target.targetPieces(), target.layoutPieces(),
+                List.of(), target.sourceCatalogKeyByTargetKey()).map(this::summarize);
+    }
+
     public CatalogRelayoutDiagnostics diagnoseCatalogRelayout(MKStructureWorkspace existing,
                                                               MKStructureWorkspace targetWorkspace,
                                                               List<MKPlannedPiece> targetPieces,
@@ -272,9 +287,27 @@ public class MKWorkspacePieceRelayoutService {
                                                     List<MKPlannedPiece> targetPieces,
                                                     List<MKPlannedPiece> layoutPieces,
                                                     List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) throws IOException {
+        return relayoutCatalog(level, existing, targetWorkspace, targetPieces, layoutPieces, acceptedRemaps,
+                Map.of());
+    }
+
+    /** Applies a projected catalog metadata change without mistaking identity changes for delete/create work. */
+    public Optional<RelayoutResult> relayoutWorkspaceCatalog(ServerLevel level, MKStructureWorkspace existing,
+                                                             MKStructureWorkspace targetWorkspace) throws IOException {
+        WorkspaceCatalogTarget target = workspaceCatalogTarget(existing, targetWorkspace);
+        return relayoutCatalog(level, existing, targetWorkspace, target.targetPieces(), target.layoutPieces(),
+                List.of(), target.sourceCatalogKeyByTargetKey());
+    }
+
+    private Optional<RelayoutResult> relayoutCatalog(ServerLevel level, MKStructureWorkspace existing,
+                                                     MKStructureWorkspace targetWorkspace,
+                                                     List<MKPlannedPiece> targetPieces,
+                                                     List<MKPlannedPiece> layoutPieces,
+                                                     List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps,
+                                                     Map<String, String> sourceCatalogKeyByTargetKey) throws IOException {
         MKWorkspaceBackupManifestWriter.requireTransaction("relayout-workspace-catalog");
         Optional<CatalogPlan> planOpt = planCatalogRelayout(existing, targetWorkspace, targetPieces, layoutPieces,
-                acceptedRemaps);
+                acceptedRemaps, sourceCatalogKeyByTargetKey);
         if (planOpt.isEmpty() || !planOpt.get().hasWork()) {
             return Optional.empty();
         }
@@ -417,6 +450,15 @@ public class MKWorkspacePieceRelayoutService {
                                                       List<MKPlannedPiece> targetPieces,
                                                       List<MKPlannedPiece> layoutPieces,
                                                       List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps) {
+        return planCatalogRelayout(existing, targetWorkspace, targetPieces, layoutPieces, acceptedRemaps, Map.of());
+    }
+
+    private Optional<CatalogPlan> planCatalogRelayout(MKStructureWorkspace existing,
+                                                      MKStructureWorkspace targetWorkspace,
+                                                      List<MKPlannedPiece> targetPieces,
+                                                      List<MKPlannedPiece> layoutPieces,
+                                                      List<MKWorkspaceTemplateRemapSuggestion> acceptedRemaps,
+                                                      Map<String, String> sourceCatalogKeyByTargetKey) {
         if (existing.pieces().isEmpty() || !existing.anchor().equals(targetWorkspace.anchor())) {
             return Optional.empty();
         }
@@ -472,6 +514,11 @@ public class MKWorkspacePieceRelayoutService {
             String key = catalogKey(targetPiece);
             MKWorkspacePieceDefinition existingPiece = existingByKey.get(key);
             boolean remapped = false;
+            if (existingPiece == null) {
+                String sourceKey = sourceCatalogKeyByTargetKey.get(key);
+                existingPiece = sourceKey == null ? null : existingByKey.get(sourceKey);
+                remapped = existingPiece != null;
+            }
             if (existingPiece == null) {
                 MKWorkspacePlannerId orphanedPlannerId = acceptedRemapTargets.get(targetPiece.plannerId());
                 existingPiece = orphanedPlannerId == null ? null : existingByPlannerId.get(orphanedPlannerId);
@@ -679,7 +726,7 @@ public class MKWorkspacePieceRelayoutService {
                 targetPiece.pieceName(),
                 targetPiece.roleId(),
                 targetPiece.plannerId(),
-                original.variantIndex(),
+                variantIndex(targetPiece.tags()),
                 targetDimensions(targetPiece, original.effectiveDimensions()),
                 retargetConnectors(workspace, original, targetPiece),
                 original.worldOrigin().offset(delta),
@@ -1020,6 +1067,11 @@ public class MKWorkspacePieceRelayoutService {
     }
 
     private String catalogKey(Map<String, String> tags, String plannerId, String pieceName, int variantIndex) {
+        String contentCatalogMemberId = tags.getOrDefault(MKWorkspaceContentSelectionTags.CATALOG_MEMBER_ID, "");
+        if (!contentCatalogMemberId.isBlank()) {
+            String slotId = MKWorkspaceContentSelectionTags.topologySlotId(plannerId, tags);
+            return "content-family:" + slotId + ":" + contentCatalogMemberId;
+        }
         String stableKey = stableCatalogKey(tags, variantIndex);
         if (!stableKey.isBlank()) {
             return stableKey;
@@ -1374,6 +1426,28 @@ public class MKWorkspacePieceRelayoutService {
                 bounds.maxY() + delta.getY(),
                 bounds.maxZ() + delta.getZ()
         );
+    }
+
+    private WorkspaceCatalogTarget workspaceCatalogTarget(MKStructureWorkspace existing,
+                                                           MKStructureWorkspace targetWorkspace) {
+        List<MKPlannedPiece> targetPieces = targetWorkspace.pieces().stream().map(this::toPlannedPiece).toList();
+        List<MKPlannedPiece> layoutPieces = targetWorkspace.pieces().stream()
+                .filter(piece -> !MKWorkspaceTemplateReuseTags.isDerived(piece.tags()))
+                .map(this::toPlannedPiece)
+                .toList();
+        Map<UUID, MKWorkspacePieceDefinition> existingById = existing.pieces().stream()
+                .collect(java.util.stream.Collectors.toMap(MKWorkspacePieceDefinition::pieceId, piece -> piece,
+                        (first, ignored) -> first));
+        LinkedHashMap<String, String> remaps = new LinkedHashMap<>();
+        for (MKWorkspacePieceDefinition targetPiece : targetWorkspace.pieces()) {
+            if (MKWorkspaceTemplateReuseTags.isDerived(targetPiece.tags())) continue;
+            MKWorkspacePieceDefinition sourcePiece = existingById.get(targetPiece.pieceId());
+            if (sourcePiece == null) continue;
+            String targetKey = catalogKey(toPlannedPiece(targetPiece));
+            String sourceKey = catalogKey(sourcePiece);
+            if (!targetKey.equals(sourceKey)) remaps.put(targetKey, sourceKey);
+        }
+        return new WorkspaceCatalogTarget(targetPieces, layoutPieces, Map.copyOf(remaps));
     }
 
     private boolean contains(BoundingBox bounds, BlockPos pos) {

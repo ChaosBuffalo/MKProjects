@@ -20,9 +20,11 @@ class MKWorkspaceContentSelectionMutationServiceTest {
     @Test
     void promotionPreservesPhysicalIdentityAndMakesVariantANewCanonical() {
         MKStructureWorkspace draft = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        MKWorkspacePieceDefinition blank = piece(draft, "platform_blank", "platform_contents",
+                "platform_family", MKWorkspaceTemplatePurpose.FAMILY_CANONICAL, 0);
         MKWorkspacePieceDefinition gazebo = piece(draft, "fire_shrine_gazebo", "platform_contents",
                 "platform_family", MKWorkspaceTemplatePurpose.FAMILY_VARIANT, 1);
-        MKStructureWorkspace workspace = draft.withPieces(List.of(gazebo));
+        MKStructureWorkspace workspace = draft.withPieces(List.of(blank, gazebo));
         var change = new MKWorkspaceContentSelectionChangePayload(
                 MKWorkspaceContentSelectionChangePayload.Kind.PROMOTE_VARIANT, gazebo.pieceId(),
                 "gazebo_family", 3, true, MKWorkspaceTemplatePurpose.FAMILY_VARIANT);
@@ -32,15 +34,30 @@ class MKWorkspaceContentSelectionMutationServiceTest {
             updated = service.apply(workspace, change);
         }
 
-        MKWorkspacePieceDefinition promoted = updated.pieces().getFirst();
+        MKWorkspacePieceDefinition promoted = updated.pieces().stream()
+                .filter(piece -> piece.pieceId().equals(gazebo.pieceId())).findFirst().orElseThrow();
         assertEquals(gazebo.pieceId(), promoted.pieceId());
         assertEquals(gazebo.worldOrigin(), promoted.worldOrigin());
         assertEquals(gazebo.exportBounds(), promoted.exportBounds());
         assertEquals("gazebo_family", MKWorkspaceContentSelectionTags.familyId(promoted));
         assertEquals("platform_contents", MKWorkspaceContentSelectionTags.topologySlotId(promoted));
         assertEquals(3, MKWorkspaceContentSelectionTags.familyWeight(promoted.tags()));
+        assertEquals(0, promoted.variantIndex());
+        assertEquals("0", promoted.tags().get("workspace_variant_index"));
+        assertEquals("gazebo_family", promoted.tags().get("workspace_base_name"));
+        assertEquals("gazebo_family:canonical",
+                promoted.tags().get(MKWorkspaceContentSelectionTags.CATALOG_MEMBER_ID));
         assertEquals(MKWorkspaceTemplatePurpose.FAMILY_CANONICAL,
                 MKWorkspaceContentSelectionTags.purpose(promoted));
+
+        MKWorkspacePieceRelayoutService.CatalogRelayoutSummary relayout =
+                new MKWorkspacePieceRelayoutService().summarizeWorkspaceCatalogRelayout(workspace, updated)
+                        .orElseThrow();
+        assertEquals(2, relayout.preservedCount());
+        assertEquals(0, relayout.newCount());
+        assertEquals(0, relayout.removedCount());
+        assertTrue(relayout.impacts().stream().anyMatch(impact ->
+                "moved".equals(impact.outcome()) || "expanded".equals(impact.outcome())));
     }
 
     @Test

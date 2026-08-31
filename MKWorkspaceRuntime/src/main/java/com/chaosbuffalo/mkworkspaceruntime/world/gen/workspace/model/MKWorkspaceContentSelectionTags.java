@@ -17,6 +17,7 @@ public final class MKWorkspaceContentSelectionTags {
     public static final String VARIANT_ID = "workspace_content_variant_id";
     public static final String VARIANT_WEIGHT = "workspace_variant_weight";
     public static final String VARIANT_ENABLED = "workspace_variant_enabled";
+    public static final String CATALOG_MEMBER_ID = "workspace_content_catalog_member_id";
 
     private static final String LEGACY_BASE_NAME = "workspace_base_name";
     private static final String LEGACY_PIECE_KIND = "workspace_piece_kind";
@@ -25,7 +26,7 @@ public final class MKWorkspaceContentSelectionTags {
     private static final String LEGACY_TOPOLOGY_SLOT_ID = "workspace_topology_slot_id";
     private static final java.util.List<String> EXPLICIT_KEYS = java.util.List.of(
             TEMPLATE_PURPOSE, TOPOLOGY_SLOT_ID, FAMILY_ID, FAMILY_WEIGHT, FAMILY_ENABLED,
-            VARIANT_ID, VARIANT_WEIGHT, VARIANT_ENABLED);
+            VARIANT_ID, VARIANT_WEIGHT, VARIANT_ENABLED, CATALOG_MEMBER_ID);
 
     private MKWorkspaceContentSelectionTags() {
     }
@@ -163,6 +164,15 @@ public final class MKWorkspaceContentSelectionTags {
         }
         result.put(VARIANT_WEIGHT, Integer.toString(Math.max(1, variantWeight)));
         result.put(VARIANT_ENABLED, Boolean.toString(enabled));
+        if (result.containsKey(CATALOG_MEMBER_ID)) {
+            String familyId = result.getOrDefault(FAMILY_ID, "");
+            if (!familyId.isBlank() && purpose != MKWorkspaceTemplatePurpose.SLOT_SCAFFOLD) {
+                result.put(CATALOG_MEMBER_ID,
+                        familyId + (purpose.variant() ? ":variant:" + variantId : ":canonical"));
+            } else {
+                result.remove(CATALOG_MEMBER_ID);
+            }
+        }
         return result;
     }
 
