@@ -19,13 +19,29 @@ public record WorkspaceContentTree(List<SlotNode> slots) {
 
     public static WorkspaceContentTree build(List<MKWorkspacePieceDefinition> pieces,
                                              Map<String, String> declaredSlotLabels) {
+        return build(pieces, declaredSlotLabels, true);
+    }
+
+    /** Builds the user-facing tree without allowing stale or inactive piece metadata to declare new slots. */
+    public static WorkspaceContentTree buildDeclared(List<MKWorkspacePieceDefinition> pieces,
+                                                     Map<String, String> declaredSlotLabels) {
+        return build(pieces, declaredSlotLabels, false);
+    }
+
+    private static WorkspaceContentTree build(List<MKWorkspacePieceDefinition> pieces,
+                                              Map<String, String> declaredSlotLabels,
+                                              boolean includeUndeclaredSlots) {
         LinkedHashMap<String, SlotBuilder> slots = new LinkedHashMap<>();
         declaredSlotLabels.forEach((id, label) -> slots.putIfAbsent(id, new SlotBuilder(id, label)));
         for (MKWorkspacePieceDefinition piece : pieces) {
             String slotId = MKWorkspaceContentSelectionTags.topologySlotId(piece);
             if (slotId.isBlank()) continue;
-            SlotBuilder slot = slots.computeIfAbsent(slotId,
-                    id -> new SlotBuilder(id, WorkspacePieceDisplay.formatTopologyLabel(id)));
+            SlotBuilder slot = slots.get(slotId);
+            if (slot == null && includeUndeclaredSlots) {
+                slot = new SlotBuilder(slotId, WorkspacePieceDisplay.formatTopologyLabel(slotId));
+                slots.put(slotId, slot);
+            }
+            if (slot == null) continue;
             MKWorkspaceTemplatePurpose purpose = MKWorkspaceContentSelectionTags.purpose(piece);
             if (purpose == MKWorkspaceTemplatePurpose.SLOT_SCAFFOLD) {
                 slot.scaffolds.add(piece);

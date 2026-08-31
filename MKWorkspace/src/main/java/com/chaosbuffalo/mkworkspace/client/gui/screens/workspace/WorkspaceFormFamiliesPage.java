@@ -35,7 +35,7 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
                 "Choose a family under its topology slot. The right panel shows only that family's canonical and variants."));
 
         WorkspaceDraftSession editor = screen.draftSession();
-        WorkspaceContentTree tree = WorkspaceContentTree.build(currentPieces(screen), declaredSlots(editor));
+        WorkspaceContentTree tree = WorkspaceContentTree.buildDeclared(currentPieces(screen), declaredSlots(editor));
         WorkspaceContentTree.FamilyNode selected = selectedFamily(editor, tree);
         if (selected != null && !selected.groupKey().equals(screen.selectedTopologyKey())) {
             screen.selectWorkspaceTopologySlot(selected.groupKey());
@@ -137,8 +137,7 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
 
     private Map<String, String> declaredSlots(WorkspaceDraftSession editor) {
         LinkedHashMap<String, String> slots = new LinkedHashMap<>();
-        MKWorkspaceResolvedSlotCatalog.resolve(editor.roomTopologySlots(), editor.familyDefinitions(),
-                        editor.linearRunFamilies(), editor.insertSlots()).slots()
+        MKWorkspaceResolvedSlotCatalog.resolve(editor.roomTopologySlots(), editor.insertSlots()).slots()
                 .forEach(slot -> slots.putIfAbsent(slot.slotId(),
                         WorkspacePieceDisplay.formatTopologyLabel(slot.slotId())));
         return Map.copyOf(slots);

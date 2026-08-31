@@ -35,10 +35,24 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HubSpokeWorkspaceDraftAdapterTest {
     private final HubSpokePlanner planner = new HubSpokePlanner();
+
+    @Test
+    void pairedCornersDoNotExposeInactiveSharedCornerSlot() {
+        registerHubSpokeClient();
+        MKWorkspaceScreen screen = new MKWorkspaceScreen(BlockPos.ZERO, fireShrineLikeWorkspace(), List.of());
+
+        assertFalse(screen.draftSession().roomTopologySlots().stream()
+                .anyMatch(slot -> HubSpokePlanner.CORNER_SLOT.equals(slot.slotId())));
+        assertTrue(screen.draftSession().roomTopologySlots().stream()
+                .anyMatch(slot -> "hub_spoke.corner.north_west".equals(slot.slotId())));
+        assertTrue(screen.draftSession().roomTopologySlots().stream()
+                .anyMatch(slot -> "hub_spoke.corner.north_east".equals(slot.slotId())));
+    }
 
     @Test
     void templateFamiliesAddSpokeFamilyUpdatesPlannerSettingsAndCatalog() {

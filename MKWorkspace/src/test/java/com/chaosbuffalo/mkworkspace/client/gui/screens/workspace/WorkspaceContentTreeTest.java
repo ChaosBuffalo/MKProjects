@@ -88,6 +88,23 @@ class WorkspaceContentTreeTest {
         assertTrue(tree.slots().getFirst().families().isEmpty());
     }
 
+    @Test
+    void declaredTreeDoesNotExposeInactiveSlotsFromStalePieces() {
+        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        MKWorkspacePieceDefinition active = piece(workspace, "north_west_corner",
+                "hub_spoke.corner.north_west", "north_west_family",
+                MKWorkspaceTemplatePurpose.FAMILY_CANONICAL, 0, true);
+        MKWorkspacePieceDefinition inactive = piece(workspace, "shared_corner",
+                "hub_spoke.corner.shared", "shared_family",
+                MKWorkspaceTemplatePurpose.FAMILY_CANONICAL, 0, true);
+
+        WorkspaceContentTree tree = WorkspaceContentTree.buildDeclared(List.of(active, inactive),
+                Map.of("hub_spoke.corner.north_west", "Hub Spoke Corner North West"));
+
+        assertEquals(List.of("hub_spoke.corner.north_west"), tree.slots().stream()
+                .map(WorkspaceContentTree.SlotNode::slotId).toList());
+    }
+
     private MKWorkspacePieceDefinition piece(MKStructureWorkspace workspace, String name, String slot,
                                                String family, MKWorkspaceTemplatePurpose purpose, int variantIndex,
                                                boolean familyEnabled) {
