@@ -3,14 +3,12 @@ package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 import com.chaosbuffalo.mkworkspace.client.gui.screens.MKWorkspaceScreen;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWorkspaceResolvedSlotCatalog;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
-import com.chaosbuffalo.mkwidgets.client.gui.constraints.CenterYWithOffsetConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.constraints.MarginConstraint;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKLayout;
 import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
+import com.chaosbuffalo.mkwidgets.client.gui.widgets.CompatButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
 import java.util.LinkedHashMap;
@@ -97,12 +95,12 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
                         selected.familyId().equals(family.familyId());
                 String label = truncate(family.familyId(), 20) +
                         " [" + family.status() + "]";
-                MKText familyLabel = screen.makeWhiteText(Component.literal(label));
-                SelectableFamilyRow row = new SelectableFamilyRow(SELECTOR_WIDTH - 24, FAMILY_ROW_HEIGHT,
-                        familyLabel, isSelected, () -> {
+                CompatButton row = new CompatButton(Component.literal(label), SELECTOR_WIDTH - 24,
+                        FAMILY_ROW_HEIGHT).setSelected(isSelected).setPressedCallback((button, mouseButton) -> {
                     editor.selectContentFamily(family.slotId(), family.familyId());
                     screen.selectWorkspaceTopologySlot(family.groupKey());
                     screen.flagNeedSetup();
+                    return true;
                 });
                 selector.addWidget(row);
                 selector.addConstraintToWidget(MarginConstraint.LEFT, row);
@@ -156,32 +154,4 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
         return value.length() <= max ? value : value.substring(0, Math.max(1, max - 3)) + "...";
     }
 
-    /** Compact clickable list row, following the player ability list's hover/selection interaction. */
-    private static final class SelectableFamilyRow extends MKLayout {
-        private final boolean selected;
-        private final Runnable callback;
-
-        private SelectableFamilyRow(int width, int height, MKText label, boolean selected, Runnable callback) {
-            super(0, 0, width, height);
-            this.selected = selected;
-            this.callback = callback;
-            label.setWidth(width - 8);
-            addWidget(label);
-            addConstraintToWidget(MarginConstraint.LEFT, label);
-            addConstraintToWidget(new CenterYWithOffsetConstraint(1), label);
-        }
-
-        @Override
-        public boolean onMousePressed(Minecraft minecraft, double mouseX, double mouseY, int mouseButton) {
-            callback.run();
-            return true;
-        }
-
-        @Override
-        public void postDraw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height,
-                             int mouseX, int mouseY, float partialTicks) {
-            if (isHovered()) graphics.fill(x, y, x + width, y + height, 0x55ffffff);
-            if (selected) graphics.fill(x, y, x + width, y + height, 0x99ffffff);
-        }
-    }
 }
