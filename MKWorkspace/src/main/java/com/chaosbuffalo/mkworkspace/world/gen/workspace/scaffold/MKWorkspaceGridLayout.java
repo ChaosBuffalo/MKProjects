@@ -93,7 +93,7 @@ public class MKWorkspaceGridLayout {
     }
 
     private String getColumnGroupKey(MKPlannedPiece piece, String baseName) {
-        String topologySlotId = piece.tags().getOrDefault(MKWorkspaceContentSelectionTags.TOPOLOGY_SLOT_ID, "");
+        String topologySlotId = MKWorkspaceContentSelectionTags.topologySlotId(piece.roleId(), piece.tags());
         return topologySlotId.isBlank() ? "column:" + baseName : "slot:" + topologySlotId;
     }
 

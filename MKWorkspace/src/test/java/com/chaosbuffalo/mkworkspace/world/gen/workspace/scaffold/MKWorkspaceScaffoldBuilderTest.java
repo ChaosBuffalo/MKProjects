@@ -143,8 +143,8 @@ class MKWorkspaceScaffoldBuilderTest {
     @Test
     void gridLayoutKeepsFamiliesForSameContentSlotContiguous() {
         MKWorkspaceGridLayout layout = new MKWorkspaceGridLayout();
-        MKPlannedPiece platform = slottedPiece("platform_family", "platform_contents");
-        MKPlannedPiece pillars = slottedPiece("pillars_family", "pillars");
+        MKPlannedPiece platform = legacyInsertPiece("platform_contents", "platform_contents");
+        MKPlannedPiece pillars = legacyInsertPiece("pillars", "pillars");
         MKPlannedPiece gazebo = slottedPiece("gazebo_family", "platform_contents");
 
         List<MKWorkspaceGridLayout.Placement> placements = layout.assignPlacements(BlockPos.ZERO,
@@ -335,6 +335,22 @@ class MKWorkspaceScaffoldBuilderTest {
                         MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "0",
                         MKWorkspaceContentSelectionTags.TOPOLOGY_SLOT_ID, slotId,
                         MKWorkspaceContentSelectionTags.FAMILY_ID, familyId
+                )
+        );
+    }
+
+    private static MKPlannedPiece legacyInsertPiece(String baseName, String legacyInsertSlotId) {
+        return new MKPlannedPiece(
+                "workspace.insert_family.insert_socket",
+                baseName + "_template",
+                5,
+                5,
+                5,
+                List.of(),
+                Map.of(
+                        MKWorkspaceGridLayout.TAG_BASE_NAME, baseName,
+                        MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "0",
+                        "workspace_insert_family_id", legacyInsertSlotId
                 )
         );
     }
