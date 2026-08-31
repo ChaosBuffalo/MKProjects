@@ -10,8 +10,11 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspace
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplatePurpose;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /** Projects slot/family/variant changes; the owning change operation performs any required physical relayout. */
 public final class MKWorkspaceContentSelectionMutationService {
@@ -109,6 +112,8 @@ public final class MKWorkspaceContentSelectionMutationService {
         MKWorkspacePieceDefinition selected = find(workspace, change);
         String sourceFamily = MKWorkspaceContentSelectionTags.familyId(selected);
         String slot = MKWorkspaceContentSelectionTags.topologySlotId(selected);
+        Map<UUID, Integer> projectedVariantIndexes = projectedVariantIndexes(
+                workspace, change, selected, sourceFamily, slot);
         ArrayList<MKWorkspacePieceDefinition> pieces = new ArrayList<>(workspace.pieces().size());
         for (MKWorkspacePieceDefinition piece : workspace.pieces()) {
             boolean selectedPiece = piece.pieceId().equals(change.pieceId());
@@ -171,6 +176,19 @@ public final class MKWorkspaceContentSelectionMutationService {
                             MKWorkspaceContentSelectionTags.variantEnabled(tags)));
                 }
             }
+            Integer projectedVariantIndex = projectedVariantIndexes.get(piece.pieceId());
+            if (projectedVariantIndex != null) {
+                variantIndex = projectedVariantIndex;
+                tags.put(MKWorkspaceGridLayout.TAG_VARIANT_INDEX, Integer.toString(projectedVariantIndex));
+                MKWorkspaceTemplatePurpose projectedPurpose = MKWorkspaceContentSelectionTags
+                        .purpose(tags, projectedVariantIndex);
+                if (projectedPurpose == MKWorkspaceTemplatePurpose.FAMILY_VARIANT) {
+                    String projectedFamily = MKWorkspaceContentSelectionTags.familyId(piece.pieceName(), tags);
+                    tags.put(MKWorkspaceContentSelectionTags.CATALOG_MEMBER_ID,
+                            projectedFamily + ":variant:" +
+                                    MKWorkspaceContentSelectionTags.variantId(piece.pieceName(), tags));
+                }
+            }
             pieces.add(tags.equals(piece.tags()) && variantIndex == piece.variantIndex() ? piece :
                     piece.withVariantIndexAndTags(variantIndex, tags));
         }
@@ -180,6 +198,47 @@ public final class MKWorkspaceContentSelectionMutationService {
             if (state != null) updated = updated.withLayerState(state.markDirty());
         }
         return updated;
+    }
+
+    private Map<UUID, Integer> projectedVariantIndexes(MKStructureWorkspace workspace,
+                                                       MKWorkspaceContentSelectionChangePayload change,
+                                                       MKWorkspacePieceDefinition selected,
+                                                       String sourceFamily, String slot) {
+        if (change.kind() != MKWorkspaceContentSelectionChangePayload.Kind.PROMOTE_VARIANT &&
+                change.kind() != MKWorkspaceContentSelectionChangePayload.Kind.MOVE_VARIANT) {
+            return Map.of();
+        }
+        LinkedHashMap<UUID, Integer> indexes = new LinkedHashMap<>();
+        List<MKWorkspacePieceDefinition> sourceVariants = familyVariants(workspace, slot, sourceFamily).stream()
+                .filter(piece -> !piece.pieceId().equals(selected.pieceId()))
+                .toList();
+        for (int i = 0; i < sourceVariants.size(); i++) {
+            indexes.put(sourceVariants.get(i).pieceId(), i + 1);
+        }
+        if (change.kind() == MKWorkspaceContentSelectionChangePayload.Kind.PROMOTE_VARIANT) {
+            indexes.put(selected.pieceId(), 0);
+        } else {
+            List<MKWorkspacePieceDefinition> targetVariants = familyVariants(
+                    workspace, slot, change.targetFamilyId());
+            for (int i = 0; i < targetVariants.size(); i++) {
+                indexes.put(targetVariants.get(i).pieceId(), i + 1);
+            }
+            indexes.put(selected.pieceId(), targetVariants.size() + 1);
+        }
+        return Map.copyOf(indexes);
+    }
+
+    private List<MKWorkspacePieceDefinition> familyVariants(MKStructureWorkspace workspace, String slot,
+                                                             String familyId) {
+        return workspace.pieces().stream()
+                .filter(piece -> slot.equals(MKWorkspaceContentSelectionTags.topologySlotId(piece)))
+                .filter(piece -> familyId.equals(MKWorkspaceContentSelectionTags.familyId(piece)))
+                .filter(piece -> MKWorkspaceContentSelectionTags.purpose(piece) ==
+                        MKWorkspaceTemplatePurpose.FAMILY_VARIANT)
+                .sorted(Comparator.comparingInt(MKWorkspacePieceDefinition::variantIndex)
+                        .thenComparing(MKWorkspacePieceDefinition::pieceName)
+                        .thenComparing(piece -> piece.pieceId().toString()))
+                .toList();
     }
 
     public static List<MKWorkspaceGeneratedLayer> invalidatedLayers(

@@ -24,7 +24,9 @@ class MKWorkspaceContentSelectionMutationServiceTest {
                 "platform_family", MKWorkspaceTemplatePurpose.FAMILY_CANONICAL, 0);
         MKWorkspacePieceDefinition gazebo = piece(draft, "fire_shrine_gazebo", "platform_contents",
                 "platform_family", MKWorkspaceTemplatePurpose.FAMILY_VARIANT, 1);
-        MKStructureWorkspace workspace = draft.withPieces(List.of(blank, gazebo));
+        MKWorkspacePieceDefinition fountain = piece(draft, "fire_shrine_lava_fountain", "platform_contents",
+                "platform_family", MKWorkspaceTemplatePurpose.FAMILY_VARIANT, 2);
+        MKStructureWorkspace workspace = draft.withPieces(List.of(blank, gazebo, fountain));
         var change = new MKWorkspaceContentSelectionChangePayload(
                 MKWorkspaceContentSelectionChangePayload.Kind.PROMOTE_VARIANT, gazebo.pieceId(),
                 "gazebo_family", 3, true, MKWorkspaceTemplatePurpose.FAMILY_VARIANT);
@@ -49,15 +51,58 @@ class MKWorkspaceContentSelectionMutationServiceTest {
                 promoted.tags().get(MKWorkspaceContentSelectionTags.CATALOG_MEMBER_ID));
         assertEquals(MKWorkspaceTemplatePurpose.FAMILY_CANONICAL,
                 MKWorkspaceContentSelectionTags.purpose(promoted));
+        MKWorkspacePieceDefinition compactedFountain = updated.pieces().stream()
+                .filter(piece -> piece.pieceId().equals(fountain.pieceId())).findFirst().orElseThrow();
+        assertEquals(1, compactedFountain.variantIndex());
+        assertEquals("1", compactedFountain.tags().get("workspace_variant_index"));
+        assertEquals("platform_family:variant:fire_shrine_lava_fountain",
+                compactedFountain.tags().get(MKWorkspaceContentSelectionTags.CATALOG_MEMBER_ID));
 
         MKWorkspacePieceRelayoutService.CatalogRelayoutSummary relayout =
                 new MKWorkspacePieceRelayoutService().summarizeWorkspaceCatalogRelayout(workspace, updated)
                         .orElseThrow();
-        assertEquals(2, relayout.preservedCount());
+        assertEquals(3, relayout.preservedCount());
         assertEquals(0, relayout.newCount());
         assertEquals(0, relayout.removedCount());
         assertTrue(relayout.impacts().stream().anyMatch(impact ->
                 "moved".equals(impact.outcome()) || "expanded".equals(impact.outcome())));
+        assertTrue(relayout.impacts().stream().anyMatch(impact ->
+                fountain.pieceName().equals(impact.pieceName()) &&
+                        ("moved".equals(impact.outcome()) || "expanded".equals(impact.outcome()))));
+    }
+
+    @Test
+    void movingVariantCompactsSourceFamilyAndAppendsToTargetFamily() {
+        MKStructureWorkspace draft = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        MKWorkspacePieceDefinition sourceCanonical = piece(draft, "platform", "platform_contents",
+                "platform_family", MKWorkspaceTemplatePurpose.FAMILY_CANONICAL, 0);
+        MKWorkspacePieceDefinition moved = piece(draft, "gazebo", "platform_contents",
+                "platform_family", MKWorkspaceTemplatePurpose.FAMILY_VARIANT, 1);
+        MKWorkspacePieceDefinition sourceRemainder = piece(draft, "fountain", "platform_contents",
+                "platform_family", MKWorkspaceTemplatePurpose.FAMILY_VARIANT, 2);
+        MKWorkspacePieceDefinition targetCanonical = piece(draft, "garden", "platform_contents",
+                "garden_family", MKWorkspaceTemplatePurpose.FAMILY_CANONICAL, 0);
+        MKWorkspacePieceDefinition targetVariant = piece(draft, "garden_occupied", "platform_contents",
+                "garden_family", MKWorkspaceTemplatePurpose.FAMILY_VARIANT, 1);
+        MKStructureWorkspace workspace = draft.withPieces(List.of(sourceCanonical, moved, sourceRemainder,
+                targetCanonical, targetVariant));
+        var change = new MKWorkspaceContentSelectionChangePayload(
+                MKWorkspaceContentSelectionChangePayload.Kind.MOVE_VARIANT, moved.pieceId(),
+                "garden_family", 1, true, MKWorkspaceTemplatePurpose.FAMILY_VARIANT);
+
+        MKStructureWorkspace updated;
+        try (var ignored = MKWorkspaceBackupManifestWriter.enterTransaction(null)) {
+            updated = service.apply(workspace, change);
+        }
+
+        MKWorkspacePieceDefinition compacted = updated.pieces().stream()
+                .filter(piece -> piece.pieceId().equals(sourceRemainder.pieceId())).findFirst().orElseThrow();
+        MKWorkspacePieceDefinition appended = updated.pieces().stream()
+                .filter(piece -> piece.pieceId().equals(moved.pieceId())).findFirst().orElseThrow();
+        assertEquals(1, compacted.variantIndex());
+        assertEquals(2, appended.variantIndex());
+        assertEquals("garden_family", MKWorkspaceContentSelectionTags.familyId(appended));
+        assertEquals("garden", appended.tags().get("workspace_base_name"));
     }
 
     @Test
