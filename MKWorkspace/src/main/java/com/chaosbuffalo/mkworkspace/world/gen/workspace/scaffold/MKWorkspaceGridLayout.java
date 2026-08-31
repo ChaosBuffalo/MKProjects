@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mkworkspace.world.gen.workspace.scaffold;
 
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedPiece;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceContentSelectionTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
@@ -27,6 +28,7 @@ public class MKWorkspaceGridLayout {
                                             int verticalShellMargin, int exteriorAirMargin, int previewMargin,
                                             int columns, int cellPadding) {
         Map<String, Integer> columnWidths = new LinkedHashMap<>();
+        Map<String, String> columnGroupKeys = new LinkedHashMap<>();
         int maxPreviewLength = 0;
         int maxPreviewHeight = 0;
         for (MKPlannedPiece piece : pieces) {
@@ -37,15 +39,23 @@ public class MKWorkspaceGridLayout {
             int previewHeight = exportHeight;
             String baseName = getBaseName(piece);
             columnWidths.merge(baseName, previewWidth, Math::max);
+            columnGroupKeys.putIfAbsent(baseName, getColumnGroupKey(piece, baseName));
             maxPreviewLength = Math.max(maxPreviewLength, previewLength);
             maxPreviewHeight = Math.max(maxPreviewHeight, previewHeight);
         }
 
         Map<String, Integer> columnOrigins = new LinkedHashMap<>();
         int nextColumnX = 0;
-        for (Map.Entry<String, Integer> entry : columnWidths.entrySet()) {
-            columnOrigins.put(entry.getKey(), nextColumnX);
-            nextColumnX += entry.getValue() + cellPadding;
+        Map<String, List<String>> columnsByGroup = new LinkedHashMap<>();
+        for (String baseName : columnWidths.keySet()) {
+            columnsByGroup.computeIfAbsent(columnGroupKeys.get(baseName), ignored -> new ArrayList<>())
+                    .add(baseName);
+        }
+        for (List<String> groupColumns : columnsByGroup.values()) {
+            for (String baseName : groupColumns) {
+                columnOrigins.put(baseName, nextColumnX);
+                nextColumnX += columnWidths.get(baseName) + cellPadding;
+            }
         }
         int strideZ = maxPreviewLength + cellPadding;
         BlockPos start = anchor.offset(WORKSPACE_START_MARGIN, 0, WORKSPACE_START_MARGIN);
@@ -80,6 +90,11 @@ public class MKWorkspaceGridLayout {
         } catch (NumberFormatException ignored) {
             return 0;
         }
+    }
+
+    private String getColumnGroupKey(MKPlannedPiece piece, String baseName) {
+        String topologySlotId = piece.tags().getOrDefault(MKWorkspaceContentSelectionTags.TOPOLOGY_SLOT_ID, "");
+        return topologySlotId.isBlank() ? "column:" + baseName : "slot:" + topologySlotId;
     }
 
     private int getExportWidth(MKPlannedPiece piece, int shellMargin, int exteriorAirMargin) {

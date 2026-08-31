@@ -4,6 +4,7 @@ import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKConnect
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceHorizontalExtrusionMode;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceContentSelectionTags;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
 import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
 import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedConnector;
@@ -137,6 +138,22 @@ class MKWorkspaceScaffoldBuilderTest {
         assertEquals(15, placements.get(2).previewBounds().getXSpan());
         assertEquals(2, placements.get(1).previewBounds().minX() - placements.get(0).previewBounds().maxX() - 1);
         assertEquals(2, placements.get(2).previewBounds().minX() - placements.get(1).previewBounds().maxX() - 1);
+    }
+
+    @Test
+    void gridLayoutKeepsFamiliesForSameContentSlotContiguous() {
+        MKWorkspaceGridLayout layout = new MKWorkspaceGridLayout();
+        MKPlannedPiece platform = slottedPiece("platform_family", "platform_contents");
+        MKPlannedPiece pillars = slottedPiece("pillars_family", "pillars");
+        MKPlannedPiece gazebo = slottedPiece("gazebo_family", "platform_contents");
+
+        List<MKWorkspaceGridLayout.Placement> placements = layout.assignPlacements(BlockPos.ZERO,
+                List.of(platform, pillars, gazebo), 1, 2, 2, 4, 2);
+
+        assertTrue(placements.get(0).previewBounds().minX() < placements.get(2).previewBounds().minX());
+        assertTrue(placements.get(2).previewBounds().minX() < placements.get(1).previewBounds().minX());
+        assertEquals(2,
+                placements.get(2).previewBounds().minX() - placements.get(0).previewBounds().maxX() - 1);
     }
 
     @Test
@@ -301,6 +318,23 @@ class MKWorkspaceScaffoldBuilderTest {
                 Map.of(
                         MKWorkspaceGridLayout.TAG_BASE_NAME, baseName,
                         MKWorkspaceGridLayout.TAG_VARIANT_INDEX, String.valueOf(variantIndex)
+                )
+        );
+    }
+
+    private static MKPlannedPiece slottedPiece(String familyId, String slotId) {
+        return new MKPlannedPiece(
+                "test.insert",
+                familyId + "_template",
+                5,
+                5,
+                5,
+                List.of(),
+                Map.of(
+                        MKWorkspaceGridLayout.TAG_BASE_NAME, familyId,
+                        MKWorkspaceGridLayout.TAG_VARIANT_INDEX, "0",
+                        MKWorkspaceContentSelectionTags.TOPOLOGY_SLOT_ID, slotId,
+                        MKWorkspaceContentSelectionTags.FAMILY_ID, familyId
                 )
         );
     }
