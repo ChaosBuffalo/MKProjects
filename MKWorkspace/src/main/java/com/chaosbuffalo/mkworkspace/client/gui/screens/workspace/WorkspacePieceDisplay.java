@@ -29,6 +29,13 @@ public final class WorkspacePieceDisplay {
                 .toList());
     }
 
+    public static Map<String, List<MKWorkspacePieceDefinition>> groupManageableTemplatePiecesByTopology(
+            MKStructureWorkspace workspace) {
+        return groupPiecesByTopology(workspace.pieces().stream()
+                .filter(WorkspacePieceDisplay::isManageableTemplatePiece)
+                .toList());
+    }
+
     private static Map<String, List<MKWorkspacePieceDefinition>> groupPiecesByTopology(
             List<MKWorkspacePieceDefinition> pieces) {
         Map<String, List<MKWorkspacePieceDefinition>> grouped = new LinkedHashMap<>();
@@ -46,6 +53,12 @@ public final class WorkspacePieceDisplay {
 
     public static boolean isAuthoredTemplatePiece(MKWorkspacePieceDefinition piece) {
         return MKWorkspaceContentSelectionTags.purpose(piece).placeable() &&
+                !MKWorkspaceTemplateReuseTags.isDerived(piece.tags());
+    }
+
+    public static boolean isManageableTemplatePiece(MKWorkspacePieceDefinition piece) {
+        MKWorkspaceTemplatePurpose purpose = MKWorkspaceContentSelectionTags.purpose(piece);
+        return (purpose.placeable() || purpose == MKWorkspaceTemplatePurpose.SLOT_SCAFFOLD) &&
                 !MKWorkspaceTemplateReuseTags.isDerived(piece.tags());
     }
 

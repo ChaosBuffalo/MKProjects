@@ -47,6 +47,8 @@ final class WorkspaceTemplateDetailPane {
                 .filter(piece -> MKWorkspaceContentSelectionTags.purpose(piece) ==
                         MKWorkspaceTemplatePurpose.FAMILY_CANONICAL)
                 .findFirst()
+                .or(() -> pieces.stream().filter(piece -> MKWorkspaceContentSelectionTags.purpose(piece) ==
+                        MKWorkspaceTemplatePurpose.SLOT_SCAFFOLD).findFirst())
                 .orElse(pieces.getFirst());
 
         editor.ensureOverridesInitialized();
@@ -156,8 +158,13 @@ final class WorkspaceTemplateDetailPane {
 
         String sourcePieceName = piece.pieceName();
         String sourceBaseName = WorkspacePieceDisplay.getBaseName(piece);
-        MKButton teleport = new MKButton(Component.literal(purpose.canonical() ?
-                "Teleport To Template" : "Teleport To Variant"), 180, screen.buttonHeight());
+        String teleportLabel = switch (purpose) {
+            case SLOT_SCAFFOLD -> "Teleport To Scaffold";
+            case FAMILY_CANONICAL -> "Teleport To Template";
+            case FAMILY_VARIANT -> "Teleport To Variant";
+            case DERIVED_DATA_ONLY -> "Teleport To Template";
+        };
+        MKButton teleport = new MKButton(Component.literal(teleportLabel), 180, screen.buttonHeight());
         content.addWidget(teleport);
         content.addConstraintToWidget(new CenterXConstraint(), teleport);
         teleport.setPressedCallback((button, mouseButton) -> {
@@ -168,15 +175,17 @@ final class WorkspaceTemplateDetailPane {
             return true;
         });
 
-        MKButton copyVariant = new MKButton(Component.literal(purpose.canonical() ?
-                "Create Variant From Canonical" : "Copy This Variant"), 180, screen.buttonHeight());
-        content.addWidget(copyVariant);
-        content.addConstraintToWidget(new CenterXConstraint(), copyVariant);
-        copyVariant.setPressedCallback((button, mouseButton) -> {
-            screen.draftSession().stageVariantAddition(sourceBaseName, sourcePieceName);
-            screen.flagNeedSetup();
-            return true;
-        });
+        if (purpose != MKWorkspaceTemplatePurpose.SLOT_SCAFFOLD) {
+            MKButton copyVariant = new MKButton(Component.literal(purpose.canonical() ?
+                    "Create Variant From Canonical" : "Copy This Variant"), 180, screen.buttonHeight());
+            content.addWidget(copyVariant);
+            content.addConstraintToWidget(new CenterXConstraint(), copyVariant);
+            copyVariant.setPressedCallback((button, mouseButton) -> {
+                screen.draftSession().stageVariantAddition(sourceBaseName, sourcePieceName);
+                screen.flagNeedSetup();
+                return true;
+            });
+        }
 
         if (purpose.variant()) {
             MKButton deleteVariant = new MKButton(Component.literal("Delete Variant"), 180, screen.buttonHeight());

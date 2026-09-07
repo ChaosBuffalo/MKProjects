@@ -682,6 +682,15 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     public List<MKWorkspacePieceDefinition> selectedTopologySlotPieces() {
+        String selectedSlotId = draftSession.selectedContentSlotId();
+        String selectedFamilyId = draftSession.selectedContentFamilyId();
+        if (selectedSlotId != null && selectedFamilyId != null && workspace != null) {
+            return draftSession.filterPendingDeletedVariants(workspace.pieces().stream()
+                    .filter(WorkspacePieceDisplay::isManageableTemplatePiece)
+                    .filter(piece -> selectedSlotId.equals(MKWorkspaceContentSelectionTags.topologySlotId(piece)))
+                    .filter(piece -> selectedFamilyId.equals(MKWorkspaceContentSelectionTags.familyId(piece)))
+                    .toList());
+        }
         if (selectedTopologyKey == null) {
             return List.of();
         }
@@ -1164,7 +1173,7 @@ public class MKWorkspaceScreen extends MKScreen {
     }
 
     private Map<String, List<MKWorkspacePieceDefinition>> groupPiecesByTopology() {
-        return WorkspacePieceDisplay.groupAuthoredPiecesByTopology(workspace);
+        return WorkspacePieceDisplay.groupManageableTemplatePiecesByTopology(workspace);
     }
 
     public boolean supportsStairGeneration(MKWorkspacePieceDefinition piece) {

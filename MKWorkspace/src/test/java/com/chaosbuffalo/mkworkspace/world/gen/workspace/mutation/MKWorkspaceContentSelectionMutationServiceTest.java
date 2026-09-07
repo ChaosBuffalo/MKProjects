@@ -127,6 +127,31 @@ class MKWorkspaceContentSelectionMutationServiceTest {
     }
 
     @Test
+    void scaffoldCanUpdateItsLegacyFamilyWeight() {
+        MKStructureWorkspace draft = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        MKWorkspacePieceDefinition taggedScaffold = piece(draft, "fire_shrine_pillars", "pillars",
+                "pillars", MKWorkspaceTemplatePurpose.SLOT_SCAFFOLD, 0);
+        Map<String, String> scaffoldTags = new java.util.LinkedHashMap<>(
+                MKWorkspaceContentSelectionTags.clearFamily(taggedScaffold.tags()));
+        scaffoldTags.put("workspace_insert_family_id", "pillars");
+        MKWorkspacePieceDefinition scaffold = taggedScaffold.withTags(scaffoldTags);
+        MKWorkspacePieceDefinition variant = piece(draft, "fire_shrine_pillar", "pillars", "pillars",
+                MKWorkspaceTemplatePurpose.FAMILY_VARIANT, 1);
+        MKStructureWorkspace workspace = draft.withPieces(List.of(scaffold, variant));
+        var change = new MKWorkspaceContentSelectionChangePayload(
+                MKWorkspaceContentSelectionChangePayload.Kind.SET_FAMILY_WEIGHT, scaffold.pieceId(), "", 4,
+                true, MKWorkspaceTemplatePurpose.SLOT_SCAFFOLD);
+
+        MKStructureWorkspace updated;
+        try (var ignored = MKWorkspaceBackupManifestWriter.enterTransaction(null)) {
+            updated = service.apply(workspace, change);
+        }
+
+        assertTrue(updated.pieces().stream().allMatch(piece ->
+                MKWorkspaceContentSelectionTags.familyWeight(piece.tags()) == 4));
+    }
+
+    @Test
     void moveRequiresCanonicalInSameTopologySlot() {
         MKStructureWorkspace draft = MKStructureWorkspace.createDraft(BlockPos.ZERO);
         MKWorkspacePieceDefinition variant = piece(draft, "gazebo_occupied", "platform_contents", "gazebo_family",

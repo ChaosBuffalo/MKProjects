@@ -37,9 +37,15 @@ class WorkspaceContentTreeTest {
         WorkspaceContentTree.SlotNode platform = tree.slots().stream()
                 .filter(slot -> slot.slotId().equals("platform_contents")).findFirst().orElseThrow();
         assertEquals(1, platform.scaffolds().size());
-        assertEquals(2, platform.families().size());
+        assertEquals(3, platform.families().size());
         assertTrue(tree.slots().stream().anyMatch(slot ->
                 slot.slotId().equals("unused_slot") && slot.families().isEmpty()));
+
+        WorkspaceContentTree.FamilyNode scaffoldFamily = tree.family("platform_contents", "legacy_platform");
+        assertNotNull(scaffoldFamily);
+        assertEquals(List.of("platform_scaffold"), scaffoldFamily.scaffolds().stream()
+                .map(MKWorkspacePieceDefinition::pieceName).toList());
+        assertEquals("empty scaffold", scaffoldFamily.status());
 
         WorkspaceContentTree.FamilyNode gazebo = tree.family("platform_contents", "gazebo_family");
         assertNotNull(gazebo);
@@ -64,6 +70,24 @@ class WorkspaceContentTreeTest {
     }
 
     @Test
+    void groupsScaffoldAndVariantIntoTheSameManageableFamily() {
+        MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO);
+        MKWorkspacePieceDefinition scaffold = piece(workspace, "pillars_scaffold", "pillars", "pillars",
+                MKWorkspaceTemplatePurpose.SLOT_SCAFFOLD, 0, true);
+        MKWorkspacePieceDefinition variant = piece(workspace, "fire_shrine_pillar", "pillars", "pillars",
+                MKWorkspaceTemplatePurpose.FAMILY_VARIANT, 1, true);
+
+        WorkspaceContentTree.FamilyNode family = WorkspaceContentTree.build(List.of(scaffold, variant), Map.of())
+                .family("pillars", "pillars");
+
+        assertNotNull(family);
+        assertEquals(List.of(scaffold, variant), family.pieces());
+        assertEquals(List.of(scaffold), family.scaffolds());
+        assertEquals(List.of(variant), family.variants());
+        assertEquals("1 variant", family.status());
+    }
+
+    @Test
     void legacyInsertPiecesAppearOnlyUnderTheirUserDeclaredSlot() {
         MKStructureWorkspace workspace = MKStructureWorkspace.createDraft(BlockPos.ZERO);
         Map<String, String> tags = new java.util.LinkedHashMap<>();
@@ -85,7 +109,8 @@ class WorkspaceContentTreeTest {
         assertEquals(List.of("fire_shrine_platform_contents"), tree.slots().stream()
                 .map(WorkspaceContentTree.SlotNode::slotId).toList());
         assertEquals(1, tree.slots().getFirst().scaffolds().size());
-        assertTrue(tree.slots().getFirst().families().isEmpty());
+        assertEquals(List.of("fire_shrine_platform_contents"), tree.slots().getFirst().families().stream()
+                .map(WorkspaceContentTree.FamilyNode::familyId).toList());
     }
 
     @Test

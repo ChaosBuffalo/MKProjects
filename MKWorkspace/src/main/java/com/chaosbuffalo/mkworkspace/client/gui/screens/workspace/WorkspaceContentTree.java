@@ -45,6 +45,10 @@ public record WorkspaceContentTree(List<SlotNode> slots) {
             MKWorkspaceTemplatePurpose purpose = MKWorkspaceContentSelectionTags.purpose(piece);
             if (purpose == MKWorkspaceTemplatePurpose.SLOT_SCAFFOLD) {
                 slot.scaffolds.add(piece);
+                String familyId = MKWorkspaceContentSelectionTags.familyId(piece);
+                if (!familyId.isBlank()) {
+                    slot.families.computeIfAbsent(familyId, FamilyBuilder::new).scaffolds.add(piece);
+                }
             } else if (purpose.placeable()) {
                 String familyId = MKWorkspaceContentSelectionTags.familyId(piece);
                 if (!familyId.isBlank()) {
@@ -84,9 +88,10 @@ public record WorkspaceContentTree(List<SlotNode> slots) {
 
     public record FamilyNode(String slotId, String familyId, int weight, boolean enabled,
                              boolean canonicalFallback, MKWorkspacePieceDefinition canonical,
-                             List<MKWorkspacePieceDefinition> variants, List<MKWorkspacePieceDefinition> pieces,
-                             String groupKey) {
+                             List<MKWorkspacePieceDefinition> scaffolds, List<MKWorkspacePieceDefinition> variants,
+                             List<MKWorkspacePieceDefinition> pieces, String groupKey) {
         public FamilyNode {
+            scaffolds = List.copyOf(scaffolds);
             variants = List.copyOf(variants);
             pieces = List.copyOf(pieces);
         }
@@ -95,7 +100,8 @@ public record WorkspaceContentTree(List<SlotNode> slots) {
             if (!enabled) return "disabled";
             if (canonicalFallback) return "canonical fallback";
             if (!variants.isEmpty()) return variants.size() + (variants.size() == 1 ? " variant" : " variants");
-            return canonical == null ? "missing canonical" : "canonical fallback";
+            if (canonical != null) return "canonical fallback";
+            return scaffolds.isEmpty() ? "missing canonical" : "empty scaffold";
         }
     }
 
@@ -122,6 +128,7 @@ public record WorkspaceContentTree(List<SlotNode> slots) {
 
     private static final class FamilyBuilder {
         private final String id;
+        private final List<MKWorkspacePieceDefinition> scaffolds = new ArrayList<>();
         private final List<MKWorkspacePieceDefinition> pieces = new ArrayList<>();
 
         private FamilyBuilder(String id) {
@@ -138,13 +145,18 @@ public record WorkspaceContentTree(List<SlotNode> slots) {
                     MKWorkspaceContentSelectionTags.purpose(piece).canonical()).findFirst().orElse(null);
             List<MKWorkspacePieceDefinition> variants = sorted.stream().filter(piece ->
                     MKWorkspaceContentSelectionTags.purpose(piece).variant()).toList();
-            MKWorkspacePieceDefinition metadata = canonical == null ? sorted.getFirst() : canonical;
+            List<MKWorkspacePieceDefinition> sortedScaffolds = scaffolds.stream()
+                    .sorted(Comparator.comparing(MKWorkspacePieceDefinition::pieceName)).toList();
+            ArrayList<MKWorkspacePieceDefinition> allPieces = new ArrayList<>(sortedScaffolds);
+            allPieces.addAll(sorted);
+            MKWorkspacePieceDefinition metadata = canonical != null ? canonical :
+                    !sorted.isEmpty() ? sorted.getFirst() : sortedScaffolds.getFirst();
             MKWorkspaceContentCandidateResolver.ResolvedFamily resolved = resolution.family(id);
             boolean fallback = resolved != null && resolved.topologySlotId().equals(slotId) &&
                     resolved.canonicalFallback();
             return new FamilyNode(slotId, id, MKWorkspaceContentSelectionTags.familyWeight(metadata.tags()),
-                    MKWorkspaceContentSelectionTags.familyEnabled(metadata.tags()), fallback, canonical, variants,
-                    sorted, WorkspacePieceDisplay.buildWorkspaceGroupKey(metadata));
+                    MKWorkspaceContentSelectionTags.familyEnabled(metadata.tags()), fallback, canonical,
+                    sortedScaffolds, variants, allPieces, WorkspacePieceDisplay.buildWorkspaceGroupKey(metadata));
         }
     }
 }
