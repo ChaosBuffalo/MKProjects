@@ -1,2 +1,4 @@
-// 1.21.1	2024-09-02T19:06:19.928413	Tags for minecraft:worldgen/structure mod id mknpc
+// 1.21.1	2026-06-01T11:53:38.0634331	Tags for minecraft:worldgen/structure mod id mknpc
+d35dcc8e29917e24b1e88ae95328e6cc0fc74204 data/mknpc/tags/worldgen/structure/test_keep.json
 341e1b9794f0591baa32507fc0a8546ffbdc269a data/mknpc/tags/worldgen/structure/test_structures.json
+c62e72006871d6f1f8683d85228c8b24ba25b8fa data/mknpc/tags/worldgen/structure/test_tower.json

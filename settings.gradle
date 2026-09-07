@@ -34,5 +34,8 @@ include 'MKChat'
 include 'MKFaction'
 include 'MKWeapons'
 include 'MKNpc'
+include 'MKWorkspaceRuntime'
+include 'MKWorkspace'
+include 'MKWorkspaceExtensions'
 include 'MKUltra'
 

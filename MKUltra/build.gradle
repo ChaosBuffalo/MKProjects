@@ -20,6 +20,14 @@ project.ext.dependentProjects = [
 
 apply from: '../common.gradle'
 
+dependencies {
+    compileOnly project(":MKWorkspaceRuntime")
+    compileOnly project(":MKWorkspace")
+    compileOnly project(":MKWorkspaceExtensions")
+    localRuntime project(":MKWorkspace")
+    localRuntime project(":MKWorkspaceExtensions")
+}
+
 neoForge {
     runs {
         data {

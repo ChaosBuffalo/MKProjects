@@ -42,6 +42,7 @@ public class MKNpc {
     public static final Logger LOGGER = LogManager.getLogger();
     public static final boolean DEV_LOGGING = Boolean.parseBoolean(System.getProperty("mknpc.enable_debug_log", "false"));
     public static final String MODID = "mknpc";
+    public static final String MODULE_DIRECTORY_NAME = "MKNpc";
     public static final String REGISTER_NPC_OPTIONS_EXTENSION = "register_npc_extension";
 
     public MKNpc(IEventBus modBus) {
@@ -106,7 +107,9 @@ public class MKNpc {
     }
 
     private void clientSetup(final FMLClientSetupEvent event) {
-        event.enqueueWork(QuestPage::registerPlayerPage);
+        event.enqueueWork(() -> {
+            QuestPage.registerPlayerPage();
+        });
     }
 
     public static double getDifficultyScale(LivingEntity entity) {

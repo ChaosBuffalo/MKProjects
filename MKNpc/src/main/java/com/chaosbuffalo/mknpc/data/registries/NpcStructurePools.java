@@ -1,6 +1,7 @@
 package com.chaosbuffalo.mknpc.data.registries;
 
 import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifestLoader;
 import com.chaosbuffalo.mknpc.world.gen.feature.structure.MKSinglePoolElement;
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
@@ -14,10 +15,17 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
+import java.util.function.Function;
+
 public class NpcStructurePools {
+    private static final java.nio.file.Path MODULE_ROOT =
+            MKWorkspaceExportManifestLoader.resolveModuleRoot(MKNpc.MODULE_DIRECTORY_NAME);
     public static final ResourceKey<StructureTemplatePool> DIGGER_CAMP_POOL = createKey("digger/diggercamp");
     public static final ResourceKey<StructureTemplatePool> DIGGER_BASE_POOL = createKey("digger/diggerbase");
     public static final ResourceKey<StructureTemplatePool> DIGGER_ROAD_POOL = createKey("digger/diggerroad");
+
+    public static final ResourceKey<StructureTemplatePool> TEST_TOWER_START_POOL = createKey("test_tower/start");
+    public static final ResourceKey<StructureTemplatePool> TEST_KEEP_START_POOL = createKey("test_keep/start");
 
     private static final ResourceLocation DIGGER_TENT_DBL_1 = MKNpc.id("digger/diggertentdbl1");
     private static final ResourceLocation DIGGER_TENT_SGL_1 = MKNpc.id("digger/diggertentsgl1");
@@ -54,5 +62,7 @@ public class NpcStructurePools {
                         Pair.of(MKSinglePoolElement.forTemplate(DIGGER_ROAD_1, false), 1)
                 ),
                 StructureTemplatePool.Projection.TERRAIN_MATCHING));
+
+        ExportedWorkspacePoolBootstrap.bootstrapExportedPoolsForNamespace(pContext, empty, MODULE_ROOT, MKNpc.MODID);
     }
 }

@@ -14,10 +14,27 @@ project.ext.dependentProjects = [
         project(":MKCore"),
         project(":MKChat"),
         project(":MKFaction"),
-        project(":MKWeapons")
+        project(":MKWeapons"),
+        project(":MKWorkspaceRuntime")
 ]
 
 apply from: '../common.gradle'
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+sourceSets {
+    test {
+        compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+        runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+    }
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}
 
 neoForge {
     validateAccessTransformers = true

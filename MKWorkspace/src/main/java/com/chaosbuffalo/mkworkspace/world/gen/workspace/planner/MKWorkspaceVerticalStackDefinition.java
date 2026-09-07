@@ -1,0 +1,78 @@
+package com.chaosbuffalo.mkworkspace.world.gen.workspace.planner;
+
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKVerticalAccessPlacement;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceVerticalStackSettings;
+
+public record MKWorkspaceVerticalStackDefinition(
+        String stackId,
+        int minMainFloors,
+        int mainFloors,
+        int minBasementFloors,
+        int basementFloors,
+        int shaftSize,
+        MKVerticalAccessPlacement verticalAccessPlacement,
+        MKWorkspaceStairAuthoringConfig stairConfig,
+        boolean topCapApproachEnabled,
+        boolean basementEntryEnabled,
+        boolean basementCapApproachEnabled,
+        boolean startPiece,
+        String connectUpPool,
+        String connectDownEntryPool,
+        String connectDownPool,
+        String topCapPool,
+        String bottomCapPool,
+        boolean useFamilyTopologyRole
+) {
+    public MKWorkspaceVerticalStackDefinition {
+        stackId = stackId == null ? "" : stackId;
+    }
+
+    public static MKWorkspaceVerticalStackDefinition towerPrimary(MKWorkspaceVerticalStackSettings stackSettings) {
+        return new MKWorkspaceVerticalStackDefinition(
+                stackSettings.stackId(),
+                stackSettings.minMainFloors(),
+                stackSettings.mainFloors(),
+                stackSettings.minBasementFloors(),
+                stackSettings.basementFloors(),
+                stackSettings.shaftSize(),
+                stackSettings.verticalAccessPlacement(),
+                stackSettings.stairConfig(),
+                stackSettings.topCapApproachEnabled(),
+                stackSettings.basementEntryEnabled(),
+                stackSettings.basementCapApproachEnabled(),
+                true,
+                "connect_up",
+                "connect_down_entry",
+                "connect_down",
+                "top_cap",
+                "bottom_cap",
+                false
+        );
+    }
+
+    public static MKWorkspaceVerticalStackDefinition scoped(String stackId, boolean startPiece,
+                                                MKWorkspaceVerticalStackSettings stackSettings) {
+        String prefix = "vertical_stacks/" + stackId.replace('.', '/');
+        return new MKWorkspaceVerticalStackDefinition(
+                stackId,
+                stackSettings.minMainFloors(),
+                stackSettings.mainFloors(),
+                stackSettings.minBasementFloors(),
+                stackSettings.basementFloors(),
+                stackSettings.shaftSize(),
+                stackSettings.verticalAccessPlacement(),
+                stackSettings.stairConfig(),
+                stackSettings.topCapApproachEnabled(),
+                stackSettings.basementEntryEnabled(),
+                stackSettings.basementCapApproachEnabled(),
+                startPiece,
+                prefix + "/connect_up",
+                prefix + "/connect_down_entry",
+                prefix + "/connect_down",
+                prefix + "/top_cap",
+                prefix + "/bottom_cap",
+                true
+        );
+    }
+}

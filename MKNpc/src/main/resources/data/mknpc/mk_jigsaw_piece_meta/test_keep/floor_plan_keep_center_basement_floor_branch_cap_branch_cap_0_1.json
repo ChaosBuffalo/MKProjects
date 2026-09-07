@@ -1,0 +1,1 @@
+{"branch_cap":true,"floor_closable_openings":[{"z":22,"opening_width":3,"opening_height":3,"closure_depth":3,"facing":"south","x":11,"y":1}],"topology_group":"keep.center.basement_floor","allow_on_main_path":false,"allow_on_branch_path":true,"terminal":true,"role":"branch"}

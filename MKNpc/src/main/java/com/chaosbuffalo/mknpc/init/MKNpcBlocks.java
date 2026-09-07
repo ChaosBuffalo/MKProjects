@@ -34,7 +34,6 @@ public class MKNpcBlocks {
                     .isViewBlocking((BlockState state, BlockGetter reader, BlockPos pos) -> false)));
     public static final DeferredItem<BlockItem> MK_POI_ITEM = ITEMS.register("mk_poi",
             () -> new BlockItem(MK_POI_BLOCK.get(), new Item.Properties()));
-
     public static void register(IEventBus modBus) {
         BLOCKS.register(modBus);
         ITEMS.register(modBus);

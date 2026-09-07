@@ -1,0 +1,514 @@
+package com.chaosbuffalo.mkworkspace.world.gen.workspace;
+
+import com.chaosbuffalo.mkworkspace.MKWorkspace;
+
+import com.chaosbuffalo.mknpc.MKNpc;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifestLoader;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKConnectorRole;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.capability.IMKStructureWorkspaceData;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.export.MKWorkspaceBackupManifestWriter;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceRoomFamilyDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.structure.runtime.layout.MKFamilyHorizontalExitDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKVerticalAccessPlacement;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKHorizontalOpeningProfile;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceConnectorDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceDimensions;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceMaterialPalette;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceLinearRunFamilyDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceInsertFamilyDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspacePieceDefinition;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairAuthoringConfig;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairMode;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceStairRiseType;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTemplateReuseTags;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologySlotMetadata;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceTopologyProfile;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKWorkspaceVerticalAccessSpec;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedConnector;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKPlannedPiece;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.planner.MKWorkspacePlannerRegistry;
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.scaffold.MKWorkspaceScaffoldBuilder;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+public class MKStructureWorkspaceImportService {
+    public record MKWorkspaceImportResult(UUID workspaceId, int pieceCount) {
+    }
+
+    public record MKWorkspaceImportOutcome(@Nullable MKWorkspaceImportResult result, List<String> validationErrors) {
+        public static MKWorkspaceImportOutcome success(MKWorkspaceImportResult result) {
+            return new MKWorkspaceImportOutcome(result, List.of());
+        }
+
+        public static MKWorkspaceImportOutcome failed() {
+            return new MKWorkspaceImportOutcome(null, List.of());
+        }
+
+        public static MKWorkspaceImportOutcome validationFailed(List<String> validationErrors) {
+            return new MKWorkspaceImportOutcome(null, List.copyOf(validationErrors));
+        }
+
+        public Optional<MKWorkspaceImportResult> resultOpt() {
+            return Optional.ofNullable(result);
+        }
+    }
+
+    private static final String MKULTRA_MODULE_DIRECTORY_NAME = "MKUltra";
+    private static final String MKULTRA_MODID = "mkultra";
+    private final List<MKWorkspaceImportManifestDiscovery> discoveries = createDiscoveries();
+    private final MKWorkspaceScaffoldBuilder scaffoldBuilder = new MKWorkspaceScaffoldBuilder();
+    private final MKWorkspacePlannerRegistry plannerRegistry = MKWorkspacePlannerRegistry.shared();
+
+    public Optional<MKWorkspaceImportResult> importWorkspaceAtAnchor(ServerLevel level, BlockPos anchor,
+                                                                     ResourceLocation manifestId) {
+        return importWorkspaceAtAnchorDetailed(level, anchor, manifestId).resultOpt();
+    }
+
+    public MKWorkspaceImportOutcome importWorkspaceAtAnchorDetailed(ServerLevel level, BlockPos anchor,
+                                                                    ResourceLocation manifestId) {
+        MKWorkspaceBackupManifestWriter.requireTransaction("import-workspace-manifest");
+        IMKStructureWorkspaceData data = IMKStructureWorkspaceData.get(level);
+        if (data.getWorkspaceByAnchor(anchor).isPresent()) {
+            return MKWorkspaceImportOutcome.failed();
+        }
+
+        Optional<MKWorkspaceExportManifest> manifestOpt = loadManifest(manifestId);
+        if (manifestOpt.isEmpty()) {
+            return MKWorkspaceImportOutcome.failed();
+        }
+
+        MKStructureWorkspace workspace = workspaceFromManifest(anchor, manifestOpt.get());
+        List<String> validationErrors = plannerRegistry.validate(workspace);
+        if (!validationErrors.isEmpty()) {
+            return MKWorkspaceImportOutcome.validationFailed(validationErrors);
+        }
+
+        List<MKPlannedPiece> plannedPieces = toPlannedPieces(manifestOpt.get());
+        Map<String, MKWorkspaceExportManifest.ExportPiece> exportedByName = manifestOpt.get().pieces().stream()
+                .collect(Collectors.toMap(MKWorkspaceExportManifest.ExportPiece::pieceName, piece -> piece));
+        Optional<Map<String, StructureTemplate>> templatesByPieceNameOpt =
+                preflightImport(level, manifestId, plannedPieces, exportedByName);
+        if (templatesByPieceNameOpt.isEmpty()) {
+            return MKWorkspaceImportOutcome.failed();
+        }
+        Map<String, StructureTemplate> templatesByPieceName = templatesByPieceNameOpt.get();
+
+        List<MKWorkspacePieceDefinition> scaffoldedPieces = scaffoldBuilder.build(level, workspace, plannedPieces);
+
+        List<MKWorkspacePieceDefinition> importedPieces = new ArrayList<>();
+        for (MKWorkspacePieceDefinition piece : scaffoldedPieces) {
+            MKWorkspaceExportManifest.ExportPiece exported = exportedByName.get(piece.pieceName());
+            if (exported == null) {
+                continue;
+            }
+            if (MKWorkspaceTemplateReuseTags.isDerived(exported.tags())) {
+                importedPieces.add(mergeImportedPiece(piece, exported, workspace));
+                continue;
+            }
+            StructureTemplate template = templatesByPieceName.get(piece.pieceName());
+            if (template == null || !placeSavedStructure(level, template, piece.worldOrigin())) {
+                return MKWorkspaceImportOutcome.failed();
+            }
+            importedPieces.add(mergeImportedPiece(piece, exported, workspace));
+        }
+
+        MKStructureWorkspace importedWorkspace = workspace.withPieces(importedPieces);
+        data.createWorkspace(importedWorkspace);
+        return MKWorkspaceImportOutcome.success(new MKWorkspaceImportResult(importedWorkspace.id(),
+                importedPieces.size()));
+    }
+
+    public List<String> discoverManifestIds() {
+        return discoveries.stream()
+                .flatMap(discovery -> discovery.discoverCandidates().stream())
+                .map(candidate -> candidate.id().toString())
+                .sorted(String::compareToIgnoreCase)
+                .toList();
+    }
+
+    public Optional<MKWorkspaceExportManifest> loadManifest(ResourceLocation manifestId) {
+        return discoveries.stream()
+                .filter(discovery -> discovery.namespace().equals(manifestId.getNamespace()))
+                .map(discovery -> discovery.loadManifest(manifestId))
+                .flatMap(Optional::stream)
+                .findFirst();
+    }
+
+    private static List<MKWorkspaceImportManifestDiscovery> createDiscoveries() {
+        ArrayList<MKWorkspaceImportManifestDiscovery> result = new ArrayList<>();
+        result.add(new MKWorkspaceImportManifestDiscovery(
+                MKWorkspaceExportManifestLoader.resolveModuleRoot(MKNpc.MODULE_DIRECTORY_NAME), MKNpc.MODID));
+        addOptionalDiscovery(result, MKULTRA_MODULE_DIRECTORY_NAME, MKULTRA_MODID);
+        return List.copyOf(result);
+    }
+
+    private static void addOptionalDiscovery(List<MKWorkspaceImportManifestDiscovery> discoveries,
+                                             String moduleDirectoryName, String namespace) {
+        try {
+            discoveries.add(new MKWorkspaceImportManifestDiscovery(
+                    MKWorkspaceExportManifestLoader.resolveModuleRoot(moduleDirectoryName), namespace));
+        } catch (IllegalStateException ignored) {
+        }
+    }
+
+    private Optional<Map<String, StructureTemplate>> preflightImport(ServerLevel level, ResourceLocation manifestId,
+                                                                     List<MKPlannedPiece> plannedPieces,
+                                                                     Map<String, MKWorkspaceExportManifest.ExportPiece> exportedByName) {
+        Map<String, StructureTemplate> templatesByPieceName = new HashMap<>();
+        for (MKPlannedPiece plannedPiece : plannedPieces) {
+            MKWorkspaceExportManifest.ExportPiece exported = exportedByName.get(plannedPiece.pieceName());
+            if (exported == null) {
+                MKWorkspace.LOGGER.warn("Workspace manifest {} is missing exported piece data for planned piece {}",
+                        manifestId, plannedPiece.pieceName());
+                return Optional.empty();
+            }
+            if (MKWorkspaceTemplateReuseTags.isDerived(exported.tags())) {
+                continue;
+            }
+            ResourceLocation structureId = ResourceLocation.parse(exported.structureId());
+            Optional<StructureTemplate> templateOpt = level.getStructureManager().get(structureId);
+            if (templateOpt.isEmpty()) {
+                MKWorkspace.LOGGER.warn("Workspace manifest {} references missing structure template {} for piece {}",
+                        manifestId, structureId, plannedPiece.pieceName());
+                return Optional.empty();
+            }
+            templatesByPieceName.put(plannedPiece.pieceName(), templateOpt.get());
+        }
+        return Optional.of(templatesByPieceName);
+    }
+
+    public MKStructureWorkspace workspaceFromManifest(BlockPos anchor, MKWorkspaceExportManifest manifest) {
+        return workspaceFromManifest(UUID.randomUUID(), anchor, System.currentTimeMillis(), manifest);
+    }
+
+    public MKStructureWorkspace workspaceFromManifest(UUID workspaceId, BlockPos anchor, long createdAt,
+                                                      MKWorkspaceExportManifest manifest) {
+        MKWorkspaceExportManifest.ExportWorkspaceSettings settings = manifest.settings();
+        MKWorkspaceExportManifest.ExportDimensions dimensions = settings.dimensions();
+        MKWorkspaceExportManifest.ExportPalette palette = settings.palette();
+        MKWorkspaceExportManifest.ExportStairConfig stairConfig = settings.stairConfig();
+        MKWorkspaceDimensions workspaceDimensions = new MKWorkspaceDimensions(
+                dimensions.roomWidth(),
+                dimensions.roomLength(),
+                dimensions.entranceHeight(),
+                dimensions.roomHeight(),
+                dimensions.basementHeight(),
+                dimensions.shaftWidth(),
+                dimensions.doorwayWidth(),
+                dimensions.doorwayHeight()
+        );
+        MKWorkspaceStairAuthoringConfig workspaceStairConfig = new MKWorkspaceStairAuthoringConfig(
+                stairConfig.mode(),
+                stairConfig.riseType(),
+                stairConfig.stairWidth()
+        );
+        MKWorkspaceExportManifest.ExportVerticalAccessSpec verticalAccessSpecExport = settings.verticalAccessSpec();
+        MKWorkspaceVerticalAccessSpec verticalAccessSpec = new MKWorkspaceVerticalAccessSpec(
+                verticalAccessSpecExport.shaftSize(),
+                verticalAccessSpecExport.placement(),
+                new MKWorkspaceStairAuthoringConfig(
+                        verticalAccessSpecExport.stairConfig().mode(),
+                        verticalAccessSpecExport.stairConfig().riseType(),
+                        verticalAccessSpecExport.stairConfig().stairWidth()
+                )
+        );
+        List<MKWorkspaceRoomFamilyDefinition> familyDefinitions = settings.familyDefinitions().stream()
+                .map(family -> {
+                    List<MKFamilyHorizontalExitDefinition> horizontalExits = family.horizontalExits().stream()
+                            .map(exit -> new MKFamilyHorizontalExitDefinition(
+                                    Direction.byName(exit.direction()),
+                                    exit.pathKind(),
+                                    exit.openingProfileId(),
+                                    exit.connectionMode(),
+                                    exit.sideOffset(),
+                                    exit.verticalOffset()
+                            ))
+                            .toList();
+                    return MKWorkspaceRoomFamilyDefinition.forTopologySlot(
+                            family.baseName(),
+                            MKWorkspaceTopologySlotMetadata.fromVerticalStackTopologySlotId(
+                                            family.slotMetadata().topologySlotId())
+                                    .orElse(family.slotMetadata()),
+                            family.verticalAccessGroupId(),
+                            family.supportsVerticalAccess(),
+                            family.roomWidth(),
+                            family.roomLength(),
+                            family.roomHeight(),
+                            family.horizontalExtrusionMode(),
+                            horizontalExits,
+                            family.topVoidMargin(),
+                            family.bottomVoidMargin(),
+                            family.foundationPolicy(),
+                            family.paletteOverride());
+                })
+                .toList();
+        List<MKHorizontalOpeningProfile> openingProfiles = settings.openingProfiles().stream()
+                .map(profile -> new MKHorizontalOpeningProfile(
+                        profile.profileId(),
+                        profile.openingWidth(),
+                        profile.openingHeight(),
+                        profile.allowOnMainPath(),
+                        profile.allowOnBranchPath()
+                ))
+                .toList();
+        if (openingProfiles.isEmpty()) {
+            openingProfiles = MKHorizontalOpeningProfile.createDefaults(workspaceDimensions);
+        }
+        List<MKWorkspaceLinearRunFamilyDefinition> linearRunFamilies = settings.linearRunFamilies().stream()
+                .map(linearRun -> new MKWorkspaceLinearRunFamilyDefinition(
+                        linearRun.linearRunId(),
+                        linearRun.topologySlotId(),
+                        linearRun.kind(),
+                        linearRun.openingProfileId(),
+                        linearRun.length(),
+                        linearRun.interiorWidth(),
+                        linearRun.interiorHeight(),
+                        linearRun.slopeDelta(),
+                        linearRun.allowOnMainPath(),
+                        linearRun.allowOnBranchPath(),
+                        linearRun.projection(),
+                        linearRun.supportedShapes(),
+                        linearRun.foundationPolicy(),
+                        linearRun.paletteOverride()
+                ))
+                .toList();
+        List<MKWorkspaceInsertFamilyDefinition> insertFamilies = settings.insertFamilies().stream()
+                .map(insertFamily -> new MKWorkspaceInsertFamilyDefinition(
+                        insertFamily.familyId(),
+                        insertFamily.kind(),
+                        insertFamily.width(),
+                        insertFamily.height(),
+                        insertFamily.depth(),
+                        insertFamily.attachmentFace(),
+                        insertFamily.faceUOffset(),
+                        insertFamily.faceVOffset(),
+                        insertFamily.templateJigsawFinalState()
+                ))
+                .toList();
+        long now = System.currentTimeMillis();
+        return new MKStructureWorkspace(
+                workspaceId,
+                anchor,
+                manifest.namespace(),
+                manifest.structureName(),
+                settings.topologyProfile(),
+                workspaceDimensions,
+                new MKWorkspaceMaterialPalette(
+                        palette.floorBlock(),
+                        palette.wallBlock(),
+                        palette.ceilingBlock(),
+                        palette.stairBlock(),
+                        palette.slabBlock(),
+                        palette.ladderBlock()
+                ),
+                workspaceStairConfig,
+                settings.verticalAccessPlacement(),
+                settings.shellMargin(),
+                settings.verticalShellMargin(),
+                settings.exteriorAirMargin(),
+                settings.previewMargin(),
+                verticalAccessSpec,
+                familyDefinitions,
+                openingProfiles,
+                linearRunFamilies,
+                insertFamilies,
+                createdAt,
+                now,
+                List.of(),
+                List.of()
+        );
+    }
+
+    public List<MKWorkspacePieceDefinition> pieceDefinitionsFromManifest(MKStructureWorkspace workspace,
+                                                                         MKWorkspaceExportManifest manifest) {
+        return manifest.pieces().stream()
+                .map(piece -> pieceDefinitionFromManifest(workspace, piece))
+                .toList();
+    }
+
+    private List<MKPlannedPiece> toPlannedPieces(MKWorkspaceExportManifest manifest) {
+        Map<String, MKWorkspaceExportManifest.ExportPiece> byName = manifest.pieces().stream()
+                .collect(Collectors.toMap(MKWorkspaceExportManifest.ExportPiece::pieceName, piece -> piece));
+        List<MKPlannedPiece> plannedPieces = new ArrayList<>();
+        for (MKWorkspaceExportManifest.ExportTemplateGroup templateGroup : manifest.templateGroups()) {
+            for (String pieceName : templateGroup.pieces()) {
+                MKWorkspaceExportManifest.ExportPiece piece = byName.get(pieceName);
+                if (piece != null) {
+                    plannedPieces.add(toPlannedPiece(piece));
+                }
+            }
+        }
+        return plannedPieces;
+    }
+
+    private MKPlannedPiece toPlannedPiece(MKWorkspaceExportManifest.ExportPiece piece) {
+        MKWorkspaceExportManifest.ExportDimensions dimensions = piece.effectiveDimensions();
+        List<MKPlannedConnector> connectors = piece.connectors().stream()
+                .map(this::toPlannedConnector)
+                .toList();
+        LinkedHashMap<String, String> tags = new LinkedHashMap<>(piece.tags());
+        return new MKPlannedPiece(
+                tags.getOrDefault("workspace_topology_slot_id", piece.roleId()),
+                piece.pieceName(),
+                dimensions.roomWidth(),
+                dimensions.roomLength(),
+                dimensions.roomHeight(),
+                connectors,
+                tags
+        );
+    }
+
+    private MKPlannedConnector toPlannedConnector(MKWorkspaceExportManifest.ExportConnector connector) {
+        return new MKPlannedConnector(
+                connector.role(),
+                Direction.byName(connector.facing()),
+                connector.openingWidth(),
+                connector.openingHeight(),
+                connector.lateralOffset(),
+                connector.verticalOffset(),
+                connector.targetPool().toString(),
+                connector.incomingPool().toString()
+        );
+    }
+
+    private boolean placeSavedStructure(ServerLevel level, StructureTemplate template, BlockPos targetOrigin) {
+        StructurePlaceSettings settings = new StructurePlaceSettings().setIgnoreEntities(true);
+        template.placeInWorld(level, targetOrigin, targetOrigin, settings, level.getRandom(), Block.UPDATE_ALL);
+        return true;
+    }
+
+    private MKWorkspacePieceDefinition mergeImportedPiece(MKWorkspacePieceDefinition generatedPiece,
+                                                          MKWorkspaceExportManifest.ExportPiece exportedPiece,
+                                                          MKStructureWorkspace workspace) {
+        List<MKWorkspaceConnectorDefinition> connectors = exportedPiece.connectors().stream()
+                .map(this::toConnectorDefinition)
+                .toList();
+        List<BlockPos> generatedStairPositions = remapGeneratedStairPositions(exportedPiece, generatedPiece.worldOrigin());
+        return new MKWorkspacePieceDefinition(
+                generatedPiece.pieceId(),
+                workspace.id(),
+                generatedPiece.pieceName(),
+                generatedPiece.roleId(),
+                generatedPiece.variantIndex(),
+                generatedPiece.effectiveDimensions(),
+                connectors,
+                generatedPiece.worldOrigin(),
+                generatedPiece.exportBounds(),
+                generatedPiece.previewBounds(),
+                generatedPiece.structureBlockPos(),
+                generatedPiece.signPos(),
+                generatedPiece.markerPositions(),
+                generatedStairPositions,
+                migrateImportedRuntimeTags(workspace, exportedPiece.tags())
+        );
+    }
+
+    private MKWorkspaceConnectorDefinition toConnectorDefinition(MKWorkspaceExportManifest.ExportConnector connector) {
+        return new MKWorkspaceConnectorDefinition(
+                connector.role(),
+                Direction.byName(connector.facing()),
+                new BlockPos(connector.relativePos().x(), connector.relativePos().y(), connector.relativePos().z()),
+                connector.openingWidth(),
+                connector.openingHeight(),
+                connector.lateralOffset(),
+                connector.verticalOffset(),
+                connector.jigsawName(),
+                connector.jigsawTarget(),
+                connector.targetPool(),
+                connector.incomingPool(),
+                connector.jigsawOrientation(),
+                connector.jigsawFinalState(),
+                connector.jigsawJoint()
+        );
+    }
+
+    private MKWorkspacePieceDefinition pieceDefinitionFromManifest(MKStructureWorkspace workspace,
+                                                                   MKWorkspaceExportManifest.ExportPiece piece) {
+        MKWorkspaceExportManifest.ExportPiecePlacement placement = piece.placement();
+        return new MKWorkspacePieceDefinition(
+                piece.pieceId(),
+                workspace.id(),
+                piece.pieceName(),
+                piece.roleId(),
+                piece.variantIndex(),
+                dimensionsFromExport(piece.effectiveDimensions()),
+                piece.connectors().stream().map(this::toConnectorDefinition).toList(),
+                offsetFromAnchor(workspace.anchor(), placement.worldOriginOffset()),
+                boundingBoxFromOffsets(workspace.anchor(), placement.exportBounds()),
+                boundingBoxFromOffsets(workspace.anchor(), placement.previewBounds()),
+                offsetFromAnchor(workspace.anchor(), placement.structureBlockOffset()),
+                offsetFromAnchor(workspace.anchor(), placement.signOffset()),
+                piece.markerPositions().stream()
+                        .map(position -> offsetFromAnchor(workspace.anchor(), position.offset()))
+                        .toList(),
+                piece.generatedStairPositions().stream()
+                        .map(position -> offsetFromAnchor(workspace.anchor(), position.offset()))
+                        .toList(),
+                migrateImportedRuntimeTags(workspace, piece.tags())
+        );
+    }
+
+    public static Map<String, String> migrateImportedRuntimeTags(MKStructureWorkspace workspace,
+                                                                 Map<String, String> sourceTags) {
+        return MKWorkspacePlannerRegistry.shared()
+                .plannerFor(workspace)
+                .migrateImportedRuntimeTags(workspace, sourceTags);
+    }
+
+    private MKWorkspaceDimensions dimensionsFromExport(MKWorkspaceExportManifest.ExportDimensions dimensions) {
+        return new MKWorkspaceDimensions(
+                dimensions.roomWidth(),
+                dimensions.roomLength(),
+                dimensions.entranceHeight(),
+                dimensions.roomHeight(),
+                dimensions.basementHeight(),
+                dimensions.shaftWidth(),
+                dimensions.doorwayWidth(),
+                dimensions.doorwayHeight()
+        );
+    }
+
+    private BoundingBox boundingBoxFromOffsets(BlockPos anchor, MKWorkspaceExportManifest.ExportBoundingBox box) {
+        BlockPos min = offsetFromAnchor(anchor, box.minOffset());
+        BlockPos max = offsetFromAnchor(anchor, box.maxOffset());
+        return new BoundingBox(min.getX(), min.getY(), min.getZ(), max.getX(), max.getY(), max.getZ());
+    }
+
+    private BlockPos offsetFromAnchor(BlockPos anchor, MKWorkspaceExportManifest.ExportBlockPos offset) {
+        return anchor.offset(offset.x(), offset.y(), offset.z());
+    }
+
+    private List<BlockPos> remapGeneratedStairPositions(MKWorkspaceExportManifest.ExportPiece exportedPiece, BlockPos newOrigin) {
+        BlockPos oldOriginOffset = new BlockPos(
+                exportedPiece.placement().worldOriginOffset().x(),
+                exportedPiece.placement().worldOriginOffset().y(),
+                exportedPiece.placement().worldOriginOffset().z()
+        );
+        List<BlockPos> result = new ArrayList<>();
+        for (MKWorkspaceExportManifest.ExportPositionRef pos : exportedPiece.generatedStairPositions()) {
+            BlockPos stairOffset = new BlockPos(pos.offset().x(), pos.offset().y(), pos.offset().z());
+            result.add(newOrigin.offset(stairOffset.subtract(oldOriginOffset)));
+        }
+        return result;
+    }
+}
+

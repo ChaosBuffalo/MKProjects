@@ -21,5 +21,9 @@ public class NpcStructureTagsProvider extends StructureTagsProvider {
     protected void addTags(HolderLookup.Provider pProvider) {
         tag(NpcTags.Structures.TEST_STRUCTURE)
                 .add(NpcStructures.TEST_JIGSAW);
+        tag(NpcTags.Structures.TEST_TOWER)
+                .add(NpcStructures.TEST_TOWER);
+        tag(NpcTags.Structures.TEST_KEEP)
+                .add(NpcStructures.TEST_KEEP);
     }
 }

@@ -1,0 +1,48 @@
+package com.chaosbuffalo.mkworkspace.world.gen.workspace;
+
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifestLoader;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.export.MKWorkspaceExportManifest;
+import net.minecraft.resources.ResourceLocation;
+
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
+
+public class MKWorkspaceImportManifestDiscovery {
+    private final Path moduleRoot;
+    private final String namespace;
+
+    public record ImportCandidate(ResourceLocation id, int pieceCount, int templateGroupCount, Path path) {
+    }
+
+    public MKWorkspaceImportManifestDiscovery(Path moduleRoot, String namespace) {
+        this.moduleRoot = moduleRoot;
+        this.namespace = namespace;
+    }
+
+    public String namespace() {
+        return namespace;
+    }
+
+    public List<ImportCandidate> discoverCandidates() {
+        return MKWorkspaceExportManifestLoader.loadAllFromModSource(moduleRoot, namespace).stream()
+                .map(this::toCandidate)
+                .sorted((left, right) -> left.id().toString().compareToIgnoreCase(right.id().toString()))
+                .toList();
+    }
+
+    public Optional<MKWorkspaceExportManifest> loadManifest(ResourceLocation id) {
+        return MKWorkspaceExportManifestLoader.loadFromModSource(moduleRoot, id)
+                .map(MKWorkspaceExportManifestLoader.LoadedManifest::manifest);
+    }
+
+    private ImportCandidate toCandidate(MKWorkspaceExportManifestLoader.LoadedManifest loaded) {
+        MKWorkspaceExportManifest manifest = loaded.manifest();
+        return new ImportCandidate(
+                ResourceLocation.fromNamespaceAndPath(manifest.namespace(), manifest.structureName()),
+                manifest.pieces().size(),
+                manifest.templateGroups().size(),
+                loaded.path()
+        );
+    }
+}

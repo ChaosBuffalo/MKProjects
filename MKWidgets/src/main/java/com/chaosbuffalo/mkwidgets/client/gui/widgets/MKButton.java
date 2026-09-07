@@ -96,6 +96,9 @@ public class MKButton extends MKWidget {
 
     @Override
     public boolean onMousePressed(Minecraft minecraft, double mouseX, double mouseY, int mouseButton) {
+        if (!isEnabled()) {
+            return false;
+        }
         if (pressedCallback != null) {
             if (pressedCallback.apply(this, mouseButton)) {
                 playPressSound(minecraft.getSoundManager());
@@ -117,6 +120,9 @@ public class MKButton extends MKWidget {
 
     @Override
     public boolean keyPressed(Minecraft minecraft, int keyCode, int scanCode, int modifiers) {
+        if (!isEnabled()) {
+            return super.keyPressed(minecraft, keyCode, scanCode, modifiers);
+        }
         if (keyCode == GLFW.GLFW_KEY_E) {
             if (pressedCallback != null) {
                 if (pressedCallback.apply(this, GLFW.GLFW_MOUSE_BUTTON_1)) {

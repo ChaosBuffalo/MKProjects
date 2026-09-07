@@ -1,0 +1,474 @@
+package com.chaosbuffalo.mknpc.world.gen.feature.structure;
+
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKJigsawPieceMetadata;
+
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKConnectorRole;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.feature.structure.MKJigsawPieceRole;
+
+import net.minecraft.util.RandomSource;
+import net.minecraft.resources.ResourceLocation;
+
+import java.util.Optional;
+
+public class MKDungeonLayoutController {
+    private static final String STACK_SLOT_ENTRY = "entry";
+    private static final String STACK_SLOT_MAIN_FLOOR = "main_floor";
+    private static final String STACK_SLOT_TOP_CAP_APPROACH = "top_cap_approach";
+    private static final String STACK_SLOT_TOP_CAP = "top_cap";
+    private static final String STACK_SLOT_BASEMENT_ENTRY = "basement_entry";
+    private static final String STACK_SLOT_BASEMENT_FLOOR = "basement_floor";
+    private static final String STACK_SLOT_BASEMENT_CAP_APPROACH = "basement_cap_approach";
+    private static final String STACK_SLOT_BASEMENT_CAP = "basement_cap";
+
+    private final MKDungeonLayoutSettings settings;
+
+    public MKDungeonLayoutController(MKDungeonLayoutSettings settings) {
+        this.settings = settings;
+    }
+
+    public int chooseTargetFloors(RandomSource random) {
+        if (settings.minFloors() == settings.maxFloors()) {
+            return settings.minFloors();
+        }
+        return random.nextInt(settings.maxFloors() - settings.minFloors() + 1) + settings.minFloors();
+    }
+
+    public MKDungeonPieceState initialStateForStart(MKDungeonPieceState baseState,
+                                                    MKJigsawPieceMetadata startMetadata,
+                                                    RandomSource random) {
+        if (!startMetadata.hasVerticalStackLayout() || !STACK_SLOT_ENTRY.equals(startMetadata.verticalStackSlot())) {
+            return baseState;
+        }
+        return withVerticalStackLayout(baseState, startMetadata, random);
+    }
+
+    public boolean canPlaceChild(MKDungeonPieceState parentState, MKConnectorInfo connector, MKJigsawPieceMetadata childMetadata) {
+        return getRejectionReason(parentState, connector, childMetadata).isEmpty();
+    }
+
+    public Optional<String> getRejectionReason(MKDungeonPieceState parentState, MKConnectorInfo connector, MKJigsawPieceMetadata childMetadata) {
+        return getRejectionReason(parentState, connector, childMetadata, false);
+    }
+
+    public Optional<String> getRejectionReason(MKDungeonPieceState parentState, MKConnectorInfo connector,
+                                               MKJigsawPieceMetadata childMetadata, boolean branchCapsAvailable) {
+        if (!isVerticalDeltaAllowed(childMetadata.verticalLevelDelta())) {
+            return Optional.of("illegal_vertical_transition");
+        }
+
+        boolean nextOnMainPath = isMainPathContinuation(parentState, connector, childMetadata);
+        if (nextOnMainPath && !childMetadata.allowOnMainPath()) {
+            return Optional.of("main_path_forbidden");
+        }
+        if (!nextOnMainPath && !childMetadata.allowOnBranchPath()) {
+            return Optional.of("branch_path_forbidden");
+        }
+
+        Optional<String> verticalStackRejection = getVerticalStackRejection(parentState, connector, childMetadata);
+        if (verticalStackRejection.isPresent()) {
+            return verticalStackRejection;
+        }
+        if (isVerticalStackTransition(parentState, connector, childMetadata)) {
+            return Optional.empty();
+        }
+
+        int nextFloor = parentState.progressionFloorIndex() + childMetadata.progressionDelta();
+        if (!isVerticalStackFloorPlanTransition(parentState, childMetadata)) {
+            if (nextFloor < 0 || nextFloor >= parentState.targetFloors()) {
+                return Optional.of("floor_limit");
+            }
+            if (childMetadata.progressionDelta() != 0 && parentState.piecesOnFloor() < settings.minPiecesPerFloor()) {
+                return Optional.of("min_floor_budget");
+            }
+            if (connector.role() == MKConnectorRole.CONNECT_UP) {
+                if (nextFloor == parentState.targetFloors() - 1) {
+                    if (settings.topCapApproachEnabled() &&
+                            childMetadata.pieceRole() != MKJigsawPieceRole.TOP_CAP_APPROACH) {
+                        return Optional.of("final_upward_step_requires_top_cap_approach");
+                    }
+                    if (!settings.topCapApproachEnabled()) {
+                        if (childMetadata.pieceRole() == MKJigsawPieceRole.TOP_CAP_APPROACH) {
+                            return Optional.of("top_cap_approach_disabled");
+                        }
+                        if (!childMetadata.terminal()) {
+                            return Optional.of("final_upward_step_requires_terminal");
+                        }
+                    }
+                }
+                if (nextFloor < parentState.targetFloors() - 1 && childMetadata.pieceRole() == MKJigsawPieceRole.TOP_CAP_APPROACH) {
+                    return Optional.of("top_cap_approach_early");
+                }
+            }
+            if (connector.role() == MKConnectorRole.CONNECT_DOWN) {
+                if (nextFloor == parentState.targetFloors() - 1) {
+                    if (settings.basementCapApproachEnabled() &&
+                            childMetadata.pieceRole() != MKJigsawPieceRole.BASEMENT_CAP_APPROACH) {
+                        return Optional.of("final_downward_step_requires_basement_cap_approach");
+                    }
+                    if (!settings.basementCapApproachEnabled() && !childMetadata.terminal()) {
+                        return Optional.of("final_downward_step_requires_terminal");
+                    }
+                }
+                if (nextFloor < parentState.targetFloors() - 1 &&
+                        childMetadata.pieceRole() == MKJigsawPieceRole.BASEMENT_CAP_APPROACH) {
+                    return Optional.of("basement_cap_approach_early");
+                }
+                if (nextFloor < parentState.targetFloors() - 1 && childMetadata.terminal()) {
+                    return Optional.of("downward_terminal_early");
+                }
+            }
+
+            boolean finalFloor = parentState.progressionFloorIndex() >= parentState.targetFloors() - 1;
+            if (finalFloor && childMetadata.progressionDelta() != 0) {
+                return Optional.of("final_floor_progression_blocked");
+            }
+            if (finalFloor && !settings.allowBranchesOnFinalFloor() && connector.role() == MKConnectorRole.BRANCH) {
+                return Optional.of("final_floor_branch_blocked");
+            }
+            if (childMetadata.topCapOnly() && nextFloor != parentState.targetFloors() - 1) {
+                return Optional.of("top_cap_only_restricted");
+            }
+            if (isTopCapConnector(connector.role()) && nextFloor != parentState.targetFloors() - 1) {
+                return Optional.of("top_cap_connector_restricted");
+            }
+            if (childMetadata.progressionDelta() == 0 && parentState.piecesOnFloor() >= settings.maxPiecesPerFloor()) {
+                return Optional.of("per_floor_budget");
+            }
+        }
+        Optional<String> topologyGroupRejection = getTopologyGroupPathRejection(parentState, nextOnMainPath,
+                childMetadata);
+        if (topologyGroupRejection.isPresent()) {
+            return topologyGroupRejection;
+        }
+        Optional<String> branchCapRejection = getBranchCapRejection(parentState, connector, nextOnMainPath,
+                childMetadata, branchCapsAvailable);
+        if (branchCapRejection.isPresent()) {
+            return branchCapRejection;
+        }
+
+        MKDungeonPieceState nextState = nextState(parentState, connector, childMetadata);
+        if (nextState.branchDepth() > settings.maxBranchDepth()) {
+            return Optional.of("branch_depth");
+        }
+        return Optional.empty();
+    }
+
+    private Optional<String> getBranchCapRejection(MKDungeonPieceState parentState, MKConnectorInfo connector,
+                                                   boolean nextOnMainPath, MKJigsawPieceMetadata childMetadata,
+                                                   boolean branchCapsAvailable) {
+        if (nextOnMainPath || connector.role() != MKConnectorRole.BRANCH || !branchCapsAvailable ||
+                childMetadata.branchCap()) {
+            return Optional.empty();
+        }
+        return settings.topologyGroupRule(parentState.topologyGroup())
+                .filter(rule -> parentState.branchDepth() >= rule.maxBranchPiecesBeforeCap())
+                .map(rule -> "branch_cap_required");
+    }
+
+    public MKDungeonPieceState nextState(MKDungeonPieceState parentState, MKConnectorInfo connector, MKJigsawPieceMetadata childMetadata) {
+        return nextState(parentState, connector, childMetadata, null);
+    }
+
+    public MKDungeonPieceState nextState(MKDungeonPieceState parentState, MKConnectorInfo connector,
+                                         MKJigsawPieceMetadata childMetadata, RandomSource random) {
+        boolean nextOnMainPath = isMainPathContinuation(parentState, connector, childMetadata);
+        int nextFloor = parentState.progressionFloorIndex() + childMetadata.progressionDelta();
+        int nextVertical = parentState.verticalLevelIndex() + childMetadata.verticalLevelDelta();
+        int nextPiecesOnFloor = childMetadata.progressionDelta() != 0 ? 1 : parentState.piecesOnFloor() + 1;
+        int nextBranchDepth;
+        if (nextOnMainPath) {
+            nextBranchDepth = 0;
+        } else if (connector.role() == MKConnectorRole.BRANCH) {
+            nextBranchDepth = parentState.branchDepth() + branchDepthIncrement(parentState, childMetadata);
+        } else {
+            nextBranchDepth = parentState.branchDepth();
+        }
+        TopologyGroupProgress topologyGroupProgress = nextTopologyGroupProgress(parentState, childMetadata,
+                nextOnMainPath, random);
+        MKDungeonPieceState nextState = new MKDungeonPieceState(nextFloor, nextVertical, nextPiecesOnFloor, nextBranchDepth, nextOnMainPath,
+                parentState.targetFloors(), topologyGroupProgress.topologyGroup(),
+                topologyGroupProgress.piecesInTopologyGroup(),
+                topologyGroupProgress.targetInTopologyGroup(),
+                parentState.verticalStackId(),
+                parentState.verticalStackSlot(),
+                parentState.verticalStackMainTargetFloors(),
+                parentState.verticalStackMainPlacedFloors(),
+                parentState.verticalStackBasementTargetFloors(),
+                parentState.verticalStackBasementPlacedFloors(),
+                parentState.verticalStackTopCapApproachEnabled(),
+                parentState.verticalStackBasementEntryEnabled(),
+                parentState.verticalStackBasementCapApproachEnabled(),
+                childMetadata.floorExitMask());
+        return nextVerticalStackState(nextState, parentState, childMetadata, random);
+    }
+
+    public Optional<ResourceLocation> endingPoolForState(MKDungeonPieceState parentState, MKConnectorInfo connector) {
+        if (!parentState.onMainPath() || connector.role() == MKConnectorRole.BRANCH) {
+            return Optional.empty();
+        }
+        return settings.topologyGroupRule(parentState.topologyGroup())
+                .filter(rule -> rule.hasMainPathEndings() &&
+                        (!rule.hasMainPathContinuations() ||
+                                parentState.mainPathPiecesInTopologyGroup() >=
+                                        parentState.mainPathTargetInTopologyGroup()))
+                .flatMap(MKDungeonTopologyGroupRule::mainPathEndingPoolOpt);
+    }
+
+    private Optional<String> getTopologyGroupPathRejection(MKDungeonPieceState parentState, boolean nextOnMainPath,
+                                                           MKJigsawPieceMetadata childMetadata) {
+        if (!nextOnMainPath || childMetadata.topologyGroup().isBlank()) {
+            return Optional.empty();
+        }
+        Optional<MKDungeonTopologyGroupRule> ruleOpt = settings.topologyGroupRule(childMetadata.topologyGroup());
+        if (ruleOpt.isEmpty()) {
+            return childMetadata.mainPathEnding() ? Optional.of("main_path_ending_unconfigured") : Optional.empty();
+        }
+        MKDungeonTopologyGroupRule rule = ruleOpt.get();
+        if (childMetadata.mainPathEnding()) {
+            if (!rule.hasMainPathEndings()) {
+                return Optional.of("main_path_ending_unavailable");
+            }
+            if (!rule.hasMainPathContinuations()) {
+                return Optional.empty();
+            }
+            if (!parentState.topologyGroup().equals(childMetadata.topologyGroup())) {
+                return Optional.of("main_path_ending_early");
+            }
+            if (parentState.mainPathPiecesInTopologyGroup() < parentState.mainPathTargetInTopologyGroup()) {
+                return Optional.of("main_path_ending_early");
+            }
+            return Optional.empty();
+        }
+        if (!rule.hasMainPathContinuations() && rule.hasMainPathEndings()) {
+            return Optional.of("main_path_direct_ending_required");
+        }
+        if (rule.hasMainPathContinuations() && rule.hasMainPathEndings() &&
+                parentState.topologyGroup().equals(childMetadata.topologyGroup()) &&
+                parentState.mainPathPiecesInTopologyGroup() >= parentState.mainPathTargetInTopologyGroup()) {
+            return Optional.of("main_path_ending_required");
+        }
+        return Optional.empty();
+    }
+
+    private TopologyGroupProgress nextTopologyGroupProgress(MKDungeonPieceState parentState,
+                                                            MKJigsawPieceMetadata childMetadata,
+                                                            boolean nextOnMainPath, RandomSource random) {
+        if (!nextOnMainPath || childMetadata.topologyGroup().isBlank()) {
+            return new TopologyGroupProgress(parentState.topologyGroup(),
+                    parentState.mainPathPiecesInTopologyGroup(),
+                    parentState.mainPathTargetInTopologyGroup());
+        }
+        if (parentState.topologyGroup().equals(childMetadata.topologyGroup())) {
+            return new TopologyGroupProgress(parentState.topologyGroup(),
+                    parentState.mainPathPiecesInTopologyGroup() + 1,
+                    parentState.mainPathTargetInTopologyGroup());
+        }
+        int target = chooseMainPathTarget(childMetadata.topologyGroup(), random);
+        return new TopologyGroupProgress(childMetadata.topologyGroup(), 1, target);
+    }
+
+    private MKDungeonPieceState nextVerticalStackState(MKDungeonPieceState nextState,
+                                                    MKDungeonPieceState parentState,
+                                                    MKJigsawPieceMetadata childMetadata,
+                                                    RandomSource random) {
+        if (!childMetadata.hasVerticalStackLayout()) {
+            return nextState;
+        }
+        if (STACK_SLOT_ENTRY.equals(childMetadata.verticalStackSlot()) ||
+                parentState.verticalStackId().isBlank() ||
+                !parentState.verticalStackId().equals(childMetadata.verticalStackId())) {
+            return withVerticalStackLayout(nextState, childMetadata, random);
+        }
+        int mainPlaced = parentState.verticalStackMainPlacedFloors();
+        int basementPlaced = parentState.verticalStackBasementPlacedFloors();
+        if (STACK_SLOT_MAIN_FLOOR.equals(childMetadata.verticalStackSlot())) {
+            mainPlaced++;
+        }
+        if (STACK_SLOT_BASEMENT_FLOOR.equals(childMetadata.verticalStackSlot())) {
+            basementPlaced++;
+        }
+        return new MKDungeonPieceState(nextState.progressionFloorIndex(), nextState.verticalLevelIndex(),
+                nextState.piecesOnFloor(), nextState.branchDepth(), nextState.onMainPath(), nextState.targetFloors(),
+                nextState.topologyGroup(), nextState.mainPathPiecesInTopologyGroup(),
+                nextState.mainPathTargetInTopologyGroup(),
+                parentState.verticalStackId(), childMetadata.verticalStackSlot(),
+                parentState.verticalStackMainTargetFloors(), mainPlaced,
+                parentState.verticalStackBasementTargetFloors(), basementPlaced,
+                parentState.verticalStackTopCapApproachEnabled(),
+                parentState.verticalStackBasementEntryEnabled(),
+                parentState.verticalStackBasementCapApproachEnabled(),
+                nextState.floorExitMask());
+    }
+
+    private MKDungeonPieceState withVerticalStackLayout(MKDungeonPieceState state,
+                                                     MKJigsawPieceMetadata metadata,
+                                                     RandomSource random) {
+        int mainTarget = chooseRange(metadata.minMainFloors(), metadata.maxMainFloors(), random);
+        int basementTarget = chooseRange(metadata.minBasementFloors(), metadata.maxBasementFloors(), random);
+        return new MKDungeonPieceState(state.progressionFloorIndex(), state.verticalLevelIndex(),
+                state.piecesOnFloor(), state.branchDepth(), state.onMainPath(), state.targetFloors(),
+                state.topologyGroup(), state.mainPathPiecesInTopologyGroup(),
+                state.mainPathTargetInTopologyGroup(),
+                metadata.verticalStackId(), metadata.verticalStackSlot(),
+                mainTarget, 0, basementTarget, 0,
+                metadata.topCapApproachEnabled(),
+                metadata.basementEntryEnabled(),
+                metadata.basementCapApproachEnabled(),
+                metadata.floorExitMask());
+    }
+
+    private int chooseRange(int min, int max, RandomSource random) {
+        int normalizedMin = Math.max(0, Math.min(min, max));
+        int normalizedMax = Math.max(normalizedMin, max);
+        if (normalizedMin == normalizedMax || random == null) {
+            return normalizedMax;
+        }
+        return random.nextInt(normalizedMax - normalizedMin + 1) + normalizedMin;
+    }
+
+    private Optional<String> getVerticalStackRejection(MKDungeonPieceState parentState,
+                                                    MKConnectorInfo connector,
+                                                    MKJigsawPieceMetadata childMetadata) {
+        if (!isStackConnector(connector.role()) || parentState.verticalStackId().isBlank()) {
+            return Optional.empty();
+        }
+        if (!childMetadata.hasVerticalStackLayout()) {
+            return Optional.of("vertical_stack_metadata_required");
+        }
+        if (!parentState.verticalStackId().equals(childMetadata.verticalStackId())) {
+            return Optional.of("vertical_stack_mismatch");
+        }
+        return switch (connector.role()) {
+            case CONNECT_UP -> getUpwardverticalStackRejection(parentState, childMetadata);
+            case CONNECT_DOWN -> getDownwardverticalStackRejection(parentState, childMetadata);
+            case TOP_CAP_FORWARD, TOP_CAP_BACK -> getVerticalStackCapRejection(parentState, childMetadata);
+            default -> Optional.empty();
+        };
+    }
+
+    private Optional<String> getUpwardverticalStackRejection(MKDungeonPieceState parentState,
+                                                          MKJigsawPieceMetadata childMetadata) {
+        if (STACK_SLOT_TOP_CAP_APPROACH.equals(parentState.verticalStackSlot())) {
+            return requireverticalStackSlot(childMetadata, STACK_SLOT_TOP_CAP, "vertical_stack_top_cap_required");
+        }
+        if (parentState.verticalStackMainPlacedFloors() < parentState.verticalStackMainTargetFloors()) {
+            return requireverticalStackSlot(childMetadata, STACK_SLOT_MAIN_FLOOR, "vertical_stack_main_floor_required");
+        }
+        String targetSlot = parentState.verticalStackTopCapApproachEnabled()
+                ? STACK_SLOT_TOP_CAP_APPROACH
+                : STACK_SLOT_TOP_CAP;
+        return requireverticalStackSlot(childMetadata, targetSlot, "vertical_stack_top_cap_required");
+    }
+
+    private Optional<String> getDownwardverticalStackRejection(MKDungeonPieceState parentState,
+                                                            MKJigsawPieceMetadata childMetadata) {
+        if (STACK_SLOT_BASEMENT_CAP_APPROACH.equals(parentState.verticalStackSlot())) {
+            return requireverticalStackSlot(childMetadata, STACK_SLOT_BASEMENT_CAP, "vertical_stack_basement_cap_required");
+        }
+        if (STACK_SLOT_ENTRY.equals(parentState.verticalStackSlot()) &&
+                parentState.verticalStackBasementEntryEnabled() &&
+                parentState.verticalStackBasementTargetFloors() > 0) {
+            return requireverticalStackSlot(childMetadata, STACK_SLOT_BASEMENT_ENTRY, "vertical_stack_basement_entry_required");
+        }
+        if (parentState.verticalStackBasementPlacedFloors() < parentState.verticalStackBasementTargetFloors()) {
+            return requireverticalStackSlot(childMetadata, STACK_SLOT_BASEMENT_FLOOR, "vertical_stack_basement_floor_required");
+        }
+        String targetSlot = parentState.verticalStackBasementCapApproachEnabled()
+                ? STACK_SLOT_BASEMENT_CAP_APPROACH
+                : STACK_SLOT_BASEMENT_CAP;
+        return requireverticalStackSlot(childMetadata, targetSlot, "vertical_stack_basement_cap_required");
+    }
+
+    private Optional<String> getVerticalStackCapRejection(MKDungeonPieceState parentState,
+                                                       MKJigsawPieceMetadata childMetadata) {
+        if (STACK_SLOT_TOP_CAP_APPROACH.equals(parentState.verticalStackSlot())) {
+            return requireverticalStackSlot(childMetadata, STACK_SLOT_TOP_CAP, "vertical_stack_top_cap_required");
+        }
+        if (STACK_SLOT_BASEMENT_CAP_APPROACH.equals(parentState.verticalStackSlot())) {
+            return requireverticalStackSlot(childMetadata, STACK_SLOT_BASEMENT_CAP, "vertical_stack_basement_cap_required");
+        }
+        return Optional.of("vertical_stack_cap_connector_forbidden");
+    }
+
+    private Optional<String> requireverticalStackSlot(MKJigsawPieceMetadata childMetadata,
+                                                   String expectedSlot,
+                                                   String reason) {
+        return expectedSlot.equals(childMetadata.verticalStackSlot()) ? Optional.empty() : Optional.of(reason);
+    }
+
+    private boolean isVerticalStackTransition(MKDungeonPieceState parentState, MKConnectorInfo connector,
+                                            MKJigsawPieceMetadata childMetadata) {
+        return isStackConnector(connector.role()) &&
+                !parentState.verticalStackId().isBlank() &&
+                childMetadata.hasVerticalStackLayout() &&
+                parentState.verticalStackId().equals(childMetadata.verticalStackId());
+    }
+
+    private boolean isVerticalStackFloorPlanTransition(MKDungeonPieceState parentState,
+                                                    MKJigsawPieceMetadata childMetadata) {
+        return !parentState.verticalStackId().isBlank() &&
+                !parentState.verticalStackSlot().isBlank() &&
+                childMetadata.progressionDelta() == 0 &&
+                childMetadata.verticalLevelDelta() == 0 &&
+            isFloorTopologyGroup(childMetadata.topologyGroup());
+    }
+
+    private boolean isFloorTopologyGroup(String topologyGroup) {
+        return topologyGroup.endsWith(".main_floor") || topologyGroup.endsWith(".basement_floor");
+    }
+
+    private boolean isStackConnector(MKConnectorRole role) {
+        return role == MKConnectorRole.CONNECT_UP ||
+                role == MKConnectorRole.CONNECT_DOWN ||
+                role == MKConnectorRole.TOP_CAP_FORWARD ||
+                role == MKConnectorRole.TOP_CAP_BACK;
+    }
+
+    private int chooseMainPathTarget(String topologyGroup, RandomSource random) {
+        Optional<MKDungeonTopologyGroupRule> ruleOpt = settings.topologyGroupRule(topologyGroup);
+        if (ruleOpt.isEmpty()) {
+            return 0;
+        }
+        MKDungeonTopologyGroupRule rule = ruleOpt.get();
+        if (rule.minMainPathPieces() == rule.maxMainPathPieces() || random == null) {
+            return rule.maxMainPathPieces();
+        }
+        int span = rule.maxMainPathPieces() - rule.minMainPathPieces();
+        float sample = (random.nextFloat() + rule.sprawl()) / 2.0f;
+        return rule.minMainPathPieces() + Math.round(sample * span);
+    }
+
+    private record TopologyGroupProgress(String topologyGroup, int piecesInTopologyGroup,
+                                         int targetInTopologyGroup) {
+    }
+
+    private boolean isMainPathContinuation(MKDungeonPieceState parentState, MKConnectorInfo connector, MKJigsawPieceMetadata childMetadata) {
+        if (!parentState.onMainPath()) {
+            return false;
+        }
+        if (connector.role() == MKConnectorRole.BRANCH) {
+            return false;
+        }
+        return childMetadata.pieceRole() != MKJigsawPieceRole.BRANCH;
+    }
+
+    private int branchDepthIncrement(MKDungeonPieceState parentState, MKJigsawPieceMetadata childMetadata) {
+        if (parentState.topologyGroup().isBlank() && childMetadata.topologyGroup().isBlank()) {
+            return 1;
+        }
+        return !childMetadata.topologyGroup().isBlank() && !childMetadata.branchCap() ? 1 : 0;
+    }
+
+    private boolean isVerticalDeltaAllowed(int verticalDelta) {
+        return switch (settings.verticalProgressionMode()) {
+            case DOWNWARD -> verticalDelta <= 0;
+            case UPWARD -> verticalDelta >= 0;
+            case MIXED -> true;
+        };
+    }
+
+    private boolean isTopCapConnector(MKConnectorRole role) {
+        return role == MKConnectorRole.TOP_CAP_FORWARD || role == MKConnectorRole.TOP_CAP_BACK;
+    }
+}
+

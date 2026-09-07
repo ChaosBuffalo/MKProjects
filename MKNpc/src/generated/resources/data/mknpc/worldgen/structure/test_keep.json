@@ -1,0 +1,295 @@
+{
+  "type": "mknpc:mk_jigsaw",
+  "biomes": "#mknpc:has_test_keep",
+  "dungeon_layout": {
+    "allow_branches_on_final_floor": true,
+    "connectors": {
+      "branch": "mknpc:branch",
+      "connect_down": "mknpc:connect_down",
+      "connect_up": "mknpc:connect_up",
+      "main_back": "mknpc:main_back",
+      "main_forward": "mknpc:main_forward",
+      "top_cap_back": "mknpc:boss_back",
+      "top_cap_forward": "mknpc:boss_forward"
+    },
+    "max_branch_depth": 64,
+    "max_floors": 1,
+    "max_pieces_per_floor": 64,
+    "min_floors": 1,
+    "min_pieces_per_floor": 1,
+    "topology_group_rules": [
+      {
+        "floor_topology_settings": {
+          "links": {
+            "branch_hallway_length": 9,
+            "branch_hallway_width": 9,
+            "main_hallway_length": 9,
+            "main_hallway_width": 9
+          },
+          "profiles": {
+            "branch_cap_profiles": [
+              {
+                "horizontal_exits": [
+                  {
+                    "direction": "south",
+                    "openingProfileId": "__inherited_branch__",
+                    "pathKind": "branch_cap_entry"
+                  },
+                  {
+                    "direction": "north",
+                    "openingProfileId": "__inherited_link__",
+                    "pathKind": "link_candidate"
+                  },
+                  {
+                    "direction": "east",
+                    "openingProfileId": "__inherited_link__",
+                    "pathKind": "link_candidate"
+                  },
+                  {
+                    "direction": "west",
+                    "openingProfileId": "__inherited_link__",
+                    "pathKind": "link_candidate"
+                  }
+                ],
+                "id": "branch_cap",
+                "kind": "branch_cap",
+                "label": "Branch Cap",
+                "length": 23,
+                "width": 23
+              }
+            ],
+            "branch_room_profiles": [
+              {
+                "horizontal_exits": [
+                  {
+                    "direction": "south",
+                    "openingProfileId": "__inherited_branch__",
+                    "pathKind": "branch"
+                  }
+                ],
+                "id": "branch_room",
+                "kind": "branch_room",
+                "label": "Branch Room",
+                "length": 23,
+                "width": 23
+              }
+            ],
+            "main_cap_approach_profiles": [
+              {
+                "horizontal_exits": [
+                  {
+                    "direction": "south",
+                    "openingProfileId": "__inherited_main__",
+                    "pathKind": "main_ending_entry"
+                  },
+                  {
+                    "direction": "north",
+                    "openingProfileId": "__inherited_main__",
+                    "pathKind": "main_exit"
+                  }
+                ],
+                "id": "main_cap_approach",
+                "kind": "main_cap_approach",
+                "label": "Main Cap Approach",
+                "length": 23,
+                "width": 23
+              }
+            ],
+            "main_cap_profiles": [
+              {
+                "horizontal_exits": [
+                  {
+                    "direction": "south",
+                    "openingProfileId": "__inherited_main__",
+                    "pathKind": "main_ending_entry"
+                  }
+                ],
+                "id": "main_cap",
+                "kind": "main_cap",
+                "label": "Main Cap",
+                "length": 23,
+                "width": 23
+              }
+            ],
+            "main_room_profiles": [
+              {
+                "horizontal_exits": [
+                  {
+                    "direction": "south",
+                    "openingProfileId": "__inherited_main__",
+                    "pathKind": "main_entry"
+                  },
+                  {
+                    "direction": "north",
+                    "openingProfileId": "__inherited_main__",
+                    "pathKind": "main_exit"
+                  }
+                ],
+                "id": "main_room",
+                "kind": "main_room",
+                "label": "Main Room",
+                "length": 23,
+                "width": 23
+              }
+            ]
+          },
+          "settings": {
+            "floor_role": "main_floor",
+            "stack_id": "keep.center"
+          }
+        },
+        "main_path_ending_pool": "mknpc:test_keep/main_caps/keep.center.main_floor",
+        "max_main_path_pieces": 1,
+        "min_main_path_pieces": 1,
+        "root_length": 23,
+        "root_width": 23,
+        "topology_group": "keep.center.main_floor"
+      },
+      {
+        "floor_topology_settings": {
+          "links": {
+            "branch_hallway_length": 9,
+            "branch_hallway_width": 9,
+            "main_hallway_length": 9,
+            "main_hallway_width": 9
+          },
+          "profiles": {
+            "branch_cap_profiles": [
+              {
+                "horizontal_exits": [
+                  {
+                    "direction": "south",
+                    "openingProfileId": "__inherited_branch__",
+                    "pathKind": "branch_cap_entry"
+                  },
+                  {
+                    "direction": "north",
+                    "openingProfileId": "__inherited_link__",
+                    "pathKind": "link_candidate"
+                  },
+                  {
+                    "direction": "east",
+                    "openingProfileId": "__inherited_link__",
+                    "pathKind": "link_candidate"
+                  },
+                  {
+                    "direction": "west",
+                    "openingProfileId": "__inherited_link__",
+                    "pathKind": "link_candidate"
+                  }
+                ],
+                "id": "branch_cap",
+                "kind": "branch_cap",
+                "label": "Branch Cap",
+                "length": 23,
+                "width": 23
+              }
+            ],
+            "branch_room_profiles": [
+              {
+                "horizontal_exits": [
+                  {
+                    "direction": "south",
+                    "openingProfileId": "__inherited_branch__",
+                    "pathKind": "branch"
+                  }
+                ],
+                "id": "branch_room",
+                "kind": "branch_room",
+                "label": "Branch Room",
+                "length": 23,
+                "width": 23
+              }
+            ],
+            "main_cap_approach_profiles": [
+              {
+                "horizontal_exits": [
+                  {
+                    "direction": "south",
+                    "openingProfileId": "__inherited_main__",
+                    "pathKind": "main_ending_entry"
+                  },
+                  {
+                    "direction": "north",
+                    "openingProfileId": "__inherited_main__",
+                    "pathKind": "main_exit"
+                  }
+                ],
+                "id": "main_cap_approach",
+                "kind": "main_cap_approach",
+                "label": "Main Cap Approach",
+                "length": 23,
+                "width": 23
+              }
+            ],
+            "main_cap_profiles": [
+              {
+                "horizontal_exits": [
+                  {
+                    "direction": "south",
+                    "openingProfileId": "__inherited_main__",
+                    "pathKind": "main_ending_entry"
+                  }
+                ],
+                "id": "main_cap",
+                "kind": "main_cap",
+                "label": "Main Cap",
+                "length": 23,
+                "width": 23
+              }
+            ],
+            "main_room_profiles": [
+              {
+                "horizontal_exits": [
+                  {
+                    "direction": "south",
+                    "openingProfileId": "__inherited_main__",
+                    "pathKind": "main_entry"
+                  },
+                  {
+                    "direction": "north",
+                    "openingProfileId": "__inherited_main__",
+                    "pathKind": "main_exit"
+                  }
+                ],
+                "id": "main_room",
+                "kind": "main_room",
+                "label": "Main Room",
+                "length": 23,
+                "width": 23
+              }
+            ]
+          },
+          "settings": {
+            "floor_role": "basement_floor",
+            "stack_id": "keep.center"
+          }
+        },
+        "main_path_ending_pool": "mknpc:test_keep/main_caps/keep.center.basement_floor",
+        "max_main_path_pieces": 1,
+        "min_main_path_pieces": 1,
+        "root_length": 23,
+        "root_width": 23,
+        "topology_group": "keep.center.basement_floor"
+      }
+    ]
+  },
+  "fill_floor": false,
+  "max_distance_from_center": 116,
+  "project_start_to_heightmap": "WORLD_SURFACE_WG",
+  "size": 20,
+  "spawn_overrides": {
+    "monster": {
+      "bounding_box": "piece",
+      "spawns": []
+    }
+  },
+  "start_height": {
+    "absolute": 0
+  },
+  "start_pool": "mknpc:test_keep/start",
+  "step": "surface_structures",
+  "structure_events": {},
+  "terrain_adaptation": "beard_thin",
+  "use_expansion_hack": true
+}

@@ -1,0 +1,1 @@
+{"floor_closable_openings":[{"z":4,"opening_width":3,"opening_height":3,"closure_depth":3,"facing":"west","x":0,"y":1},{"z":4,"opening_width":3,"opening_height":3,"closure_depth":3,"facing":"east","x":8,"y":1}],"topology_group":"keep.center.basement_floor","allow_on_main_path":false,"allow_on_branch_path":true,"role":"room"}

@@ -1,0 +1,141 @@
+package com.chaosbuffalo.mkworkspace.world.gen.workspace.capability;
+
+import com.chaosbuffalo.mkworkspace.MKWorkspace;
+
+import com.chaosbuffalo.mkworkspace.world.gen.workspace.model.MKWorkspaceSamplePreviewState;
+import com.chaosbuffalo.mkworkspaceruntime.world.gen.workspace.model.MKStructureWorkspace;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.Level;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+public class MKStructureWorkspaceDataHandler implements IMKStructureWorkspaceData {
+    private final Level level;
+    private final Map<UUID, MKStructureWorkspace> workspacesById = new HashMap<>();
+    private final Map<BlockPos, UUID> workspaceByAnchor = new HashMap<>();
+    private final Map<UUID, MKWorkspaceSamplePreviewState> samplePreviewStatesByWorkspaceId = new HashMap<>();
+
+    public MKStructureWorkspaceDataHandler(Level level) {
+        this.level = level;
+    }
+
+    @Override
+    public Optional<MKStructureWorkspace> getWorkspace(UUID id) {
+        return Optional.ofNullable(workspacesById.get(id));
+    }
+
+    @Override
+    public Optional<MKStructureWorkspace> getWorkspaceByAnchor(BlockPos anchor) {
+        UUID id = workspaceByAnchor.get(anchor);
+        if (id == null) {
+            return Optional.empty();
+        }
+        return getWorkspace(id);
+    }
+
+    @Override
+    public Collection<MKStructureWorkspace> getAllWorkspaces() {
+        return workspacesById.values();
+    }
+
+    @Override
+    public UUID createWorkspace(MKStructureWorkspace workspace) {
+        workspacesById.put(workspace.id(), workspace);
+        workspaceByAnchor.put(workspace.anchor(), workspace.id());
+        return workspace.id();
+    }
+
+    @Override
+    public void updateWorkspace(MKStructureWorkspace workspace) {
+        workspacesById.put(workspace.id(), workspace);
+        workspaceByAnchor.put(workspace.anchor(), workspace.id());
+    }
+
+    @Override
+    public void deleteWorkspace(UUID id) {
+        MKStructureWorkspace removed = workspacesById.remove(id);
+        if (removed != null) {
+            workspaceByAnchor.remove(removed.anchor());
+        }
+        samplePreviewStatesByWorkspaceId.remove(id);
+    }
+
+    @Override
+    public Optional<MKWorkspaceSamplePreviewState> getSamplePreviewState(UUID workspaceId) {
+        return Optional.ofNullable(samplePreviewStatesByWorkspaceId.get(workspaceId));
+    }
+
+    @Override
+    public void setSamplePreviewState(UUID workspaceId, MKWorkspaceSamplePreviewState state) {
+        samplePreviewStatesByWorkspaceId.put(workspaceId, state);
+    }
+
+    @Override
+    public void clearSamplePreviewState(UUID workspaceId) {
+        samplePreviewStatesByWorkspaceId.remove(workspaceId);
+    }
+
+    @Override
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
+        CompoundTag tag = new CompoundTag();
+        Tag workspacesTag = MKStructureWorkspace.LIST_CODEC.encodeStart(NbtOps.INSTANCE, List.copyOf(workspacesById.values()))
+                .resultOrPartial(error -> com.chaosbuffalo.mkworkspace.MKWorkspace.LOGGER.error(
+                        "Failed to encode workspace capability data: {}", error))
+                .orElseThrow(() -> new IllegalStateException("Failed to encode workspace capability data"));
+        tag.put("workspaces", workspacesTag);
+        ListTag samplePreviewStates = new ListTag();
+        for (Map.Entry<UUID, MKWorkspaceSamplePreviewState> entry : samplePreviewStatesByWorkspaceId.entrySet()) {
+            if (!workspacesById.containsKey(entry.getKey())) {
+                continue;
+            }
+            CompoundTag stateTag = new CompoundTag();
+            stateTag.putUUID("workspaceId", entry.getKey());
+            stateTag.put("state", entry.getValue().toTag());
+            samplePreviewStates.add(stateTag);
+        }
+        tag.put("samplePreviewStates", samplePreviewStates);
+        return tag;
+    }
+
+    @Override
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag nbt) {
+        workspacesById.clear();
+        workspaceByAnchor.clear();
+        samplePreviewStatesByWorkspaceId.clear();
+        Tag workspacesTag = nbt.get("workspaces");
+        if (workspacesTag == null) {
+            return;
+        }
+        List<MKStructureWorkspace> workspaces = MKStructureWorkspace.LIST_CODEC.parse(NbtOps.INSTANCE, workspacesTag)
+                .resultOrPartial(error -> com.chaosbuffalo.mkworkspace.MKWorkspace.LOGGER.error(
+                        "Failed to parse workspace capability data: {}", error))
+                .orElseThrow(() -> new IllegalStateException("Failed to parse workspace capability data"));
+        for (MKStructureWorkspace workspace : workspaces) {
+            workspacesById.put(workspace.id(), workspace);
+            workspaceByAnchor.put(workspace.anchor(), workspace.id());
+        }
+        ListTag samplePreviewStates = nbt.getList("samplePreviewStates", Tag.TAG_COMPOUND);
+        for (int i = 0; i < samplePreviewStates.size(); i++) {
+            CompoundTag stateEntry = samplePreviewStates.getCompound(i);
+            if (!stateEntry.hasUUID("workspaceId") || !stateEntry.contains("state", Tag.TAG_COMPOUND)) {
+                continue;
+            }
+            UUID workspaceId = stateEntry.getUUID("workspaceId");
+            if (!workspacesById.containsKey(workspaceId)) {
+                continue;
+            }
+            samplePreviewStatesByWorkspaceId.put(workspaceId,
+                    MKWorkspaceSamplePreviewState.fromTag(stateEntry.getCompound("state")));
+        }
+    }
+}

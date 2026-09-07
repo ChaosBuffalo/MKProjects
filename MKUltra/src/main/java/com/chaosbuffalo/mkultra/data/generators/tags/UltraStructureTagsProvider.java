@@ -33,5 +33,7 @@ public class UltraStructureTagsProvider extends StructureTagsProvider {
                 .add(UltraStructures.DECAYING_CHURCH);
         tag(UltraTags.Structures.THEMCROMANCER_LAIR)
                 .add(UltraStructures.THEMCROMANCERS_LAIR);
+        tag(UltraTags.Structures.FIRE_SHRINE)
+                .add(UltraStructures.FIRE_SHRINE);
     }
 }
