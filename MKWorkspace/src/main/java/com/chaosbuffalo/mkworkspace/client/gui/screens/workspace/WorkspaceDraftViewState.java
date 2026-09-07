@@ -1,7 +1,9 @@
 package com.chaosbuffalo.mkworkspace.client.gui.screens.workspace;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 final class WorkspaceDraftViewState {
     final Map<String, Long> floorTopologyPreviewSeeds = new HashMap<>();
@@ -10,6 +12,7 @@ final class WorkspaceDraftViewState {
     final Map<String, Boolean> floorHallVariantDrawers = new HashMap<>();
     final Map<String, Boolean> floorInsertVariantDrawers = new HashMap<>();
     final Map<String, Boolean> floorRoomVariantDrawers = new HashMap<>();
+    final Set<String> collapsedContentSlots = new HashSet<>();
     private final Map<String, String> plannerSelections = new HashMap<>();
 
     void copyFrom(WorkspaceDraftViewState source) {
@@ -25,6 +28,8 @@ final class WorkspaceDraftViewState {
         floorInsertVariantDrawers.putAll(source.floorInsertVariantDrawers);
         floorRoomVariantDrawers.clear();
         floorRoomVariantDrawers.putAll(source.floorRoomVariantDrawers);
+        collapsedContentSlots.clear();
+        collapsedContentSlots.addAll(source.collapsedContentSlots);
         plannerSelections.clear();
         plannerSelections.putAll(source.plannerSelections);
     }

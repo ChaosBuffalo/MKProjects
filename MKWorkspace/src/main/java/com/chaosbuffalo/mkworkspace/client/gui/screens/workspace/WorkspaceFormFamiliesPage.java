@@ -9,18 +9,23 @@ import com.chaosbuffalo.mkwidgets.client.gui.layouts.MKStackLayoutVertical;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.CompatButton;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKScrollView;
 import com.chaosbuffalo.mkwidgets.client.gui.widgets.MKText;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Slot/family browser. The detail column intentionally renders only the selected family's templates. */
+/** Slot/family browser. The detail column renders the selected family's scaffold, canonical, and variants. */
 public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
     public static final String ID = "form_families";
     private static final int SELECTOR_WIDTH = 250;
     private static final int COLUMN_GAP = 12;
     private static final int FAMILY_ROW_HEIGHT = 14;
+    private static final int SLOT_ROW_HEIGHT = 16;
 
     @Override
     public String id() {
@@ -32,7 +37,7 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
         MKLayout root = createPanel(screen);
         addTitle(screen, root, Component.literal("Topology Slots & Content Families"));
         MKText help = addHeaderText(screen, root, Component.literal(
-                "Choose a family under its topology slot. The right panel shows only that family's canonical and variants."));
+                "Choose a family under its topology slot. The right panel manages its scaffold, canonical, and variants."));
 
         WorkspaceDraftSession editor = screen.draftSession();
         WorkspaceContentTree tree = WorkspaceContentTree.buildDeclared(currentPieces(screen), declaredSlots(editor));
@@ -78,16 +83,22 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
         }
         for (WorkspaceContentTree.SlotNode slot : tree.slots()) {
             boolean selectedSlot = selected != null && selected.slotId().equals(slot.slotId());
-            MKText slotHeader = screen.makeWhiteText(Component.literal((selectedSlot ? "▾ " : "• ") +
-                    truncate(slot.label(), 29)));
-            slotHeader.setWidth(SELECTOR_WIDTH - 18);
-            slotHeader.setMultiline(true);
+            boolean collapsed = editor.viewState.collapsedContentSlots.contains(slot.slotId());
+            String slotStatus = slot.families().size() + (slot.families().size() == 1 ? " family" : " families");
+            Component headerLabel = compactSlotLabel(screen.font(), slot.label(), slotStatus, collapsed,
+                    SELECTOR_WIDTH - 24);
+            CompatButton slotHeader = new SlotHeaderButton(headerLabel, SELECTOR_WIDTH - 18, SLOT_ROW_HEIGHT)
+                    .setSelected(selectedSlot)
+                    .setPressedCallback((button, mouseButton) -> {
+                        if (collapsed) editor.viewState.collapsedContentSlots.remove(slot.slotId());
+                        else editor.viewState.collapsedContentSlots.add(slot.slotId());
+                        screen.refreshPreservingActiveScroll();
+                        return true;
+                    });
             selector.addWidget(slotHeader);
             selector.addConstraintToWidget(MarginConstraint.LEFT, slotHeader);
 
-            String slotStatus = slot.families().size() + (slot.families().size() == 1 ? " family" : " families");
-            if (!slot.scaffolds().isEmpty()) slotStatus += " | scaffold " + slot.scaffolds().getFirst().pieceName();
-            addTreeText(screen, selector, "  " + slotStatus);
+            if (collapsed) continue;
             if (slot.families().isEmpty()) addTreeText(screen, selector, "  No placeable content families");
 
             for (WorkspaceContentTree.FamilyNode family : slot.families()) {
@@ -152,6 +163,69 @@ public class WorkspaceFormFamiliesPage extends WorkspacePageBase {
 
     private String truncate(String value, int max) {
         return value.length() <= max ? value : value.substring(0, Math.max(1, max - 3)) + "...";
+    }
+
+    private Component compactSlotLabel(Font font, String slotLabel, String slotStatus, boolean collapsed,
+                                       int maxWidth) {
+        String prefix = collapsed ? "\u25b8 " : "\u25be ";
+        String suffix = " \u00b7 " + slotStatus;
+        String fittedLabel = slotLabel;
+        if (font.width(prefix + fittedLabel + suffix) > maxWidth) {
+            while (!fittedLabel.isEmpty() && font.width(prefix + fittedLabel + "..." + suffix) > maxWidth) {
+                fittedLabel = fittedLabel.substring(0, fittedLabel.length() - 1);
+            }
+            fittedLabel += "...";
+        }
+        return Component.literal(prefix + fittedLabel + suffix);
+    }
+
+    private static class SlotHeaderButton extends CompatButton {
+        private static final int TOGGLE_WIDTH = 14;
+        private static final int BACKGROUND = 0xF03B3B3B;
+        private static final int TOGGLE_HOVER_BACKGROUND = 0xFF656565;
+        private static final int SELECTED_BACKGROUND = 0xF0504934;
+        private static final int SELECTED_ACCENT = 0xFFFFD166;
+        private static final int TEXT_COLOR = 0xFFF4F4F4;
+
+        private SlotHeaderButton(Component text, int width, int height) {
+            super(text, width, height);
+        }
+
+        @Override
+        public SlotHeaderButton setSelected(boolean selected) {
+            super.setSelected(selected);
+            return this;
+        }
+
+        @Override
+        public SlotHeaderButton setPressedCallback(java.util.function.BiFunction<
+                com.chaosbuffalo.mkwidgets.client.gui.widgets.MKButton, Integer, Boolean> callback) {
+            super.setPressedCallback(callback);
+            return this;
+        }
+
+        @Override
+        public boolean onMousePressed(Minecraft minecraft, double mouseX, double mouseY, int mouseButton) {
+            if (mouseButton != GLFW.GLFW_MOUSE_BUTTON_LEFT || mouseX >= getX() + TOGGLE_WIDTH) {
+                return false;
+            }
+            return super.onMousePressed(minecraft, mouseX, mouseY, mouseButton);
+        }
+
+        @Override
+        public void draw(GuiGraphics graphics, Minecraft mc, int x, int y, int width, int height,
+                         int mouseX, int mouseY, float partialTicks) {
+            graphics.fill(x, y, x + width, y + height, isSelected() ? SELECTED_BACKGROUND : BACKGROUND);
+            if (isSelected()) graphics.fill(x, y, x + 2, y + height, SELECTED_ACCENT);
+            boolean toggleHovered = isEnabled() && mouseX >= x && mouseX < x + TOGGLE_WIDTH &&
+                    mouseY >= y && mouseY < y + height;
+            if (toggleHovered) {
+                graphics.fill(x + 2, y + 1, x + TOGGLE_WIDTH, y + height - 1, TOGGLE_HOVER_BACKGROUND);
+            }
+            int color = isEnabled() ? TEXT_COLOR : 0xFFA0A0A0;
+            graphics.drawString(mc.font, buttonText, x + HORIZONTAL_TEXT_PADDING,
+                    y + (height - mc.font.lineHeight) / 2, color, false);
+        }
     }
 
 }
