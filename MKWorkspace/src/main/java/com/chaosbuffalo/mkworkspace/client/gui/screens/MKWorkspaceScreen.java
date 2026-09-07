@@ -1095,7 +1095,7 @@ public class MKWorkspaceScreen extends MKScreen {
             scrollView.setOffsetX(Math.max(minOffsetX, Math.min(scrollView.getOffsetX(), maxOffsetX)));
         }
         if (!scrollView.shouldScrollY() || !scrollView.isContentTaller()) {
-            scrollView.setOffsetY(Math.min(scrollView.getOffsetY(), scrollView.getScrollMarginY()));
+            scrollView.setToTop();
             return;
         }
         double minOffsetY = scrollView.getHeight() - child.getHeight() - scrollView.getScrollMarginY();
